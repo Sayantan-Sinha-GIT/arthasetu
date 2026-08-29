@@ -53,8 +53,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href={logoHref} className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center shadow-md">
+          <Link href={logoHref} className="flex items-center gap-2 shrink-0 group transition-transform hover:scale-[1.02] active:scale-[0.98]">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center shadow-md group-hover:shadow-saffron-500/30 transition-shadow">
               <span className="text-white font-bold text-sm">अ</span>
             </div>
             <span className="font-bold text-lg gradient-text hidden sm:block">
@@ -68,22 +68,28 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`
-                  px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                  ${isActive(link.href)
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : 'text-muted hover:text-foreground hover:bg-surface'
-                  }
-                `}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-1.5">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`
+                    relative px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-200 ease-smooth
+                    ${active
+                      ? 'bg-primary/15 text-primary font-bold shadow-xs'
+                      : 'text-muted hover:text-foreground hover:bg-surface/80'
+                    }
+                  `}
+                >
+                  {link.label}
+                  {active && (
+                    <span className="absolute bottom-1 left-3.5 right-3.5 h-0.5 bg-primary rounded-full animate-fade-in" />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Right side controls */}
@@ -94,8 +100,8 @@ export default function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg border border-border hover:bg-surface
-                         transition-all duration-200 text-muted hover:text-foreground cursor-pointer"
+              className="p-2 rounded-xl border border-border hover:border-primary/40 hover:bg-surface
+                         transition-all duration-200 text-muted hover:text-foreground cursor-pointer active:scale-95 shadow-xs"
               title={theme === 'light' ? 'Dark mode' : 'Light mode'}
             >
               {theme === 'light' ? (
@@ -179,23 +185,29 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border/50 bg-surface-elevated animate-fade-in">
-          <div className="px-4 py-3 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`
-                  block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
-                  ${isActive(link.href)
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : 'text-muted hover:text-foreground hover:bg-surface'
-                  }
-                `}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="py-3 px-2 space-y-1">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`
+                    flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                    ${active
+                      ? 'bg-primary/15 text-primary font-bold shadow-xs'
+                      : 'text-muted hover:text-foreground hover:bg-surface'
+                    }
+                  `}
+                >
+                  <span>{link.label}</span>
+                  {active && (
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                  )}
+                </Link>
+              );
+            })}
 
             {/* Mobile user section */}
             <div className="pt-2 mt-2 border-t border-border-subtle">

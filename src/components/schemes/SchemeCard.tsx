@@ -20,9 +20,18 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
   return (
     <Card
       padding="lg"
-      className="flex flex-col justify-between space-y-4 hover:border-primary/50 transition-all hover:shadow-lg group"
+      className="relative overflow-hidden flex flex-col justify-between space-y-4 hover:border-primary/50 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
     >
-      <div className="space-y-3">
+      {/* Category Accent Indicator Top Bar */}
+      <div
+        className={`absolute top-0 left-0 right-0 h-1 ${
+          isCentral
+            ? 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600'
+            : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600'
+        }`}
+      />
+
+      <div className="space-y-3 pt-1">
         {/* Top Badges Bar */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">

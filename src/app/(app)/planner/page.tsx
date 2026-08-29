@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import PlannerWizard from '@/components/planner/PlannerWizard';
 import PlanResultView from '@/components/planner/PlanResultView';
 import { getUserProfile } from '@/lib/firestore/users';
@@ -136,14 +137,17 @@ export default function PlannerPage() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
         {/* Top Page Header */}
         {!activePlan && (
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground flex items-center gap-2">
-              <span>📊</span>
-              <span>Financial Structuring & Planning Engine</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-muted mt-1">
-              Deterministic financial arithmetic combined with AI-powered market assumptions and bankability analysis
-            </p>
+          <div className="relative overflow-hidden rounded-2xl p-6 bg-surface-elevated/70 border border-border">
+            <AmbientBackground variant="subtle" />
+            <div className="relative z-10">
+              <h1 className="text-2xl sm:text-3xl font-black text-foreground flex items-center gap-2">
+                <span>📊</span>
+                <span>Financial Structuring & Planning Engine</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-muted mt-1">
+                Deterministic financial arithmetic combined with AI-powered market assumptions and bankability analysis
+              </p>
+            </div>
           </div>
         )}
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import type { UserProfile } from '@/types';
 
 interface WelcomeBannerProps {
@@ -41,9 +42,8 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy-800 via-navy-900 to-navy-950 text-white p-6 sm:p-8 border border-navy-700 shadow-xl">
-      {/* Decorative background glows */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-saffron-500/15 rounded-full blur-3xl -z-0" />
-      <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-accent/20 rounded-full blur-2xl -z-0" />
+      {/* Ambient background atmosphere */}
+      <AmbientBackground variant="card" />
 
       <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="space-y-4 flex-1">

@@ -30,7 +30,7 @@ export default function Card({
         rounded-2xl border border-border
         ${glass ? 'glass' : 'bg-surface-elevated'}
         ${paddingClasses[padding]}
-        ${hover ? 'hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-pointer' : 'shadow-sm'}
+        ${hover ? 'hover:shadow-md hover:border-primary/40 hover:-translate-y-1 cursor-pointer' : 'shadow-sm'}
         transition-all duration-300 ease-smooth
         ${onClick ? 'cursor-pointer' : ''}
         ${className}
@@ -48,11 +48,11 @@ export function CardHeader({ children, className = '' }: { children: ReactNode; 
 }
 
 export function CardTitle({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <h3 className={`text-lg font-bold text-foreground ${className}`}>{children}</h3>;
+  return <h3 className={`text-lg font-bold text-foreground tracking-tight ${className}`}>{children}</h3>;
 }
 
 export function CardDescription({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <p className={`text-sm text-muted mt-1 ${className}`}>{children}</p>;
+  return <p className={`text-sm text-muted mt-1 leading-relaxed ${className}`}>{children}</p>;
 }
 
 export function CardContent({ children, className = '' }: { children: ReactNode; className?: string }) {

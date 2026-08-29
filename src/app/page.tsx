@@ -1,15 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useInView } from '@/hooks/useInView';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Button from '@/components/ui/Button';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 
 export default function LandingPage() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { ref: featuresRef, inView: featuresInView } = useInView<HTMLElement>({ threshold: 0.1 });
+  const { ref: ctaRef, inView: ctaInView } = useInView<HTMLElement>({ threshold: 0.15 });
 
   return (
     <>
@@ -17,14 +22,10 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden">
-          {/* Background decorations */}
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-saffron-400/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-navy-500/10 rounded-full blur-3xl" />
-            <div className="absolute top-40 right-1/3 w-48 h-48 bg-saffron-300/5 rounded-full blur-2xl" />
-          </div>
+          {/* Ambient Background Atmosphere */}
+          <AmbientBackground variant="hero" />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-28">
             <div className="max-w-3xl mx-auto text-center animate-slide-up">
               {/* Badge - High Contrast */}
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-saffron-100 dark:bg-saffron-950/80 border border-saffron-300 dark:border-saffron-700 mb-6 shadow-sm">
@@ -35,7 +36,7 @@ export default function LandingPage() {
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.12]">
                 <span className="text-amber-600 dark:text-saffron-300 font-extrabold">{t.appName}</span>
                 <br />
                 <span className="text-foreground">{t.tagline}</span>
@@ -57,7 +58,7 @@ export default function LandingPage() {
                 ) : (
                   <>
                     <Link href="/signup">
-                      <Button size="lg" className="text-base px-8 font-bold shadow-lg shadow-saffron-500/20">
+                      <Button size="lg" className="text-base px-8 font-bold shadow-md shadow-saffron-500/20">
                         {t.landing.ctaSignup}
                       </Button>
                     </Link>
@@ -74,13 +75,13 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 bg-surface/50">
+        <section ref={featuresRef} className="py-16 sm:py-24 bg-surface/50 border-y border-border-subtle overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-foreground">
+            <div className={`text-center mb-12 sm:mb-16 transition-all duration-700 ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 {t.landing.featuresTitle}
               </h2>
-              <p className="mt-3 text-muted max-w-xl mx-auto">
+              <p className="mt-3 text-muted max-w-xl mx-auto text-base">
                 {t.landing.featuresSubtitle}
               </p>
             </div>
@@ -145,12 +146,19 @@ export default function LandingPage() {
               ].map((feature, i) => (
                 <div
                   key={i}
-                  className="group bg-surface-elevated border border-border rounded-2xl p-6 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 transition-all duration-300"
+                  className={`
+                    group bg-surface-elevated border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-500
+                    ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
+                  `}
+                  style={{
+                    transitionDelay: featuresInView ? `${i * 80}ms` : '0ms',
+                    transitionTimingFunction: 'var(--ease-smooth)',
+                  }}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-saffron-400/20 to-navy-500/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-saffron-400/20 to-navy-500/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 shadow-sm">
                     {feature.icon}
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold text-foreground">
+                  <h3 className="mt-4 text-base sm:text-lg font-bold text-foreground tracking-tight">
                     {feature.title}
                   </h3>
                   <p className="mt-2 text-sm text-muted leading-relaxed">
@@ -162,25 +170,101 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Authentic Grassroots Enterprise Showcase */}
+        <section className="py-16 sm:py-20 border-b border-border-subtle bg-surface/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10 sm:mb-14">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Grassroots Micro-Enterprises
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-1">
+                Empowering Rural Enterprises Across India
+              </h2>
+              <p className="mt-2 text-muted max-w-xl mx-auto text-sm sm:text-base">
+                From village handloom weavers to kirana retail shopkeepers, terracotta potters, and women self-help group artisans.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  src: '/images/artisan-weaving.webp',
+                  title: 'Handloom & Textiles',
+                  subtitle: 'Rural weavers & traditional textile craft',
+                  alt: 'Indian artisan weaving traditional Ikat patterned fabric on a handloom',
+                },
+                {
+                  src: '/images/small-shopkeeper.webp',
+                  title: 'Kirana & Retail',
+                  subtitle: 'Village grocery stores & local merchants',
+                  alt: 'Indian local grocery and kirana shopkeeper at a neighborhood general store counter',
+                },
+                {
+                  src: '/images/pottery-artisan.webp',
+                  title: 'Pottery & Craft',
+                  subtitle: 'Terracotta artisans & clay craft workshops',
+                  alt: 'Hands of an artisan shaping an earthen terracotta pot on a spinning pottery wheel',
+                },
+                {
+                  src: '/images/women-entrepreneur.webp',
+                  title: 'Women Entrepreneurs',
+                  subtitle: 'Community micro-enterprises & local trade',
+                  alt: 'Smiling Indian woman micro-entrepreneur in traditional red printed attire',
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="group relative overflow-hidden rounded-2xl bg-surface-elevated border border-border shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                >
+                  <div className="relative aspect-4/3 w-full overflow-hidden bg-surface">
+                    <Image
+                      src={item.src}
+                      alt={item.alt}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-bold text-base text-foreground tracking-tight group-hover:text-primary transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-muted mt-1 leading-relaxed">
+                        {item.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
-        <section className="py-20">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <h2 className="text-3xl font-bold text-foreground">
+        <section ref={ctaRef} className="py-16 sm:py-24 overflow-hidden">
+          <div
+            className={`max-w-3xl mx-auto px-4 sm:px-6 text-center transition-all duration-700 ${
+              ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+            style={{ transitionTimingFunction: 'var(--ease-smooth)' }}
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               {t.tagline}
             </h2>
-            <p className="mt-4 text-muted text-lg">
+            <p className="mt-4 text-muted text-base sm:text-lg max-w-xl mx-auto">
               {t.landing.subtitle}
             </p>
             <div className="mt-8">
               {user ? (
                 <Link href="/dashboard">
-                  <Button size="lg" className="text-base px-10 font-bold">
+                  <Button size="lg" className="text-base px-10 font-bold shadow-md">
                     {t.landing.ctaDashboard} →
                   </Button>
                 </Link>
               ) : (
                 <Link href="/signup">
-                  <Button size="lg" className="text-base px-10 font-bold shadow-lg shadow-saffron-500/20">
+                  <Button size="lg" className="text-base px-10 font-bold shadow-md shadow-saffron-500/20">
                     {t.auth.signupButton} →
                   </Button>
                 </Link>

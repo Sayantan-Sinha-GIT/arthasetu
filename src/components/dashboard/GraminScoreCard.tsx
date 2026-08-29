@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import TextToSpeechButton from '@/components/ui/TextToSpeechButton';
+import CountUp from '@/components/ui/CountUp';
 import type { UserProfile, GraminScoreInputs, ExistingLoanInput } from '@/types';
 
 interface GraminScoreCardProps {
@@ -130,7 +131,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
           </span>
           <div className="flex items-baseline gap-1">
             <span className="text-5xl font-black text-foreground">
-              {scoreResult.score}
+              <CountUp start={300} end={scoreResult.score} duration={900} />
             </span>
             <span className="text-sm font-semibold text-muted">/ 900</span>
           </div>

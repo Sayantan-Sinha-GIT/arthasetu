@@ -13,15 +13,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-primary-foreground hover:bg-primary-hover shadow-md hover:shadow-lg active:scale-[0.98]',
+    'bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
   secondary:
-    'bg-secondary text-secondary-foreground hover:bg-secondary-hover shadow-md hover:shadow-lg active:scale-[0.98]',
+    'bg-secondary text-secondary-foreground hover:bg-secondary-hover shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
   ghost:
-    'bg-transparent text-foreground hover:bg-surface active:bg-surface-elevated',
+    'bg-transparent text-foreground hover:bg-surface active:bg-surface-elevated active:scale-[0.98]',
   danger:
-    'bg-danger text-white hover:bg-red-600 shadow-md hover:shadow-lg active:scale-[0.98]',
+    'bg-danger text-white hover:bg-red-600 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
   outline:
-    'bg-transparent text-foreground border border-border hover:bg-surface hover:border-primary active:scale-[0.98]',
+    'bg-transparent text-foreground border border-border hover:bg-surface hover:border-primary/50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
