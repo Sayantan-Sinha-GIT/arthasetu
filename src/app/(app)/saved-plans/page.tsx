@@ -148,21 +148,21 @@ export default function SavedPlansPage() {
                   {/* Key Metrics Badges */}
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <div className="p-2.5 rounded-2xl bg-surface border border-border text-center">
-                      <span className="text-[9px] font-bold uppercase text-muted block">Loan Gap</span>
+                      <span className="text-[9px] font-bold uppercase text-muted block">{t.planner.loanGap}</span>
                       <span className="text-xs sm:text-sm font-bold text-foreground mt-0.5 block">
                         ₹{plan.calculatedValues?.fundingGap?.toLocaleString('en-IN') || 0}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-2xl bg-surface border border-border text-center">
-                      <span className="text-[9px] font-bold uppercase text-muted block">Net Profit</span>
+                      <span className="text-[9px] font-bold uppercase text-muted block">{t.planner.netProfit}</span>
                       <span className="text-xs sm:text-sm font-bold text-success mt-0.5 block">
                         ₹{plan.calculatedValues?.monthlyNetProfit?.toLocaleString('en-IN') || 0}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-2xl bg-surface border border-border text-center">
-                      <span className="text-[9px] font-bold uppercase text-muted block">Break-even</span>
+                      <span className="text-[9px] font-bold uppercase text-muted block">{t.planner.breakEven}</span>
                       <span className="text-xs sm:text-sm font-bold text-foreground mt-0.5 block">
                         {plan.calculatedValues?.breakEvenMonths ? `${plan.calculatedValues.breakEvenMonths} Mo` : 'N/A'}
                       </span>

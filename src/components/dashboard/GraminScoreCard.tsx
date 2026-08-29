@@ -18,25 +18,37 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   // Derive initial inputs from profile
-  const [inputs, setInputs] = useState<GraminScoreInputs>({
-    monthlyIncome: profile?.monthlyIncome || 35000,
-    monthlyExpenses: profile?.monthlyExpenses || 20000,
-    revenueConsistency: 'stable',
-    steadyIncomeMonths: 12,
-    availableCapital: profile?.availableCapital || 50000,
-    desiredFunding: profile?.desiredFunding || 100000,
-    monthlySavings: 5000,
-    emergencyReserve: 25000,
-    yearsInOperation: profile?.businessStatus === 'existing' ? 2 : 0,
-    isRegistered: true,
-    employeeCount: profile?.employeeCount || 2,
-    existingLoans: [
-      { id: '1', lenderType: 'shg_cooperative', emiAmount: 1800, status: 'on_time' },
-    ],
-    keepsRecords: true,
-    usesBankAccount: true,
-    hasInsurance: false,
-    isShgMember: true,
+  const [inputs, setInputs] = useState<GraminScoreInputs>(() => {
+    const profileLoans: ExistingLoanInput[] =
+      profile?.loanDetails && profile.loanDetails.length > 0
+        ? profile.loanDetails.map((l) => ({
+            id: l.id,
+            lenderType: l.lenderType === 'informal' ? 'informal_moneylender' : l.lenderType,
+            emiAmount: l.monthlyEmi || 0,
+            status: 'on_time' as const,
+          }))
+        : [];
+
+    return {
+      monthlyIncome: typeof profile?.monthlyIncome === 'number' ? profile.monthlyIncome : 0,
+      monthlyExpenses: typeof profile?.monthlyExpenses === 'number' ? profile.monthlyExpenses : 0,
+      revenueConsistency: profile?.monthlyIncome && profile.monthlyIncome > 0 ? 'stable' : 'growing',
+      steadyIncomeMonths: profile?.businessStatus === 'existing' ? 12 : 0,
+      availableCapital: typeof profile?.availableCapital === 'number' ? profile.availableCapital : 0,
+      desiredFunding: typeof profile?.desiredFunding === 'number' ? profile.desiredFunding : 0,
+      monthlySavings: typeof profile?.monthlyIncome === 'number' && typeof profile?.monthlyExpenses === 'number'
+        ? Math.max(0, profile.monthlyIncome - profile.monthlyExpenses)
+        : 0,
+      emergencyReserve: typeof profile?.availableCapital === 'number' ? Math.round(profile.availableCapital * 0.2) : 0,
+      yearsInOperation: profile?.businessStatus === 'existing' ? 2 : 0,
+      isRegistered: !!profile?.businessStatus && profile.businessStatus === 'existing',
+      employeeCount: typeof profile?.employeeCount === 'number' ? profile.employeeCount : 0,
+      existingLoans: profileLoans,
+      keepsRecords: true,
+      usesBankAccount: true,
+      hasInsurance: false,
+      isShgMember: false,
+    };
   });
 
   const scoreResult = calculateGraminScore(inputs);

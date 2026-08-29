@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -115,6 +115,9 @@ export default function OnboardingPage() {
     });
   };
 
+  // Cache last validated payload to avoid redundant AI calls
+  const lastValidatedRef = useRef<string>('');
+
   const validateStep = (step: number): boolean => {
     const errs: Record<string, string> = {};
 
@@ -123,6 +126,9 @@ export default function OnboardingPage() {
       if (!formData.state) errs.state = 'Please select your state';
       if (!formData.district?.trim()) errs.district = 'Please enter your district';
       if (!formData.locality?.trim()) errs.locality = 'Please enter your village / town';
+      if (formData.pinCode?.trim() && !/^[1-9][0-9]{5}$/.test(formData.pinCode.trim())) {
+        errs.pinCode = 'PIN code must be 6 digits and cannot start with 0';
+      }
     } else if (step === 1) {
       if (!formData.businessStatus) errs.businessStatus = 'Please select business status';
       if (!formData.businessCategory) errs.businessCategory = 'Please select a business category';
@@ -131,7 +137,7 @@ export default function OnboardingPage() {
       if (formData.availableCapital === undefined || formData.availableCapital < 0) {
         errs.availableCapital = 'Please enter available capital (or 0)';
       }
-      if (!formData.desiredFunding || formData.desiredFunding <= 0) {
+      if (formData.desiredFunding === undefined || formData.desiredFunding <= 0) {
         errs.desiredFunding = 'Please enter estimated desired funding amount';
       }
     }
@@ -143,8 +149,60 @@ export default function OnboardingPage() {
   const handleNext = async () => {
     if (!validateStep(currentStep)) return;
 
+    // AI validation step on relevant transitions (Step 0, Step 1, Step 2)
+    if (currentStep <= 2) {
+      const cacheKey = JSON.stringify({
+        step: currentStep,
+        businessType: formData.businessType,
+        businessCategory: formData.businessCategory,
+        state: formData.state,
+        district: formData.district,
+        availableCapital: formData.availableCapital,
+        desiredFunding: formData.desiredFunding,
+      });
+
+      if (lastValidatedRef.current !== cacheKey) {
+        setSaving(true);
+        try {
+          const res = await fetch('/api/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              businessType: formData.businessType,
+              businessCategory: formData.businessCategory,
+              state: formData.state,
+              district: formData.district,
+              availableCapital: formData.availableCapital,
+              desiredFunding: formData.desiredFunding,
+              monthlyIncome: formData.monthlyIncome,
+              monthlyExpenses: formData.monthlyExpenses,
+              language: formData.language || language || 'en',
+            }),
+          });
+
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              if (json.data.errors && Object.keys(json.data.errors).length > 0) {
+                setErrors((prev) => ({ ...prev, ...json.data.errors }));
+                setSaving(false);
+                return;
+              }
+              if (json.data.suggestedCategory && !formData.businessCategory) {
+                updateFormData({ businessCategory: json.data.suggestedCategory });
+              }
+              lastValidatedRef.current = cacheKey;
+            }
+          }
+        } catch (err) {
+          console.warn('AI validation fail-open fallback:', err);
+        } finally {
+          setSaving(false);
+        }
+      }
+    }
+
     if (currentStep < stepTitles.length - 1) {
-      // Save progress so far to Firestore
       if (user) {
         try {
           await createUserProfile({

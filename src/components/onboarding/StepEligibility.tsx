@@ -1,10 +1,10 @@
 'use client';
 
-import Input, { Select } from '@/components/ui/Input';
+import { Select, NumberInput } from '@/components/ui/Input';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { GENDERS } from '@/lib/firestore/users';
-import type { UserProfile } from '@/types';
+import type { UserProfile, LoanDetail } from '@/types';
 
 interface StepEligibilityProps {
   data: Partial<UserProfile>;
@@ -20,10 +20,52 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
     ...GENDERS.map((g) => ({ value: g, label: g })),
   ];
 
-  const handleNumericChange = (key: keyof UserProfile, valStr: string) => {
-    const clean = valStr.replace(/[^0-9]/g, '');
-    const num = clean === '' ? 0 : parseInt(clean, 10);
-    onChange({ [key]: num });
+  const lenderOptions = [
+    { value: 'bank', label: t.graminScore.bank || 'Commercial Bank (SBI, PNB, etc.)' },
+    { value: 'nbfc', label: t.graminScore.nbfc || 'NBFC / Microfinance (MFI)' },
+    { value: 'shg_cooperative', label: t.graminScore.shg || 'SHG / Cooperative Credit Society' },
+    { value: 'informal', label: t.graminScore.moneylender || 'Informal / Private Lender' },
+  ];
+
+  const loans = data.loanDetails || [];
+
+  const handleToggleLoans = (checked: boolean) => {
+    if (checked) {
+      const initialLoans: LoanDetail[] = loans.length > 0 ? loans : [
+        {
+          id: `loan_${Date.now()}`,
+          lenderType: 'bank',
+          outstandingAmount: 0,
+          monthlyEmi: 0,
+        },
+      ];
+      onChange({ existingLoans: true, loanDetails: initialLoans });
+    } else {
+      onChange({ existingLoans: false, loanDetails: [] });
+    }
+  };
+
+  const handleAddLoan = () => {
+    const newLoan: LoanDetail = {
+      id: `loan_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      lenderType: 'bank',
+      outstandingAmount: 0,
+      monthlyEmi: 0,
+    };
+    onChange({ loanDetails: [...loans, newLoan] });
+  };
+
+  const handleUpdateLoan = (id: string, updates: Partial<LoanDetail>) => {
+    const updated = loans.map((l) => (l.id === id ? { ...l, ...updates } : l));
+    onChange({ loanDetails: updated });
+  };
+
+  const handleRemoveLoan = (id: string) => {
+    const remaining = loans.filter((l) => l.id !== id);
+    onChange({
+      loanDetails: remaining,
+      existingLoans: remaining.length > 0,
+    });
   };
 
   return (
@@ -50,38 +92,101 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input
+        <NumberInput
           label={t.onboarding.employeeCount}
-          type="text"
-          value={data.employeeCount ? data.employeeCount.toString() : ''}
-          onChange={(e) => handleNumericChange('employeeCount', e.target.value)}
+          value={data.employeeCount !== undefined ? data.employeeCount : ''}
+          onValueChange={(val) => onChange({ employeeCount: val })}
           placeholder={t.onboarding.employeeCountPlaceholder}
+          min={0}
           hint="Including yourself and family members"
         />
 
-        <Input
+        <NumberInput
           label={t.onboarding.annualTurnover}
-          type="text"
-          value={data.annualTurnover ? data.annualTurnover.toString() : ''}
-          onChange={(e) => handleNumericChange('annualTurnover', e.target.value)}
+          value={data.annualTurnover !== undefined ? data.annualTurnover : ''}
+          onValueChange={(val) => onChange({ annualTurnover: val })}
           placeholder={t.onboarding.annualTurnoverPlaceholder}
+          min={0}
           hint="Estimated yearly revenue (if existing)"
         />
       </div>
 
-      {/* Existing Loan Toggle */}
-      <div className="pt-2">
-        <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-border bg-surface-elevated hover:border-muted">
+      {/* Existing Loan Toggle & Expandable Details */}
+      <div className="space-y-3 pt-2">
+        <label className="flex items-center gap-3 cursor-pointer p-3.5 rounded-xl border border-border bg-surface-elevated hover:border-muted transition-all">
           <input
             type="checkbox"
             checked={!!data.existingLoans}
-            onChange={(e) => onChange({ existingLoans: e.target.checked })}
-            className="w-4 h-4 rounded text-primary focus:ring-primary"
+            onChange={(e) => handleToggleLoans(e.target.checked)}
+            className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
           />
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-sm font-semibold text-foreground">
             {t.onboarding.existingLoans}
           </span>
         </label>
+
+        {data.existingLoans && (
+          <div className="p-4 rounded-2xl bg-surface border border-border space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-2">
+              <span className="text-xs font-bold text-foreground">
+                Active Loan Details ({loans.length})
+              </span>
+              <button
+                type="button"
+                onClick={handleAddLoan}
+                className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+              >
+                <span>➕</span>
+                <span>Add Another Loan</span>
+              </button>
+            </div>
+
+            {loans.map((loan, idx) => (
+              <div
+                key={loan.id}
+                className="p-3.5 rounded-xl bg-surface-elevated border border-border space-y-3"
+              >
+                <div className="flex items-center justify-between text-xs font-bold text-muted">
+                  <span>Loan #{idx + 1}</span>
+                  {loans.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLoan(loan.id)}
+                      className="text-danger hover:underline text-xs font-semibold"
+                    >
+                      ✕ Remove
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <Select
+                    label="Lender Type"
+                    value={loan.lenderType}
+                    onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as any })}
+                    options={lenderOptions}
+                  />
+
+                  <NumberInput
+                    label="Outstanding Balance (₹)"
+                    value={loan.outstandingAmount !== undefined ? loan.outstandingAmount : ''}
+                    onValueChange={(val) => handleUpdateLoan(loan.id, { outstandingAmount: val })}
+                    placeholder="e.g. 50000"
+                    min={0}
+                  />
+
+                  <NumberInput
+                    label="Monthly EMI (₹)"
+                    value={loan.monthlyEmi !== undefined ? loan.monthlyEmi : ''}
+                    onValueChange={(val) => handleUpdateLoan(loan.id, { monthlyEmi: val })}
+                    placeholder="e.g. 2500"
+                    min={0}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

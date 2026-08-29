@@ -3,6 +3,7 @@
 import Input, { Select } from '@/components/ui/Input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ALL_INDIAN_REGIONS } from '@/lib/firestore/users';
+import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { UserProfile } from '@/types';
 
 interface StepBasicInfoProps {
@@ -12,12 +13,34 @@ interface StepBasicInfoProps {
 }
 
 export default function StepBasicInfo({ data, onChange, errors = {} }: StepBasicInfoProps) {
-  const { t, setLanguage } = useLanguage();
+  const { t, setLanguage, language } = useLanguage();
 
   const stateOptions = [
     { value: '', label: t.onboarding.selectState },
     ...ALL_INDIAN_REGIONS.map((s) => ({ value: s, label: s })),
   ];
+
+  const languageOptions = SUPPORTED_LANGUAGES.map((l) => ({
+    value: l.code,
+    label: `${l.nativeName} (${l.name})${l.isMachineTranslated ? ' — AI' : ''}`,
+  }));
+
+  const handleLanguageChange = (code: string) => {
+    onChange({ language: code });
+    setLanguage(code);
+  };
+
+  const handlePinChange = (pin: string) => {
+    // Only accept numeric digits up to 6
+    const clean = pin.replace(/[^0-9]/g, '').slice(0, 6);
+    onChange({ pinCode: clean });
+  };
+
+  const pinError =
+    errors.pinCode ||
+    (data.pinCode && data.pinCode.length > 0 && !/^[1-9][0-9]{5}$/.test(data.pinCode)
+      ? 'PIN code must be 6 digits and cannot start with 0'
+      : undefined);
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -31,45 +54,15 @@ export default function StepBasicInfo({ data, onChange, errors = {} }: StepBasic
         error={errors.name}
       />
 
-      {/* Language Preference */}
+      {/* Preferred Language - Full 23-Language Selector */}
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-foreground">
-          {t.onboarding.preferredLanguage}
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              onChange({ language: 'en' });
-              setLanguage('en');
-            }}
-            className={`
-              py-2.5 px-4 rounded-xl border text-sm font-medium transition-all text-center
-              ${data.language === 'en'
-                ? 'border-primary bg-primary/10 text-primary font-semibold shadow-sm'
-                : 'border-border bg-surface-elevated text-muted hover:border-muted'
-              }
-            `}
-          >
-            English
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onChange({ language: 'hi' });
-              setLanguage('hi');
-            }}
-            className={`
-              py-2.5 px-4 rounded-xl border text-sm font-medium transition-all text-center
-              ${data.language === 'hi'
-                ? 'border-primary bg-primary/10 text-primary font-semibold shadow-sm'
-                : 'border-border bg-surface-elevated text-muted hover:border-muted'
-              }
-            `}
-          >
-            हिंदी (Hindi)
-          </button>
-        </div>
+        <Select
+          label={`🌐 ${t.onboarding.preferredLanguage} (23 Languages)`}
+          value={data.language || language || 'en'}
+          onChange={(e) => handleLanguageChange(e.target.value)}
+          options={languageOptions}
+          required
+        />
       </div>
 
       {/* State & District */}
@@ -108,9 +101,10 @@ export default function StepBasicInfo({ data, onChange, errors = {} }: StepBasic
           label={t.onboarding.pinCode}
           type="text"
           value={data.pinCode || ''}
-          onChange={(e) => onChange({ pinCode: e.target.value })}
+          onChange={(e) => handlePinChange(e.target.value)}
           placeholder={t.onboarding.pinCodePlaceholder}
-          error={errors.pinCode}
+          error={pinError}
+          maxLength={6}
         />
       </div>
     </div>

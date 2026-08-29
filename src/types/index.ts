@@ -3,6 +3,13 @@
 
 import { Timestamp } from 'firebase/firestore';
 
+export interface LoanDetail {
+  id: string;
+  lenderType: 'bank' | 'nbfc' | 'shg_cooperative' | 'informal';
+  outstandingAmount: number;
+  monthlyEmi: number;
+}
+
 // ─── User Profile ───
 export interface UserProfile {
   uid: string;
@@ -34,6 +41,7 @@ export interface UserProfile {
   gender?: string;
   employeeCount?: number;
   existingLoans?: boolean;
+  loanDetails?: LoanDetail[];
   annualTurnover?: number;
 
   // Profile completeness

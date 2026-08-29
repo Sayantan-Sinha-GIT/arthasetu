@@ -38,7 +38,10 @@
     "featureSchemesDesc": "अपने उद्यम के लिए केंद्र और राज्य सरकार की कल्याणकारी योजनाओं की खोज करें।",
     "statsUsers": "सूक्ष्म उद्यमियों का समर्थन",
     "statsLanguages": "मान्यता प्राप्त भारतीय भाषाएं",
-    "statsSchemes": "सत्यापित सरकारी योजनाएं"
+    "statsSchemes": "सत्यापित सरकारी योजनाएं",
+    "featureGovernanceTitle": "एआई शासन और प्रशासन",
+    "featureGovernanceDesc": "लाइव होने से पहले सत्यापित नीति विश्लेषण और मानवीय देखरेख के साथ आधिकारिक योजना डेटाबेस को अद्यतन करें।",
+    "featureSavedPlansDesc": "आपकी योजनाएं और सलाह हर सत्र में सुरक्षित रहती हैं। लॉग आउट करें, कभी भी वापस आएं — सब कुछ आपके खाते में सहेजा रहेगा।"
   },
   "auth": {
     "loginTitle": "वापस आपका स्वागत है",
@@ -114,7 +117,10 @@
     "employeeCountPlaceholder": "उदा. 2",
     "existingLoans": "क्या कोई सक्रिय बैंक ऋण है?",
     "annualTurnover": "वार्षिक कारोबार (₹, यदि कोई हो)",
-    "annualTurnoverPlaceholder": "उदा. 300000"
+    "annualTurnoverPlaceholder": "उदा. 300000",
+    "dob": "जन्म तिथि",
+    "dobPlaceholder": "अपनी जन्म तिथि चुनें (दिन-माह-वर्ष)",
+    "dobError": "कृपया एक वैध जन्म तिथि चुनें (आयु 18-100 वर्ष)"
   },
   "dashboard": {
     "welcome": "वापस आपका स्वागत है,",
@@ -271,7 +277,24 @@
     "userProvided": "भवता प्रदत्तविवरणम्",
     "viabilityScore": "व्यावहारिकताङ्कः",
     "breakEven": "आयव्ययसन्तुलनकालः (ब्रेक-इव्हन)",
-    "operatingMargin": "कार्यसञ्चालनलाभप्रतिशतम्"
+    "operatingMargin": "कार्यसञ्चालनलाभप्रतिशतम्",
+    "grossRevenue": "सकल राजस्व",
+    "operatingCosts": "परिचालन लागत",
+    "loanInterest": "ऋण ब्याज",
+    "loanEmi": "ऋण ईएमआई",
+    "capexSubsidy": "कैपेक्स सब्सिडी अनुदान",
+    "netProfitPat": "शुद्ध लाभ (PAT)",
+    "margin": "मार्जिन",
+    "bankDscr": "बैंक DSCR अनुपात",
+    "breakEvenPeriod": "ब्रेक-इवन अवधि",
+    "unviable": "अव्यावहारिक",
+    "interactiveSimulation": "इंटरएक्टिव सिमुलेशन",
+    "whatIfTitle": "व्हाट-इफ वित्तीय तनाव और वृद्धि तुलनाकर्ता",
+    "whatIfSubtitle": "बाजार की मंदी, त्योहारी मांग में उछाल और सरकारी सब्सिडी अनुदानों के मुकाबले अपने मूल अनुमानों की तुलना करें",
+    "adjustVariables": "कस्टम सिमुलेशन चर समायोजित करें",
+    "resetSliders": "स्लाइडर रीसेट करें",
+    "loanGap": "ऋण अंतर",
+    "netProfit": "शुद्ध लाभ"
   },
   "schemes": {
     "title": "सरकारी योजनाएं",
@@ -288,7 +311,16 @@
     "source": "आधिकारिकस्रोतः",
     "lastVerified": "अन्तिमसत्यापनदिनाङ्कः",
     "relevance": "एषा किमर्थम् उपयुक्ता",
-    "missingInfo": "अनुपलब्धसूचना"
+    "missingInfo": "अनुपलब्धसूचना",
+    "subsidyBenefit": "सब्सिडी लाभ",
+    "maxFunding": "अधिकतम वित्तपोषण",
+    "lastVerifiedTooltip": "प्रशासनिक टीम द्वारा अंतिम बार सत्यापित",
+    "whyMatches": "यह आपकी प्रोफाइल से क्यों मेल खाता है",
+    "verified": "सत्यापित",
+    "collateralFree": "संपार्श्विक-मुक्त ऋण",
+    "upTo": "तक",
+    "subsidy": "सब्सिडी",
+    "lakhs": "लाख"
   },
   "admin": {
     "loginTitle": "प्रशासकप्रवेशः (Admin Login)",
@@ -350,7 +382,7 @@
   "footer": {
     "disclaimer": "अर्थसेतु केवलं सूचनार्थम् अनुमानानि ददाति। निर्णयात् पूर्वं स्वयमेव सत्यापयतु।",
     "prototype": "हैकाथॉन प्रोटोटाइप — स्मार्ट इण्डिया हैकाथॉन",
-    "teamName": "टीम CoreDumped",
+    "teamName": "टीम कोरडंप्ड",
     "teamLeader": "दलप्रमुखः",
     "leadDeveloper": "मुख्यविकासकः",
     "testers": "परीक्षणदलम्"

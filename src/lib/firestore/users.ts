@@ -173,6 +173,18 @@ export function calculateProfileCompleteness(profile: Partial<UserProfile> | nul
     { key: 'availableCapital', label: 'Available Capital', check: () => typeof profile.availableCapital === 'number' && profile.availableCapital >= 0 },
     { key: 'desiredFunding', label: 'Desired Funding', check: () => typeof profile.desiredFunding === 'number' && profile.desiredFunding > 0 },
     { key: 'dob', label: 'Date of Birth', check: () => !!profile.dob && profile.dob.length > 0 },
+    {
+      key: 'loanDetails',
+      label: 'Loan Details',
+      check: () => {
+        if (!profile.existingLoans) return true; // Not applicable / no debt
+        return (
+          Array.isArray(profile.loanDetails) &&
+          profile.loanDetails.length > 0 &&
+          profile.loanDetails.every((l) => (l.outstandingAmount > 0 || l.monthlyEmi > 0) && !!l.lenderType)
+        );
+      },
+    },
   ];
 
   const missingFields: string[] = [];

@@ -99,22 +99,30 @@ export function calculateGraminScore(inputs: Partial<GraminScoreInputs>): Gramin
   const loans = inputs.existingLoans || [];
 
   if (loans.length > 0) {
-    const hasDefault = loans.some((l) => l.status === 'defaulted' || l.status === 'occasionally_missed');
     const totalEmi = loans.reduce((acc, l) => acc + (l.emiAmount || 0), 0);
-    const emiRatio = revenue > 0 ? (totalEmi / revenue) * 100 : 0;
+    const hasDefault = loans.some((l) => l.status === 'defaulted' || l.status === 'occasionally_missed');
 
     if (hasDefault) {
       debtScore = 10;
       debtRationale = 'Disclosed past missed payments or repayment delays';
-    } else if (emiRatio < 30) {
-      debtScore = 120;
-      debtRationale = `Clean repayment record with safe EMI burden (${emiRatio.toFixed(0)}% of income)`;
-    } else if (emiRatio <= 50) {
-      debtScore = 70;
-      debtRationale = `Moderate debt burden (EMI consumes ${emiRatio.toFixed(0)}% of income)`;
+    } else if (revenue > 0 && totalEmi > 0) {
+      const emiRatio = (totalEmi / revenue) * 100;
+      if (emiRatio < 30) {
+        debtScore = 120;
+        debtRationale = `Clean repayment record with safe EMI burden (${emiRatio.toFixed(0)}% of income)`;
+      } else if (emiRatio <= 50) {
+        debtScore = 70;
+        debtRationale = `Moderate debt burden (EMI consumes ${emiRatio.toFixed(0)}% of income)`;
+      } else {
+        debtScore = 30;
+        debtRationale = `High debt servicing burden (EMI exceeds ${emiRatio.toFixed(0)}% of income)`;
+      }
+    } else if (totalEmi > 0) {
+      debtScore = 60;
+      debtRationale = `Active loan servicing liability of ₹${totalEmi.toLocaleString('en-IN')}/mo in pre-revenue stage`;
     } else {
-      debtScore = 30;
-      debtRationale = `High debt servicing burden (EMI exceeds ${emiRatio.toFixed(0)}% of income)`;
+      debtScore = 100;
+      debtRationale = `Active credit facility reported (${loans.length} active account${loans.length > 1 ? 's' : ''})`;
     }
   }
 

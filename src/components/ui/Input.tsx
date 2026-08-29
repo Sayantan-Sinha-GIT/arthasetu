@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, useState, useEffect, type InputHTMLAttributes, type ReactNode } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -254,12 +254,15 @@ export function Textarea({
 }
 
 // ─── NumberInput Component ───
-interface NumberInputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface NumberInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label?: string;
   error?: string;
   hint?: string;
   prefix?: string;
   wrapperClassName?: string;
+  value?: number | string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onValueChange?: (value: number) => void;
 }
 
 export function NumberInput({
@@ -270,9 +273,94 @@ export function NumberInput({
   wrapperClassName = '',
   className = '',
   id,
+  value,
+  onChange,
+  onValueChange,
+  min,
+  max,
   ...props
 }: NumberInputProps) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+
+  // Format incoming value to string without leading zeros (unless literally 0)
+  const formatValue = (v: number | string | undefined): string => {
+    if (v === undefined || v === null || v === '') return '';
+    if (typeof v === 'number') return v.toString();
+    const str = v.toString();
+    if (str === '0') return '0';
+    // Remove leading zeros like "070000" -> "70000"
+    const cleaned = str.replace(/^0+(?=\d)/, '');
+    return cleaned;
+  };
+
+  const [displayValue, setDisplayValue] = useState<string>(() => formatValue(value));
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Sync external value changes when not actively typing
+  useEffect(() => {
+    if (!isFocused) {
+      setDisplayValue(formatValue(value));
+    }
+  }, [value, isFocused]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let raw = e.target.value;
+    // Strip leading zeros if more digits follow (e.g. "07" -> "7")
+    if (/^0\d+/.test(raw)) {
+      raw = raw.replace(/^0+/, '');
+    }
+    setDisplayValue(raw);
+
+    // Compute actual number
+    const parsed = raw === '' ? 0 : Number(raw);
+    const num = isNaN(parsed) ? 0 : parsed;
+
+    if (onValueChange) {
+      onValueChange(num);
+    }
+    if (onChange) {
+      // Create synthetic event with parsed number string
+      const syntheticEvent = {
+        ...e,
+        target: {
+          ...e.target,
+          value: raw === '' ? '0' : raw,
+        },
+      } as React.ChangeEvent<HTMLInputElement>;
+      onChange(syntheticEvent);
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(false);
+    if (displayValue === '') {
+      setDisplayValue('0');
+      if (onValueChange) onValueChange(0);
+      if (onChange) {
+        const syntheticEvent = {
+          ...e,
+          target: { ...e.target, value: '0' },
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        onChange(syntheticEvent);
+      }
+    } else {
+      const parsed = Number(displayValue);
+      const cleanNum = isNaN(parsed) ? 0 : parsed;
+      setDisplayValue(cleanNum.toString());
+      if (onValueChange) onValueChange(cleanNum);
+    }
+    if (props.onBlur) {
+      props.onBlur(e);
+    }
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(true);
+    // If value is currently 0, select text or allow immediate overwrite
+    if (props.onFocus) {
+      props.onFocus(e);
+    }
+  };
 
   return (
     <div className={`space-y-1.5 ${wrapperClassName}`}>
@@ -290,6 +378,12 @@ export function NumberInput({
         <input
           type="number"
           id={inputId}
+          value={displayValue}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          min={min}
+          max={max}
           className={`
             w-full rounded-xl border border-border bg-surface-elevated text-foreground
             placeholder:text-muted-foreground

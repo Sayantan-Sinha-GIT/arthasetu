@@ -43,6 +43,9 @@ const EXEMPT_PATTERNS = [
   /^300$/,
   /^900$/,
   /^4632$/,
+  /^NBFC(\s*\/\s*MFI)?$/,
+  /^MFI$/,
+  /Smart India Hackathon/,
   /CoreDumped/,
   /^[\d\s,.\-%+/():•✓⚠️🚀🏛️📊🎙️📋💡📂⏳⚖️🌾🪪🏢👥🎛️🔔🔕🔒🛡️📜✨]*$/,
 ];
@@ -61,15 +64,18 @@ function isLikelyEnglish(str: string, langCode: string): boolean {
   // English itself is expected to be English
   if (langCode === 'en') return false;
 
+  // Strip exempt brand names and acronyms before checking Latin ratio
+  let cleaned = str.replace(/ArthaSetu|PMEGP|MUDRA|MSME|KVIC|DIC|DPR|KYC|PAN|WhatsApp|SMS|CoreDumped|Smart India Hackathon|NBFC|MFI/gi, '');
+
   // Filter out punctuation, numbers, and emojis
-  const lettersOnly = str.replace(/[\d\s\p{P}\p{S}]/gu, '');
+  const lettersOnly = cleaned.replace(/[\d\s\p{P}\p{S}]/gu, '');
   if (lettersOnly.length === 0) return false;
 
   // Count Latin characters
   const latinMatches = lettersOnly.match(/[A-Za-z]/g) || [];
   const latinRatio = latinMatches.length / lettersOnly.length;
 
-  // If >50% of the alphabetic characters are Latin, it's an English leak in an Indian language
+  // If >50% of the non-brand alphabetic characters are Latin, it's an English leak
   return latinRatio > 0.5;
 }
 

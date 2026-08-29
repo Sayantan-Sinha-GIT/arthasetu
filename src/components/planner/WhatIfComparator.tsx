@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Card from '@/components/ui/Card';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { PlanInputs, CalculatedValues } from '@/types';
 
 interface WhatIfComparatorProps {
@@ -24,6 +25,8 @@ interface ScenarioResult {
 }
 
 export default function WhatIfComparator({ inputs, calculated }: WhatIfComparatorProps) {
+  const { t } = useLanguage();
+
   // Custom scenario adjustment sliders
   const [revenueDeltaPct, setRevenueDeltaPct] = useState(0); // -50% to +100%
   const [costsDeltaPct, setCostsDeltaPct] = useState(0); // -30% to +50%
@@ -38,72 +41,83 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
     revMultiplier: number,
     costMultiplier: number,
     interestRate: number,
-    subsidyPct: number
+    subsidyPercent: number
   ): ScenarioResult => {
-    // 1. Initial Investment and Subsidy Adjustment
-    const baseTotalCapEx = calculated.totalInitialCost;
-    const subsidyAmount = Math.round(baseTotalCapEx * (subsidyPct / 100));
-    const effectiveFundingGap = Math.max(0, calculated.fundingGap - subsidyAmount);
+    // 1. Adjusted Monthly Revenue
+    const monthlyGrossRevenue = Math.round(
+      (inputs.planType === 'existing_expansion'
+        ? (inputs.currentMonthlyRevenue || 0) * (1 + (inputs.projectedRevenueIncreasePercent || 30) / 100)
+        : (inputs.unitsSoldPerMonth || 1) * (inputs.unitPrice || 0)) * revMultiplier
+    );
 
-    // 2. Loan EMI (reducing balance formula)
-    const monthlyRate = interestRate / 12 / 100;
-    const n = Math.max(1, inputs.loanTenureMonths || 36);
-    const emi =
-      effectiveFundingGap > 0 && monthlyRate > 0
-        ? Math.round(
-            (effectiveFundingGap * monthlyRate * Math.pow(1 + monthlyRate, n)) /
-              (Math.pow(1 + monthlyRate, n) - 1)
-          )
-        : 0;
+    // 2. Adjusted OPEX
+    const rawMaterials = (inputs.monthlyRawMaterials || 0) * costMultiplier;
+    const rentUtilities = inputs.monthlyRentUtilities || 0;
+    const labor = inputs.monthlyLabor || 0;
+    const transport = (inputs.monthlyTransportPackaging || 0) * costMultiplier;
+    const maintenance = inputs.monthlyMaintenanceOther || 0;
+    const monthlyOperatingCosts = Math.round(rawMaterials + rentUtilities + labor + transport + maintenance);
 
-    // 3. Revenue & Operating Costs
-    const grossRev = Math.round(calculated.monthlyGrossRevenue * revMultiplier);
-    const baseOpex =
-      inputs.monthlyRawMaterials +
-      inputs.monthlyRentUtilities +
-      inputs.monthlyLabor +
-      inputs.monthlyTransportPackaging +
-      inputs.monthlyMaintenanceOther;
-    const opex = Math.round(baseOpex * costMultiplier);
+    // 3. Adjusted Initial Investment & Subsidy
+    const baseCapEx =
+      inputs.planType === 'existing_expansion'
+        ? (inputs.expansionEquipmentCost || 0) + (inputs.expansionWorkingCapital || 0)
+        : (inputs.equipmentCost || 0) + (inputs.setupCost || 0) + (inputs.initialInventory || 0) + (inputs.workingCapitalReserve || 0);
 
-    // 4. Net Profit
-    const netProfit = grossRev - opex - emi;
-    const margin = grossRev > 0 ? Math.round((netProfit / grossRev) * 100) : 0;
+    const subsidyAmount = Math.round(baseCapEx * (subsidyPercent / 100));
+    const effectiveCapEx = Math.max(0, baseCapEx - subsidyAmount);
+    const fundingGap = Math.max(0, effectiveCapEx - (inputs.availableSavings || 0));
 
-    // 5. Break-Even Payback
-    const breakEven =
-      netProfit > 0 ? Math.ceil(baseTotalCapEx / netProfit) : null;
-
-    // 6. DSCR (Debt Service Coverage Ratio) = Annual Operating Income / Annual Debt Service
-    const annualNOI = (grossRev - opex) * 12;
-    const annualDebt = emi * 12;
-    const dscr = annualDebt > 0 ? Number((annualNOI / annualDebt).toFixed(2)) : 5.0;
-
-    let dscrStatus = 'Excellent Bank Safety 🟢';
-    if (dscr < 1.25) {
-      dscrStatus = 'High Risk / Low Margin 🔴';
-    } else if (dscr < 1.75) {
-      dscrStatus = 'Standard Bank Norm 🟡';
+    // 4. Adjusted Loan EMI
+    let monthlyLoanEmi = 0;
+    const tenureMonths = inputs.loanTenureMonths || 36;
+    if (fundingGap > 0 && interestRate > 0) {
+      const monthlyRate = interestRate / 12 / 100;
+      monthlyLoanEmi = Math.round(
+        (fundingGap * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) /
+          (Math.pow(1 + monthlyRate, tenureMonths) - 1)
+      );
     }
+
+    // 5. Net Profit (PAT)
+    const monthlyNetProfit = monthlyGrossRevenue - monthlyOperatingCosts - monthlyLoanEmi;
+    const profitMarginPercent =
+      monthlyGrossRevenue > 0 ? Math.round((monthlyNetProfit / monthlyGrossRevenue) * 100) : 0;
+
+    // 6. Break-Even Payback Period
+    let breakEvenMonths: number | null = null;
+    if (monthlyNetProfit > 0 && effectiveCapEx > 0) {
+      breakEvenMonths = Math.ceil(effectiveCapEx / monthlyNetProfit);
+    }
+
+    // 7. DSCR (Debt Service Coverage Ratio)
+    // Operating Cash Flow / Loan EMI
+    const operatingCashFlow = monthlyGrossRevenue - monthlyOperatingCosts;
+    const dscr = monthlyLoanEmi > 0 ? Number((operatingCashFlow / monthlyLoanEmi).toFixed(2)) : 9.99;
+
+    let dscrStatus = 'Safe (DSCR > 1.5x)';
+    if (monthlyLoanEmi === 0) dscrStatus = 'No Debt Service';
+    else if (dscr < 1.0) dscrStatus = 'Critical Risk (DSCR < 1.0x)';
+    else if (dscr < 1.3) dscrStatus = 'Moderate Risk (DSCR 1.0–1.3x)';
 
     return {
       title,
       badge,
       badgeColor,
-      monthlyGrossRevenue: grossRev,
-      monthlyOperatingCosts: opex,
-      monthlyLoanEmi: emi,
-      monthlyNetProfit: netProfit,
-      profitMarginPercent: margin,
-      breakEvenMonths: breakEven,
+      monthlyGrossRevenue,
+      monthlyOperatingCosts,
+      monthlyLoanEmi,
+      monthlyNetProfit,
+      profitMarginPercent,
+      breakEvenMonths,
       dscr,
       dscrStatus,
     };
   };
 
   const baseline = computeScenario(
-    'Baseline Plan',
-    'Current Setup',
+    'Base Projection',
+    'Standard Model',
     'primary',
     1.0,
     1.0,
@@ -112,8 +126,8 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
   );
 
   const conservative = computeScenario(
-    'Conservative Stress Test',
-    '-20% Sales, +10% Costs',
+    'Conservative Stress',
+    '-20% Demand, +10% Costs',
     'warning',
     0.8,
     1.1,
@@ -151,14 +165,14 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
           <div className="flex items-center gap-2">
             <span className="text-xl">⚖️</span>
             <h3 className="text-lg font-bold text-foreground">
-              What-If Financial Stress &amp; Growth Comparator
+              {t.planner.whatIfTitle}
             </h3>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/20">
-              Interactive Simulation
+              {t.planner.interactiveSimulation}
             </span>
           </div>
           <p className="text-xs text-muted mt-1">
-            Compare your baseline projection against market slowdowns, festive demand spikes, and government subsidy grants
+            {t.planner.whatIfSubtitle}
           </p>
         </div>
       </div>
@@ -166,7 +180,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
       {/* Interactive Sliders for Custom Scenario */}
       <div className="p-4 rounded-2xl bg-surface border border-border space-y-4 text-xs">
         <h4 className="font-bold text-foreground flex items-center justify-between">
-          <span>🎛️ Adjust Custom Simulation Variables:</span>
+          <span>🎛️ {t.planner.adjustVariables}:</span>
           <button
             type="button"
             onClick={() => {
@@ -177,7 +191,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
             }}
             className="text-xs text-primary font-bold hover:underline"
           >
-            Reset Sliders
+            {t.planner.resetSliders}
           </button>
         </h4>
 
@@ -185,7 +199,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
           {/* Revenue Slider */}
           <div className="space-y-1.5">
             <div className="flex justify-between">
-              <span className="text-muted">Monthly Revenue:</span>
+              <span className="text-muted">{t.planner.grossRevenue}:</span>
               <span className="font-bold text-foreground">
                 {revenueDeltaPct >= 0 ? `+${revenueDeltaPct}%` : `${revenueDeltaPct}%`}
               </span>
@@ -204,7 +218,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
           {/* Costs Slider */}
           <div className="space-y-1.5">
             <div className="flex justify-between">
-              <span className="text-muted">Operating Costs:</span>
+              <span className="text-muted">{t.planner.operatingCosts}:</span>
               <span className="font-bold text-foreground">
                 {costsDeltaPct >= 0 ? `+${costsDeltaPct}%` : `${costsDeltaPct}%`}
               </span>
@@ -223,7 +237,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
           {/* Interest Rate Slider */}
           <div className="space-y-1.5">
             <div className="flex justify-between">
-              <span className="text-muted">Loan Interest:</span>
+              <span className="text-muted">{t.planner.loanInterest}:</span>
               <span className="font-bold text-foreground">{customInterestRate}% p.a.</span>
             </div>
             <input
@@ -240,7 +254,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
           {/* Subsidy Slider */}
           <div className="space-y-1.5">
             <div className="flex justify-between">
-              <span className="text-muted">CapEx Subsidy Grant:</span>
+              <span className="text-muted">{t.planner.capexSubsidy}:</span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">
                 {capitalSubsidyPct}% (PMEGP/State)
               </span>
@@ -292,7 +306,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
                 <div className="pt-2 space-y-2.5 text-xs">
                   {/* Gross Revenue */}
                   <div className="flex justify-between items-center py-1 border-b border-border-subtle">
-                    <span className="text-muted">Gross Revenue:</span>
+                    <span className="text-muted">{t.planner.grossRevenue}:</span>
                     <span className="font-bold text-foreground">
                       ₹{sc.monthlyGrossRevenue.toLocaleString('en-IN')}/mo
                     </span>
@@ -300,7 +314,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
 
                   {/* Monthly OPEX */}
                   <div className="flex justify-between items-center py-1 border-b border-border-subtle">
-                    <span className="text-muted">Operating Costs:</span>
+                    <span className="text-muted">{t.planner.operatingCosts}:</span>
                     <span className="font-semibold text-foreground">
                       ₹{sc.monthlyOperatingCosts.toLocaleString('en-IN')}
                     </span>
@@ -308,7 +322,7 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
 
                   {/* Loan EMI */}
                   <div className="flex justify-between items-center py-1 border-b border-border-subtle">
-                    <span className="text-muted">Loan EMI:</span>
+                    <span className="text-muted">{t.planner.loanEmi}:</span>
                     <span className="font-semibold text-foreground">
                       ₹{sc.monthlyLoanEmi.toLocaleString('en-IN')}/mo
                     </span>
@@ -317,8 +331,8 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
                   {/* Net Monthly Profit */}
                   <div className="p-2.5 rounded-xl bg-surface-elevated border border-border flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-muted block font-medium">Net Profit (PAT)</span>
-                      <span className="text-[10px] text-muted font-bold">Margin: {sc.profitMarginPercent}%</span>
+                      <span className="text-[10px] text-muted block font-medium">{t.planner.netProfitPat}</span>
+                      <span className="text-[10px] text-muted font-bold">{t.planner.margin}: {sc.profitMarginPercent}%</span>
                     </div>
                     <span className={`text-sm font-black ${sc.monthlyNetProfit >= 0 ? 'text-success' : 'text-danger'}`}>
                       {sc.monthlyNetProfit >= 0 ? '+' : ''}₹{sc.monthlyNetProfit.toLocaleString('en-IN')}
@@ -327,15 +341,15 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
 
                   {/* Break Even */}
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-muted">Break-Even Period:</span>
+                    <span className="text-muted">{t.planner.breakEvenPeriod}:</span>
                     <span className="font-bold text-foreground">
-                      {sc.breakEvenMonths ? `${sc.breakEvenMonths} Months` : 'Unviable'}
+                      {sc.breakEvenMonths ? `${sc.breakEvenMonths} Months` : t.planner.unviable}
                     </span>
                   </div>
 
                   {/* Bank DSCR */}
                   <div className="flex justify-between items-center text-[11px] pt-1">
-                    <span className="text-muted">Bank DSCR Ratio:</span>
+                    <span className="text-muted">{t.planner.bankDscr}:</span>
                     <span className="font-bold text-foreground">
                       {sc.dscr}x
                     </span>

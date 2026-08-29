@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import TextToSpeechButton from '@/components/ui/TextToSpeechButton';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { Scheme, SchemeMatchResult } from '@/types';
 
 interface SchemeCardProps {
@@ -12,6 +13,7 @@ interface SchemeCardProps {
 }
 
 export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
+  const { t } = useLanguage();
   const isCentral = scheme.governmentLevel === 'central';
   const schemeSummarySpeech = `${scheme.name}. ${scheme.description}. Max subsidy is ${scheme.benefits.maxSubsidyPercent || 0} percent.`;
 
@@ -71,19 +73,19 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
         {/* Subsidy / Benefit Highlight Pill */}
         <div className="p-3 rounded-2xl bg-surface border border-border space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted font-medium">Subsidy Benefit:</span>
+            <span className="text-muted font-medium">{t.schemes.subsidyBenefit}:</span>
             <span className="font-bold text-success text-xs sm:text-sm">
               {(scheme.benefits.maxSubsidyPercent || 0) > 0
-                ? `Up to ${scheme.benefits.maxSubsidyPercent}% Subsidy`
-                : 'Collateral-Free Loan'}
+                ? `${t.schemes.upTo} ${scheme.benefits.maxSubsidyPercent}% ${t.schemes.subsidy}`
+                : t.schemes.collateralFree}
             </span>
           </div>
 
           {scheme.benefits.maxFundingAmount && (
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted font-medium">Max Funding:</span>
+              <span className="text-muted font-medium">{t.schemes.maxFunding}:</span>
               <span className="font-bold text-foreground">
-                ₹{(scheme.benefits.maxFundingAmount / 100000).toFixed(1)} Lakhs
+                ₹{(scheme.benefits.maxFundingAmount / 100000).toFixed(1)} {t.schemes.lakhs}
               </span>
             </div>
           )}
@@ -93,7 +95,7 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
         {matchInfo && matchInfo.matchReasons.length > 0 && (
           <div className="space-y-1 pt-1">
             <span className="text-[10px] font-bold uppercase text-muted tracking-wider block">
-              Why it matches your profile:
+              {t.schemes.whyMatches}:
             </span>
             <ul className="space-y-1">
               {matchInfo.matchReasons.slice(0, 2).map((reason, idx) => (
@@ -111,8 +113,8 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
       <div className="pt-3 border-t border-border-subtle space-y-3">
         <div className="flex items-center justify-between text-[11px] text-muted">
           <span className="truncate max-w-[180px]">🏛️ {scheme.sourceName}</span>
-          <span title="Last verified by administrative team">
-            📅 Verified: {scheme.lastVerifiedDate}
+          <span title={t.schemes.lastVerifiedTooltip}>
+            📅 {t.schemes.verified}: {scheme.lastVerifiedDate}
           </span>
         </div>
 

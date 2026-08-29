@@ -130,7 +130,7 @@ export default function LandingPage() {
                     </svg>
                   ),
                   title: t.nav.savedPlans,
-                  desc: 'Your plans and advice persist across sessions. Log out, return anytime — everything remains saved in your account.',
+                  desc: t.landing.featureSavedPlansDesc,
                 },
                 {
                   icon: (
@@ -139,8 +139,8 @@ export default function LandingPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   ),
-                  title: 'AI Governance & Admin',
-                  desc: 'Update official scheme databases with verified policy parsing and human oversight before going live.',
+                  title: t.landing.featureGovernanceTitle,
+                  desc: t.landing.featureGovernanceDesc,
                 },
               ].map((feature, i) => (
                 <div

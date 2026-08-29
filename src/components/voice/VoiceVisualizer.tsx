@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface VoiceVisualizerProps {
   isListening: boolean;
   interimTranscript: string;
-  speechLanguage: 'hi-IN' | 'en-IN';
+  speechLanguage?: string;
   onStop: () => void;
   onCancel: () => void;
 }
@@ -13,13 +13,15 @@ interface VoiceVisualizerProps {
 export default function VoiceVisualizer({
   isListening,
   interimTranscript,
-  speechLanguage,
+  speechLanguage = 'en-IN',
   onStop,
   onCancel,
 }: VoiceVisualizerProps) {
   const { t } = useLanguage();
 
   if (!isListening) return null;
+
+  const isEnglish = speechLanguage.toLowerCase().startsWith('en');
 
   return (
     <div className="p-4 rounded-2xl bg-gradient-to-r from-saffron-500/15 via-primary/10 to-saffron-500/15 border border-saffron-400/40 animate-slide-up shadow-lg">
@@ -37,7 +39,7 @@ export default function VoiceVisualizer({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-saffron-600 dark:text-saffron-400">
-                {t.voice.listening} ({speechLanguage === 'hi-IN' ? 'हिन्दी' : 'English'})
+                {t.voice.listening} ({isEnglish ? 'English' : speechLanguage.toUpperCase()})
               </span>
             </div>
             <p className="text-xs text-foreground font-medium truncate mt-0.5">

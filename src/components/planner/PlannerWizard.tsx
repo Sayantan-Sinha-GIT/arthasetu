@@ -221,7 +221,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Current Monthly Revenue / Sales (₹)"
                     value={inputs.currentMonthlyRevenue}
-                    onChange={(e) => updateField('currentMonthlyRevenue', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('currentMonthlyRevenue', val)}
                     placeholder="e.g. 35000"
                     min={0}
                     required
@@ -230,7 +230,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Current Monthly Expenses (₹)"
                     value={inputs.currentMonthlyExpenses}
-                    onChange={(e) => updateField('currentMonthlyExpenses', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('currentMonthlyExpenses', val)}
                     placeholder="e.g. 20000"
                     min={0}
                     required
@@ -260,7 +260,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Equipment & Machinery (₹)"
                     value={inputs.equipmentCost}
-                    onChange={(e) => updateField('equipmentCost', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('equipmentCost', val)}
                     placeholder="e.g. 25000"
                     min={0}
                     required
@@ -269,7 +269,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Shed, Shop Setup & Civil Works (₹)"
                     value={inputs.setupCost}
-                    onChange={(e) => updateField('setupCost', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('setupCost', val)}
                     placeholder="e.g. 35000"
                     min={0}
                     required
@@ -278,7 +278,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Initial Stock / First Batch Raw Material (₹)"
                     value={inputs.initialInventory}
-                    onChange={(e) => updateField('initialInventory', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('initialInventory', val)}
                     placeholder="e.g. 15000"
                     min={0}
                     required
@@ -287,7 +287,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Working Capital Reserve Buffer (₹)"
                     value={inputs.workingCapitalReserve}
-                    onChange={(e) => updateField('workingCapitalReserve', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('workingCapitalReserve', val)}
                     placeholder="e.g. 15000"
                     min={0}
                     required
@@ -334,7 +334,7 @@ export default function PlannerWizard({
                     <NumberInput
                       label="New Machinery / Asset Purchases (₹)"
                       value={inputs.expansionEquipmentCost}
-                      onChange={(e) => updateField('expansionEquipmentCost', Number(e.target.value) || 0)}
+                      onValueChange={(val) => updateField('expansionEquipmentCost', val)}
                       placeholder="e.g. 40000"
                       min={0}
                       required
@@ -343,7 +343,7 @@ export default function PlannerWizard({
                     <NumberInput
                       label="Additional Working Capital / Stock (₹)"
                       value={inputs.expansionWorkingCapital}
-                      onChange={(e) => updateField('expansionWorkingCapital', Number(e.target.value) || 0)}
+                      onValueChange={(val) => updateField('expansionWorkingCapital', val)}
                       placeholder="e.g. 20000"
                       min={0}
                       required
@@ -367,7 +367,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Price per Finished Unit / Service (₹)"
                     value={inputs.unitPrice}
-                    onChange={(e) => updateField('unitPrice', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('unitPrice', val)}
                     placeholder="e.g. 160"
                     min={0}
                     required
@@ -376,7 +376,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Estimated Units Sold per Month"
                     value={inputs.unitsSoldPerMonth}
-                    onChange={(e) => updateField('unitsSoldPerMonth', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('unitsSoldPerMonth', val)}
                     placeholder="e.g. 450"
                     min={0}
                     required
@@ -385,7 +385,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Secondary / Byproduct Revenue (₹/month)"
                     value={inputs.otherMonthlyRevenue}
-                    onChange={(e) => updateField('otherMonthlyRevenue', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('otherMonthlyRevenue', val)}
                     placeholder="e.g. 2000"
                     min={0}
                   />
@@ -423,7 +423,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Expected Revenue Increase (% Growth)"
                     value={inputs.projectedRevenueIncreasePercent}
-                    onChange={(e) => updateField('projectedRevenueIncreasePercent', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('projectedRevenueIncreasePercent', val)}
                     placeholder="e.g. 40"
                     min={5}
                     max={300}
@@ -458,7 +458,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Raw Materials / Feed / Inputs (₹/month)"
                     value={inputs.monthlyRawMaterials}
-                    onChange={(e) => updateField('monthlyRawMaterials', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('monthlyRawMaterials', val)}
                     placeholder="e.g. 35000"
                     min={0}
                     required
@@ -467,7 +467,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Rent & Utilities (Power, Water) (₹/month)"
                     value={inputs.monthlyRentUtilities}
-                    onChange={(e) => updateField('monthlyRentUtilities', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('monthlyRentUtilities', val)}
                     placeholder="e.g. 3000"
                     min={0}
                     required
@@ -476,7 +476,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Direct Labor / Helpers (₹/month)"
                     value={inputs.monthlyLabor}
-                    onChange={(e) => updateField('monthlyLabor', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('monthlyLabor', val)}
                     placeholder="e.g. 5000"
                     min={0}
                     required
@@ -485,7 +485,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Transport, Logistics & Packaging (₹/month)"
                     value={inputs.monthlyTransportPackaging}
-                    onChange={(e) => updateField('monthlyTransportPackaging', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('monthlyTransportPackaging', val)}
                     placeholder="e.g. 2500"
                     min={0}
                     required
@@ -494,7 +494,7 @@ export default function PlannerWizard({
                   <NumberInput
                     label="Maintenance, Marketing & Other (₹/month)"
                     value={inputs.monthlyMaintenanceOther}
-                    onChange={(e) => updateField('monthlyMaintenanceOther', Number(e.target.value) || 0)}
+                    onValueChange={(val) => updateField('monthlyMaintenanceOther', val)}
                     placeholder="e.g. 1500"
                     min={0}
                     required
@@ -520,42 +520,117 @@ export default function PlannerWizard({
             <div>
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <span>🏦</span>
-                <span>Step 5: Funding Gap, Loan Assumptions & Review</span>
+                <span>Step 5: Capital Plan, Loan Assumptions & Final Review</span>
               </h2>
               <p className="text-xs text-muted mt-1">
-                Calculate your net funding requirement and generate the complete plan
+                Specify your own contribution and review financing recommendations
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <NumberInput
-                label="Your Available Own Capital (₹)"
-                value={inputs.availableSavings}
-                onChange={(e) => updateField('availableSavings', Number(e.target.value) || 0)}
-                placeholder="e.g. 30000"
-                min={0}
-                required
-              />
+            {/* 1. Own Capital Input */}
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted font-medium">Total {isExisting ? 'Expansion' : 'Initial Setup'} Capital Required:</span>
+                  <span className="font-bold text-foreground text-sm">₹{liveCalculated.totalInitialCost.toLocaleString('en-IN')}</span>
+                </div>
 
-              <NumberInput
-                label="Annual Loan Interest Rate (%)"
-                value={inputs.loanInterestRatePercent}
-                onChange={(e) => updateField('loanInterestRatePercent', Number(e.target.value) || 0)}
-                placeholder="e.g. 9.5"
-                min={0}
-                max={25}
-                required
-              />
+                <NumberInput
+                  label="Your Available Own Capital / Savings (₹)"
+                  value={inputs.availableSavings}
+                  onValueChange={(val) => updateField('availableSavings', val)}
+                  placeholder="e.g. 30000"
+                  min={0}
+                  required
+                />
 
-              <NumberInput
-                label="Loan Tenure (Months)"
-                value={inputs.loanTenureMonths}
-                onChange={(e) => updateField('loanTenureMonths', Number(e.target.value) || 0)}
-                placeholder="e.g. 36"
-                min={6}
-                max={120}
-                required
-              />
+                <div className="flex justify-between items-center pt-2 border-t border-border-subtle text-xs">
+                  <span className="text-muted font-bold">Remaining Funding Gap to Bridge:</span>
+                  <span className={`font-black text-sm ${liveCalculated.fundingGap > 0 ? 'text-saffron-600' : 'text-success'}`}>
+                    ₹{liveCalculated.fundingGap.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+
+              {/* 2. Loan Options if Gap > 0 */}
+              {liveCalculated.fundingGap > 0 && (
+                <div className="space-y-4 p-4 rounded-2xl bg-surface-elevated border border-border">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-foreground">
+                      Do you plan to take a bank loan to finance this ₹{liveCalculated.fundingGap.toLocaleString('en-IN')} gap?
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (inputs.loanInterestRatePercent === 0) updateField('loanInterestRatePercent', 9.5);
+                          if (inputs.loanTenureMonths === 0) updateField('loanTenureMonths', 36);
+                        }}
+                        className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                          inputs.loanInterestRatePercent > 0
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border bg-surface text-muted'
+                        }`}
+                      >
+                        🏦 Yes, Explore Bank Loan
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateField('loanInterestRatePercent', 0);
+                          updateField('loanTenureMonths', 0);
+                        }}
+                        className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                          inputs.loanInterestRatePercent === 0
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border bg-surface text-muted'
+                        }`}
+                      >
+                        🏛️ No (Subsidies / Other)
+                      </button>
+                    </div>
+                  </div>
+
+                  {inputs.loanInterestRatePercent > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                      <NumberInput
+                        label="Annual Loan Interest Rate (%)"
+                        value={inputs.loanInterestRatePercent}
+                        onValueChange={(val) => updateField('loanInterestRatePercent', val)}
+                        placeholder="e.g. 9.5"
+                        min={0}
+                        max={25}
+                        required
+                      />
+
+                      <NumberInput
+                        label="Loan Tenure (Months)"
+                        value={inputs.loanTenureMonths}
+                        onValueChange={(val) => updateField('loanTenureMonths', val)}
+                        placeholder="e.g. 36"
+                        min={6}
+                        max={120}
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 3. Deterministic Financial Sanity Warning (>12x monthly profit or negative) */}
+              {liveCalculated.fundingGap > 0 &&
+                (liveCalculated.monthlyNetProfit <= 0 ||
+                  liveCalculated.fundingGap > 12 * liveCalculated.monthlyNetProfit) && (
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1.5 animate-slide-up">
+                    <div className="flex items-center gap-2 font-bold">
+                      <span>⚠️</span>
+                      <span>Financial Feasibility Notice</span>
+                    </div>
+                    <p className="leading-relaxed">
+                      Your required external funding of ₹{liveCalculated.fundingGap.toLocaleString('en-IN')} exceeds 12x your estimated monthly net profit (₹{liveCalculated.monthlyNetProfit.toLocaleString('en-IN')}/mo). We recommend applying for capital subsidies (such as PMEGP 25-35% subsidy or MUDRA) or phased expansion to ensure comfortable repayment.
+                    </p>
+                  </div>
+                )}
             </div>
 
             {/* Review Summary Box */}
@@ -565,11 +640,11 @@ export default function PlannerWizard({
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
-                  <span className="text-muted block">Total {isExisting ? 'Expansion' : 'Initial'} Cost</span>
+                  <span className="text-muted block">Total Cost</span>
                   <span className="font-bold text-foreground text-sm">₹{liveCalculated.totalInitialCost.toLocaleString('en-IN')}</span>
                 </div>
                 <div>
-                  <span className="text-muted block">Funding Gap Needed</span>
+                  <span className="text-muted block">Funding Gap</span>
                   <span className="font-bold text-saffron-600 text-sm">₹{liveCalculated.fundingGap.toLocaleString('en-IN')}</span>
                 </div>
                 <div>
@@ -577,7 +652,7 @@ export default function PlannerWizard({
                   <span className="font-bold text-foreground text-sm">₹{liveCalculated.monthlyLoanEmi.toLocaleString('en-IN')}/mo</span>
                 </div>
                 <div>
-                  <span className="text-muted block">Projected Monthly Net Profit</span>
+                  <span className="text-muted block">Projected Net Profit</span>
                   <span className="font-bold text-success text-sm">₹{liveCalculated.monthlyNetProfit.toLocaleString('en-IN')}/mo</span>
                 </div>
               </div>
@@ -592,7 +667,7 @@ export default function PlannerWizard({
                 size="lg"
                 onClick={() => onGeneratePlan(inputs)}
                 isLoading={isLoading}
-                className="px-8 shadow-lg"
+                className="px-8 shadow-lg font-bold"
               >
                 Generate Complete Plan with AI Insights ✨
               </Button>

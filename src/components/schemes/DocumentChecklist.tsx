@@ -81,8 +81,6 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
   
   // Track checked document IDs
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  // Track mock uploaded file names
-  const [uploadedFiles, setUploadedFiles] = useState<Record<string, { name: string; size: string; timestamp: string }>>({});
   const [activeCategory, setActiveCategory] = useState<'all' | 'identity' | 'business' | 'financial' | 'social'>('all');
 
   // Load from local storage
@@ -92,12 +90,6 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
       if (savedChecked) {
         try {
           setCheckedIds(JSON.parse(savedChecked));
-        } catch {}
-      }
-      const savedFiles = localStorage.getItem(`${storageKey}_files`);
-      if (savedFiles) {
-        try {
-          setUploadedFiles(JSON.parse(savedFiles));
         } catch {}
       }
     }
@@ -113,42 +105,6 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
     });
   };
 
-  const handleMockUpload = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const fileInfo = {
-      name: file.name,
-      size: `${(file.size / 1024).toFixed(1)} KB`,
-      timestamp: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }),
-    };
-
-    setUploadedFiles((prev) => {
-      const next = { ...prev, [id]: fileInfo };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`${storageKey}_files`, JSON.stringify(next));
-      }
-      return next;
-    });
-
-    // Automatically check the item when uploaded
-    if (!checkedIds.includes(id)) {
-      toggleCheck(id);
-    }
-  };
-
-  const handleRemoveMockUpload = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setUploadedFiles((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`${storageKey}_files`, JSON.stringify(next));
-      }
-      return next;
-    });
-  };
-
   const filteredDocs = DEFAULT_DOCUMENTS.filter((doc) => {
     if (activeCategory === 'all') return true;
     return doc.category === activeCategory;
@@ -159,91 +115,81 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
   const percentComplete = Math.round((completedCount / totalCount) * 100);
 
   return (
-    <div className={`p-6 rounded-3xl bg-surface-elevated border border-border space-y-6 shadow-sm ${className}`}>
-      {/* Header & Readiness Meter */}
-      <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">📂</span>
-              <h3 className="text-base font-bold text-foreground">
-                Scheme Application Document Readiness Checklist
+    <div className={`space-y-6 ${className}`}>
+      {/* Progress Card */}
+      <div className="p-5 rounded-2xl bg-surface-elevated border border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📁</span>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">
+                Document Readiness Checklist
               </h3>
+              <p className="text-xs text-muted">
+                {completedCount} of {totalCount} documents confirmed ready
+              </p>
             </div>
-            <p className="text-xs text-muted mt-0.5">
-              Verify and organize the essential paperwork required for bank loan and subsidy approval
-            </p>
           </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="text-xs font-black px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-              {completedCount} / {totalCount} Ready ({percentComplete}%)
-            </span>
-          </div>
+          <span
+            className={`text-xs font-black px-2.5 py-1 rounded-full border ${
+              percentComplete === 100
+                ? 'bg-success-light border-success text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-300'
+                : 'bg-primary/10 border-primary/20 text-primary'
+            }`}
+          >
+            {percentComplete}% Ready
+          </span>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-full bg-surface border border-border h-2.5 rounded-full overflow-hidden">
+        {/* Progress Bar */}
+        <div className="w-full bg-surface border border-border h-2 rounded-full overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-500 ease-smooth ${
-              percentComplete === 100
-                ? 'bg-success'
-                : percentComplete >= 50
-                ? 'bg-primary'
-                : 'bg-warning'
+            className={`h-full transition-all duration-500 rounded-full ${
+              percentComplete === 100 ? 'bg-success' : 'bg-primary'
             }`}
             style={{ width: `${percentComplete}%` }}
           />
         </div>
       </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2 text-xs">
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2">
         {[
-          { id: 'all', label: 'All Documents' },
-          { id: 'identity', label: '🪪 Identity & KYC' },
-          { id: 'business', label: '🏢 Business & Premises' },
-          { id: 'financial', label: '📊 Financial & DPR' },
-          { id: 'social', label: '👥 Category / SHG' },
-        ].map((cat) => (
+          { key: 'all', label: 'All Documents' },
+          { key: 'identity', label: '👤 Identity & KYC' },
+          { key: 'business', label: '🏪 Business Proofs' },
+          { key: 'financial', label: '💰 Financial & DPR' },
+          { key: 'social', label: '🎖️ Social / SHG' },
+        ].map((tab) => (
           <button
-            key={cat.id}
+            key={tab.key}
             type="button"
-            onClick={() => setActiveCategory(cat.id as any)}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-              activeCategory === cat.id
+            onClick={() => setActiveCategory(tab.key as any)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeCategory === tab.key
                 ? 'bg-primary text-white shadow-sm'
-                : 'bg-surface text-muted hover:text-foreground border border-border'
+                : 'bg-surface-elevated text-muted hover:text-foreground border border-border'
             }`}
           >
-            {cat.label}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Local storage privacy notice */}
-      <div className="text-[11px] text-muted flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface border border-border-subtle">
-        <span className="shrink-0">🔒</span>
-        <span>Files stay on your device for your own organization only — nothing is uploaded or submitted to any government portal from here.</span>
-      </div>
-
-      {/* Checklist Grid */}
+      {/* Checklist Items */}
       <div className="space-y-3">
         {filteredDocs.map((doc) => {
           const isChecked = checkedIds.includes(doc.id);
-          const uploaded = uploadedFiles[doc.id];
 
           return (
             <div
               key={doc.id}
               onClick={() => toggleCheck(doc.id)}
-              className={`
-                p-4 rounded-2xl border transition-all cursor-pointer select-none
-                ${isChecked
-                  ? 'bg-success-light/30 border-success/40 dark:bg-emerald-950/20'
-                  : 'bg-surface border-border hover:border-primary/40'
-                }
-              `}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer select-none ${
+                isChecked
+                  ? 'bg-success-light/40 border-success/40 dark:bg-green-950/20'
+                  : 'bg-surface-elevated border-border hover:border-muted'
+              }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
@@ -255,7 +201,11 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
                   />
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-bold ${isChecked ? 'text-foreground line-through opacity-80' : 'text-foreground'}`}>
+                      <span
+                        className={`text-sm font-bold ${
+                          isChecked ? 'text-foreground line-through opacity-80' : 'text-foreground'
+                        }`}
+                      >
                         {doc.name}
                       </span>
                       {doc.isRequired ? (
@@ -268,9 +218,7 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted leading-relaxed">
-                      {doc.description}
-                    </p>
+                    <p className="text-xs text-muted leading-relaxed">{doc.description}</p>
                     {doc.tip && (
                       <p className="text-[11px] text-amber-800 dark:text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg inline-block">
                         💡 {doc.tip}
@@ -279,35 +227,16 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
                   </div>
                 </div>
 
-                {/* Upload Action / Attached State */}
-                <div className="shrink-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  {uploaded ? (
-                    <div className="flex items-center gap-2 p-1.5 px-3 rounded-xl bg-success-light border border-success/30 text-green-900 dark:text-green-200 text-xs">
-                      <span>📄</span>
-                      <span className="font-bold max-w-[100px] truncate">{uploaded.name}</span>
-                      <button
-                        type="button"
-                        onClick={(e) => handleRemoveMockUpload(doc.id, e)}
-                        className="text-danger font-bold hover:opacity-80 text-xs ml-1"
-                        title="Remove attachment"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-foreground text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95">
-                      <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                      <span>Attach PDF</span>
-                      <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => handleMockUpload(doc.id, e)}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
+                <div className="shrink-0 pt-0.5">
+                  <span
+                    className={`text-xs font-bold px-2.5 py-1 rounded-xl border ${
+                      isChecked
+                        ? 'bg-success text-white border-success'
+                        : 'bg-surface text-muted border-border'
+                    }`}
+                  >
+                    {isChecked ? '✓ Ready' : 'Mark Ready'}
+                  </span>
                 </div>
               </div>
             </div>

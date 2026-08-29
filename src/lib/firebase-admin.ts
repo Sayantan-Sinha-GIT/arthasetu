@@ -41,12 +41,39 @@ function getServiceAccount(): ServiceAccount {
   }
 }
 
-// Singleton: initialize once
-if (getApps().length === 0) {
-  initializeApp({
-    credential: cert(getServiceAccount()),
-  });
+let initialized = false;
+
+function ensureInitialized() {
+  if (initialized) return;
+  if (getApps().length === 0) {
+    try {
+      const sa = getServiceAccount();
+      initializeApp({
+        credential: cert(sa),
+      });
+      initialized = true;
+    } catch (err) {
+      console.warn('Firebase Admin initialization skipped or deferred:', err);
+    }
+  } else {
+    initialized = true;
+  }
 }
 
-export const adminAuth = getAuth();
-export const adminDb = getFirestore();
+export const adminAuth = new Proxy({} as ReturnType<typeof getAuth>, {
+  get(_, prop) {
+    ensureInitialized();
+    const authInstance = getAuth();
+    const val = (authInstance as any)[prop];
+    return typeof val === 'function' ? val.bind(authInstance) : val;
+  },
+});
+
+export const adminDb = new Proxy({} as ReturnType<typeof getFirestore>, {
+  get(_, prop) {
+    ensureInitialized();
+    const dbInstance = getFirestore();
+    const val = (dbInstance as any)[prop];
+    return typeof val === 'function' ? val.bind(dbInstance) : val;
+  },
+});

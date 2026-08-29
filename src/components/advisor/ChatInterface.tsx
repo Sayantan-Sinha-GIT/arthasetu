@@ -18,7 +18,7 @@ interface ChatInterfaceProps {
 }
 
 export default function ChatInterface({ userProfile, userId }: ChatInterfaceProps) {
-  const { t, language } = useLanguage();
+  const { t, language, currentMeta } = useLanguage();
   const isHindi = language === 'hi';
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -30,10 +30,16 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   const [activeSpeakingMessageId, setActiveSpeakingMessageId] = useState<string | null>(null);
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
 
-  // Speech Recognition Language (can differ from UI language per PRD §8.5)
-  const [speechLanguage, setSpeechLanguage] = useState<'hi-IN' | 'en-IN'>(
-    isHindi ? 'hi-IN' : 'en-IN'
+  // Speech Recognition Language (inherits UI language speechCode, with 1-click toggle to English)
+  const [speechLanguage, setSpeechLanguage] = useState<string>(
+    currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN')
   );
+
+  useEffect(() => {
+    if (currentMeta?.speechCode) {
+      setSpeechLanguage(currentMeta.speechCode);
+    }
+  }, [currentMeta?.speechCode]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -234,7 +240,8 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   };
 
   const handleToggleSpeechLanguage = () => {
-    setSpeechLanguage((prev) => (prev === 'hi-IN' ? 'en-IN' : 'hi-IN'));
+    const nativeSpeechCode = currentMeta?.speechCode || 'hi-IN';
+    setSpeechLanguage((prev) => (prev.toLowerCase().startsWith('en') ? nativeSpeechCode : 'en-IN'));
   };
 
   const handleSpeakMessage = (msgId: string, content: string) => {

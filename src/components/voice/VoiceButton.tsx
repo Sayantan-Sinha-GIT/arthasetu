@@ -6,7 +6,7 @@ interface VoiceButtonProps {
   state: VoiceState;
   onClick: () => void;
   onLanguageToggle?: () => void;
-  speechLanguage?: 'hi-IN' | 'en-IN';
+  speechLanguage?: string;
   className?: string;
 }
 
@@ -14,10 +14,10 @@ export default function VoiceButton({
   state,
   onClick,
   onLanguageToggle,
-  speechLanguage = 'hi-IN',
+  speechLanguage = 'en-IN',
   className = '',
 }: VoiceButtonProps) {
-  const isHindiSpeech = speechLanguage === 'hi-IN';
+  const isEnglishSpeech = speechLanguage.toLowerCase().startsWith('en');
 
   return (
     <div className="flex items-center gap-1.5 shrink-0">
@@ -28,15 +28,15 @@ export default function VoiceButton({
           onClick={onLanguageToggle}
           disabled={state === 'listening' || state === 'processing'}
           className={`
-            px-2 py-1 rounded-xl text-[10px] font-bold border transition-all
-            ${isHindiSpeech
-              ? 'bg-saffron-100 dark:bg-saffron-900/40 text-saffron-800 dark:text-saffron-300 border-saffron-300 dark:border-saffron-700'
+            px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all cursor-pointer
+            ${!isEnglishSpeech
+              ? 'bg-saffron-100 dark:bg-saffron-900/40 text-saffron-800 dark:text-saffron-300 border-saffron-300 dark:border-saffron-700 shadow-sm'
               : 'bg-surface text-muted border-border hover:text-foreground'
             }
           `}
-          title={`Click to switch speech language (Currently speaking ${isHindiSpeech ? 'Hindi' : 'English'})`}
+          title={`Click to switch speech language (Currently speaking ${speechLanguage})`}
         >
-          {isHindiSpeech ? 'हिन्दी Mic' : 'EN Mic'}
+          {!isEnglishSpeech ? `🎙️ ${speechLanguage.split('-')[0].toUpperCase()}` : '🎙️ EN'}
         </button>
       )}
 

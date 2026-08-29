@@ -1,6 +1,6 @@
 'use client';
 
-import Input from '@/components/ui/Input';
+import { NumberInput } from '@/components/ui/Input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { UserProfile } from '@/types';
 
@@ -13,12 +13,6 @@ interface StepFinancialInfoProps {
 export default function StepFinancialInfo({ data, onChange, errors = {} }: StepFinancialInfoProps) {
   const { t } = useLanguage();
 
-  const handleNumericChange = (key: keyof UserProfile, valStr: string) => {
-    const clean = valStr.replace(/[^0-9]/g, '');
-    const num = clean === '' ? 0 : parseInt(clean, 10);
-    onChange({ [key]: num });
-  };
-
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="bg-surface p-4 rounded-xl border border-border-subtle mb-4 text-xs text-muted leading-relaxed">
@@ -26,24 +20,24 @@ export default function StepFinancialInfo({ data, onChange, errors = {} }: StepF
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input
+        <NumberInput
           label={t.onboarding.availableCapital}
-          type="text"
-          value={data.availableCapital ? data.availableCapital.toString() : ''}
-          onChange={(e) => handleNumericChange('availableCapital', e.target.value)}
+          value={data.availableCapital !== undefined ? data.availableCapital : ''}
+          onValueChange={(val) => onChange({ availableCapital: val })}
           placeholder={t.onboarding.availableCapitalPlaceholder}
           required
+          min={0}
           error={errors.availableCapital}
           hint="Your personal savings or current business capital"
         />
 
-        <Input
+        <NumberInput
           label={t.onboarding.desiredFunding}
-          type="text"
-          value={data.desiredFunding ? data.desiredFunding.toString() : ''}
-          onChange={(e) => handleNumericChange('desiredFunding', e.target.value)}
+          value={data.desiredFunding !== undefined ? data.desiredFunding : ''}
+          onValueChange={(val) => onChange({ desiredFunding: val })}
           placeholder={t.onboarding.desiredFundingPlaceholder}
           required
+          min={0}
           error={errors.desiredFunding}
           hint="Estimated loan or subsidy required"
         />
@@ -51,20 +45,20 @@ export default function StepFinancialInfo({ data, onChange, errors = {} }: StepF
 
       {data.businessStatus === 'existing' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border-subtle">
-          <Input
+          <NumberInput
             label={t.onboarding.monthlyIncome}
-            type="text"
-            value={data.monthlyIncome ? data.monthlyIncome.toString() : ''}
-            onChange={(e) => handleNumericChange('monthlyIncome', e.target.value)}
+            value={data.monthlyIncome !== undefined ? data.monthlyIncome : ''}
+            onValueChange={(val) => onChange({ monthlyIncome: val })}
             placeholder={t.onboarding.monthlyIncomePlaceholder}
+            min={0}
             error={errors.monthlyIncome}
           />
-          <Input
+          <NumberInput
             label={t.onboarding.monthlyExpenses}
-            type="text"
-            value={data.monthlyExpenses ? data.monthlyExpenses.toString() : ''}
-            onChange={(e) => handleNumericChange('monthlyExpenses', e.target.value)}
+            value={data.monthlyExpenses !== undefined ? data.monthlyExpenses : ''}
+            onValueChange={(val) => onChange({ monthlyExpenses: val })}
             placeholder={t.onboarding.monthlyExpensesPlaceholder}
+            min={0}
             error={errors.monthlyExpenses}
           />
         </div>

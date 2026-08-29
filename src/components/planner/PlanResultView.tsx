@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Card from '@/components/ui/Card';
@@ -10,9 +10,12 @@ import TextToSpeechButton from '@/components/ui/TextToSpeechButton';
 import WhatIfComparator from '@/components/planner/WhatIfComparator';
 import LocalBusinessContext from '@/components/planner/LocalBusinessContext';
 import DocumentChecklist from '@/components/schemes/DocumentChecklist';
+import SchemeCard from '@/components/schemes/SchemeCard';
 import { savePlan } from '@/lib/firestore/plans';
+import { getAllSchemes } from '@/lib/firestore/schemes';
+import { matchSchemesForProfile } from '@/lib/schemes/matcher';
 import { downloadPlanPdf } from '@/lib/pdf/export-plan-pdf';
-import type { PlanInputs, CalculatedValues } from '@/types';
+import type { PlanInputs, CalculatedValues, SchemeMatchResult } from '@/types';
 
 interface PlanResultViewProps {
   inputs: PlanInputs;
@@ -39,6 +42,24 @@ export default function PlanResultView({
   const [savedId, setSavedId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState('');
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [matchedSchemes, setMatchedSchemes] = useState<SchemeMatchResult[]>([]);
+
+  useEffect(() => {
+    async function loadMatchedSchemes() {
+      try {
+        const allSchemes = await getAllSchemes();
+        const matches = matchSchemesForProfile(allSchemes, {
+          state: inputs.location,
+          businessType: inputs.businessType,
+          desiredFunding: calculated.fundingGap || calculated.totalInitialCost,
+        });
+        setMatchedSchemes(matches.slice(0, 3));
+      } catch (err) {
+        console.warn('Could not load matched schemes for plan view:', err);
+      }
+    }
+    loadMatchedSchemes();
+  }, [inputs.location, inputs.businessType, calculated.fundingGap, calculated.totalInitialCost]);
 
   const handleSavePlan = async () => {
     if (!userId || saving) return;
@@ -63,187 +84,179 @@ export default function PlanResultView({
     }
   };
 
-  const handleExportPdf = () => {
+  const handleDownloadPdf = async () => {
     setIsExportingPdf(true);
     try {
-      const cleanFileName = `ArthaSetu_${inputs.businessType.replace(/\s+/g, '_')}_Plan.pdf`;
-      downloadPlanPdf({
+      await downloadPlanPdf({
         inputs,
         calculated,
         narrative,
-      }, cleanFileName);
+      });
     } catch (err) {
       console.error('Error generating PDF:', err);
+      alert('Failed to generate PDF. Please try again.');
     } finally {
       setIsExportingPdf(false);
     }
   };
 
-  const speechNarrativeText = `
-    Business Viability Plan for ${inputs.businessType} in ${inputs.location}.
-    Total capital required is rupees ${calculated.totalInitialCost.toLocaleString('en-IN')}.
-    Estimated bank funding gap is rupees ${calculated.fundingGap.toLocaleString('en-IN')}.
-    Projected monthly net profit is rupees ${calculated.monthlyNetProfit.toLocaleString('en-IN')} with an operating margin of ${calculated.profitMarginPercent} percent.
-    Executive summary: ${narrative.executiveSummary}.
-  `;
-
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Toast alert */}
+      {/* Toast Notification */}
       {toastMessage && (
-        <div className="bg-success-light border border-success text-green-900 dark:text-green-200 px-4 py-3 rounded-2xl text-xs font-semibold text-center animate-fade-in flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-surface-elevated border border-primary/40 text-foreground text-sm font-semibold flex items-center justify-between shadow-lg animate-slide-up">
           <span>{toastMessage}</span>
-          {savedId && (
-            <Link href="/saved-plans" className="underline font-bold ml-2">
-              {t.nav.savedPlans} →
-            </Link>
-          )}
+          <button
+            onClick={() => setToastMessage('')}
+            className="text-xs text-muted hover:text-foreground ml-4"
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      {/* Top Banner & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
+      {/* Plan Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+            <span className="text-2xl">📋</span>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
               {inputs.businessType}
+            </h1>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold border border-primary/20">
+              {inputs.businessScale}
             </span>
-            <span className="text-xs text-muted">📍 {inputs.location}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-foreground mt-1">
-            {t.planner.title} &amp; Viability Report
-          </h1>
-          <p className="text-xs text-muted mt-0.5">
-            {t.planner.subtitle}
+          <p className="text-muted text-xs sm:text-sm mt-1">
+            📍 {inputs.location} • Generated for your enterprise scale
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <TextToSpeechButton text={speechNarrativeText} size="sm" label="Read Plan" />
-
-          <Button type="button" variant="ghost" size="sm" onClick={onEdit}>
-            ← {t.planner.editInputs}
-          </Button>
-
+        {/* Top Action Bar */}
+        <div className="flex flex-wrap items-center gap-2">
           <Button
-            type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={handleExportPdf}
-            isLoading={isExportingPdf}
-            className="font-bold border-primary/40 text-primary hover:bg-primary/10"
+            onClick={onEdit}
+            className="text-xs"
           >
-            📄 Bank-Ready PDF
+            ✏️ {t.planner.editInputs}
           </Button>
 
           <Button
-            type="button"
+            variant="secondary"
             size="sm"
             onClick={handleSavePlan}
             disabled={saving || !!savedId}
-            isLoading={saving}
+            className="text-xs"
           >
             {savedId ? '✓ Saved' : `💾 ${t.planner.savePlan}`}
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={handleDownloadPdf}
+            isLoading={isExportingPdf}
+            className="text-xs bg-saffron-600 hover:bg-saffron-500 text-white font-bold"
+          >
+            📄 Export PDF
           </Button>
         </div>
       </div>
 
-      {/* Hero Metrics Matrix */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {/* Key Numbers 4-Card Summary Strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <NumberBadge
-          source="app-calculated"
           label={t.planner.totalInvestment}
           value={calculated.totalInitialCost}
-          size="lg"
-        />
-
-        <NumberBadge
           source="app-calculated"
+        />
+        <NumberBadge
+          label="Available Savings"
+          value={inputs.availableSavings}
+          source="user-provided"
+        />
+        <NumberBadge
           label={t.planner.fundingGap}
           value={calculated.fundingGap}
-          size="lg"
-        />
-
-        <NumberBadge
           source="app-calculated"
-          label={t.planner.currentNetProfit}
+        />
+        <NumberBadge
+          label={t.planner.projectedMonthlyNetProfit}
           value={calculated.monthlyNetProfit}
-          size="lg"
-        />
-
-        <NumberBadge
           source="app-calculated"
-          label={t.planner.operatingMargin}
-          value={calculated.profitMarginPercent}
-          isCurrency={false}
-          suffix="%"
-          size="lg"
-        />
-
-        <NumberBadge
-          source="app-calculated"
-          label={t.planner.estimatedEmi}
-          value={calculated.monthlyLoanEmi}
-          size="md"
-        />
-
-        <NumberBadge
-          source="app-calculated"
-          label={t.planner.breakEven}
-          value={calculated.breakEvenMonths ? calculated.breakEvenMonths : 'Loss'}
-          isCurrency={false}
-          suffix={calculated.breakEvenMonths ? ' Months' : ''}
-          size="md"
-        />
-
-        <NumberBadge
-          source="app-calculated"
-          label="Break-Even Volume"
-          value={calculated.breakEvenUnitsPerMonth}
-          isCurrency={false}
-          suffix=" units/mo"
-          size="md"
-        />
-
-        <NumberBadge
-          source="app-calculated"
-          label="Annual Projected Profit"
-          value={calculated.annualNetProfit}
-          size="md"
         />
       </div>
 
-      {/* AI Qualitative Narrative Box */}
-      <Card padding="lg" className="space-y-6 border-saffron-300 dark:border-saffron-800 bg-surface-elevated shadow-lg">
+      {/* Break-Even Callout Card */}
+      <Card padding="lg" className="border-saffron-500/30 bg-saffron-500/5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-saffron-500/20 text-saffron-600 dark:text-saffron-300 flex items-center justify-center text-2xl font-bold shrink-0">
+              ⚖️
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-foreground">
+                {t.planner.breakEven}
+              </h2>
+              <p className="text-xs text-muted mt-0.5">
+                {calculated.breakEvenUnitsPerMonth ? `${calculated.breakEvenUnitsPerMonth.toLocaleString('en-IN')} units/month minimum production needed to cover fixed overheads.` : 'Estimated recovery timeframe'}
+              </p>
+            </div>
+          </div>
+
+          <div className="text-left sm:text-right">
+            <span className="text-2xl font-black text-foreground">
+              {calculated.breakEvenMonths !== null ? `${calculated.breakEvenMonths} Months` : 'N/A'}
+            </span>
+            <span className="block text-[11px] text-muted font-medium">
+              Estimated Capital Recovery
+            </span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Feature 1: What-If Scenario Comparator */}
+      <WhatIfComparator calculated={calculated} inputs={inputs} />
+
+      {/* Feature 3: Hyperlocal Cost Factors & Context */}
+      <LocalBusinessContext location={inputs.location} businessType={inputs.businessType} />
+
+      {/* AI Advisory Analysis Section */}
+      <Card padding="lg" className="space-y-6">
+        <div className="flex items-center justify-between border-b border-border pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🤖</span>
+            <h2 className="text-base font-bold text-foreground">
+              {t.advisor.title}
+            </h2>
+          </div>
+          <TextToSpeechButton
+            text={`${narrative.executiveSummary}. Key recommendations: ${narrative.actionableNextSteps.join('. ')}`}
+            size="sm"
+          />
+        </div>
+
         {/* Executive Summary */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-saffron-500 text-white">
-                ✨ AI Insight
-              </span>
-              <h2 className="text-base font-bold text-foreground">
-                {t.planner.executiveSummary}
-              </h2>
-            </div>
-            <TextToSpeechButton text={narrative.executiveSummary || ''} size="sm" />
-          </div>
-          <p className="text-sm text-muted leading-relaxed font-medium">
+          <h3 className="text-xs font-bold text-muted uppercase tracking-wider">
+            {t.planner.executiveSummary}
+          </h3>
+          <p className="text-sm text-foreground leading-relaxed bg-surface p-4 rounded-2xl border border-border-subtle">
             {narrative.executiveSummary}
           </p>
         </div>
 
-        {/* 3-Column AI Qualitative Breakdown */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border-subtle">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Key Assumptions */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-wider flex items-center gap-1.5">
               <span>📌</span>
               <span>{t.planner.keyAssumptions}</span>
             </h3>
-            <ul className="space-y-2">
-              {narrative.keyAssumptions?.map((item, idx) => (
-                <li key={idx} className="text-xs text-muted leading-relaxed flex items-start gap-2">
+            <ul className="space-y-1.5 text-xs text-muted">
+              {narrative.keyAssumptions.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2 bg-surface-elevated p-2.5 rounded-xl border border-border-subtle">
                   <span className="text-primary font-bold">•</span>
                   <span>{item}</span>
                 </li>
@@ -252,70 +265,66 @@ export default function PlanResultView({
           </div>
 
           {/* Risk Analysis & Mitigations */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-wider flex items-center gap-1.5">
               <span>⚠️</span>
               <span>{t.planner.riskAnalysis}</span>
             </h3>
-            <ul className="space-y-2">
-              {narrative.riskAnalysis?.map((item, idx) => (
-                <li key={idx} className="text-xs text-muted leading-relaxed flex items-start gap-2">
-                  <span className="text-amber-500 font-bold">•</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Actionable Next Steps */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-              <span>🚀</span>
-              <span>{t.planner.nextSteps}</span>
-            </h3>
-            <ul className="space-y-2">
-              {narrative.actionableNextSteps?.map((item, idx) => (
-                <li key={idx} className="text-xs text-muted leading-relaxed flex items-start gap-2">
-                  <span className="text-success font-bold">✓</span>
+            <ul className="space-y-1.5 text-xs text-muted">
+              {narrative.riskAnalysis.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2 bg-surface-elevated p-2.5 rounded-xl border border-border-subtle">
+                  <span className="text-danger font-bold">!</span>
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
+
+        {/* Actionable Next Steps */}
+        <div className="space-y-2 pt-2 border-t border-border-subtle">
+          <h3 className="text-xs font-bold text-muted uppercase tracking-wider flex items-center gap-1.5">
+            <span>🚀</span>
+            <span>{t.planner.nextSteps}</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {narrative.actionableNextSteps.map((step, idx) => (
+              <div key={idx} className="flex items-start gap-2.5 p-3 rounded-xl bg-surface border border-border text-xs text-foreground">
+                <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-[10px]">
+                  {idx + 1}
+                </span>
+                <span>{step}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </Card>
 
-      {/* Feature 4: What-If Scenario Comparator */}
-      <WhatIfComparator inputs={inputs} calculated={calculated} />
-
-      {/* Feature 6: AI-Estimated Local & Seasonal Business Context */}
-      <LocalBusinessContext businessType={inputs.businessType} location={inputs.location} />
-
-      {/* Financial Details Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Startup Investment Breakdown */}
-        <Card padding="lg" className="space-y-4">
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+      {/* Cash Flow Breakdown Table */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Initial Capital Breakdown */}
+        <Card padding="md" className="space-y-3">
+          <h2 className="text-xs font-bold text-foreground flex items-center gap-1.5">
             <span>🏗️</span>
-            <span>{inputs.planType === 'existing_expansion' ? t.planner.stepExpansionCapital : 'Investment Breakdown'}</span>
+            <span>{t.planner.stepInvestment}</span>
           </h2>
 
           <div className="space-y-2.5">
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
               <span className="text-muted">Equipment & Machinery</span>
-              <span className="font-bold text-foreground">₹{inputs.equipmentCost.toLocaleString('en-IN')}</span>
+              <span className="font-bold text-foreground">₹{(inputs.equipmentCost || inputs.expansionEquipmentCost || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Shed / Shop Civil Setup</span>
-              <span className="font-bold text-foreground">₹{inputs.setupCost.toLocaleString('en-IN')}</span>
+              <span className="text-muted">Setup & Shed</span>
+              <span className="font-bold text-foreground">₹{(inputs.setupCost || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Initial Stock / Batch Materials</span>
-              <span className="font-bold text-foreground">₹{inputs.initialInventory.toLocaleString('en-IN')}</span>
+              <span className="text-muted">Initial Stock</span>
+              <span className="font-bold text-foreground">₹{(inputs.initialInventory || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Working Capital Safety Buffer</span>
-              <span className="font-bold text-foreground">₹{inputs.workingCapitalReserve.toLocaleString('en-IN')}</span>
+              <span className="text-muted">Working Capital</span>
+              <span className="font-bold text-foreground">₹{(inputs.workingCapitalReserve || inputs.expansionWorkingCapital || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-bold border-t border-border">
               <span className="text-foreground">{t.planner.totalInvestment}</span>
@@ -324,9 +333,9 @@ export default function PlanResultView({
           </div>
         </Card>
 
-        {/* Monthly Cash Flow Structure */}
-        <Card padding="lg" className="space-y-4">
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+        {/* Monthly Operational Cash Flow */}
+        <Card padding="md" className="space-y-3">
+          <h2 className="text-xs font-bold text-foreground flex items-center gap-1.5">
             <span>🧾</span>
             <span>{t.planner.stepCurrentCashFlow}</span>
           </h2>
@@ -337,24 +346,16 @@ export default function PlanResultView({
               <span className="font-bold text-success">+ ₹{calculated.monthlyGrossRevenue.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Raw Materials Replenishment</span>
+              <span className="text-muted">Raw Materials</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyRawMaterials.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Rent, Utilities & Electricity</span>
+              <span className="text-muted">Rent & Utilities</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyRentUtilities.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
               <span className="text-muted">Labor Wages</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyLabor.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Transport, Logistics & Maintenance</span>
-              <span className="font-bold text-danger">- ₹{(inputs.monthlyTransportPackaging + inputs.monthlyMaintenanceOther).toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">{t.planner.estimatedEmi}</span>
-              <span className="font-bold text-danger">- ₹{calculated.monthlyLoanEmi.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-bold border-t border-border">
               <span className="text-foreground">{t.planner.projectedMonthlyNetProfit}</span>
@@ -364,7 +365,29 @@ export default function PlanResultView({
         </Card>
       </div>
 
-      {/* Feature 2: Scheme Required Documents Checklist */}
+      {/* Matched Government Schemes & Subsidies */}
+      {matchedSchemes.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎯</span>
+              <h2 className="text-base font-bold text-foreground">
+                Matched Government Subsidies & Schemes ({matchedSchemes.length})
+              </h2>
+            </div>
+            <Link href="/schemes" className="text-xs text-primary font-bold hover:underline">
+              {t.schemes.findSchemes} →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {matchedSchemes.map((match) => (
+              <SchemeCard key={match.scheme.id} scheme={match.scheme} matchInfo={match} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Scheme Required Documents Checklist */}
       <DocumentChecklist />
 
       {/* Bottom CTA to Schemes */}
