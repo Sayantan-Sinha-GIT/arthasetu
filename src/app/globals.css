@@ -1,0 +1,305 @@
+@import "tailwindcss";
+
+/* ─── ArthaSetu Design System ─── */
+
+:root {
+  /* ─── Semantic Tokens (WCAG AA Compliant: 4.5:1+ normal, 3:1+ large) ─── */
+  --color-background: #FFFFFF;
+  --color-foreground: #091326;
+  --color-surface: #F8FAFC;
+  --color-surface-elevated: #FFFFFF;
+  --color-border: #CBD5E1;
+  --color-border-subtle: #E2E8F0;
+  --color-muted: #334155;
+  --color-muted-foreground: #475569;
+
+  --color-primary: #D97706;
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-hover: #B45309;
+
+  --color-secondary: #1E3A6E;
+  --color-secondary-foreground: #FFFFFF;
+  --color-secondary-hover: #152A52;
+
+  --color-accent: #2563EB;
+  --color-accent-foreground: #FFFFFF;
+
+  --color-success: #065F46;
+  --color-success-light: #D1FAE5;
+  --color-warning: #92400E;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #991B1B;
+  --color-danger-light: #FEE2E2;
+  --color-info: #1E40AF;
+  --color-info-light: #DBEAFE;
+
+  --color-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --color-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --color-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --color-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  --color-shadow-glow: 0 0 20px rgb(217 119 6 / 0.15);
+}
+
+/* ─── Dark Mode Overrides (WCAG AA Compliant) ─── */
+.dark {
+  --color-background: #080F20;
+  --color-foreground: #F8FAFC;
+  --color-surface: #0D1B38;
+  --color-surface-elevated: #152A52;
+  --color-border: #2D4875;
+  --color-border-subtle: #1E3A6E;
+  --color-muted: #CBD5E1;
+  --color-muted-foreground: #94A3B8;
+  --color-primary: #F59E0B;
+  --color-primary-foreground: #080F20;
+  --color-primary-hover: #FBBF24;
+  --color-secondary: #3B82F6;
+  --color-secondary-foreground: #FFFFFF;
+  --color-secondary-hover: #60A5FA;
+  --color-accent: #3B82F6;
+  --color-accent-foreground: #FFFFFF;
+  --color-success: #34D399;
+  --color-success-light: #064E3B;
+  --color-warning: #FBBF24;
+  --color-warning-light: #78350F;
+  --color-danger: #FECACA;
+  --color-danger-light: #7F1D1D;
+  --color-info: #60A5FA;
+  --color-info-light: #1E3A8A;
+  --color-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --color-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --color-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --color-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6);
+  --color-shadow-glow: 0 0 30px rgb(245 158 11 / 0.15);
+}
+
+@theme {
+  /* ─── Brand Colors: Saffron/Amber + Navy + White ─── */
+  --color-saffron-50: #FFF8E7;
+  --color-saffron-100: #FFEFC2;
+  --color-saffron-200: #FFE199;
+  --color-saffron-300: #FFD06B;
+  --color-saffron-400: #FFBF3D;
+  --color-saffron-500: #F5A623;
+  --color-saffron-600: #E08E0B;
+  --color-saffron-700: #B87408;
+  --color-saffron-800: #8C5906;
+  --color-saffron-900: #6B4305;
+
+  --color-navy-50: #EEF2FF;
+  --color-navy-100: #D8E0F7;
+  --color-navy-200: #B3C1ED;
+  --color-navy-300: #8BA0E0;
+  --color-navy-400: #6680D3;
+  --color-navy-500: #4361C5;
+  --color-navy-600: #3450A8;
+  --color-navy-700: #1E3A6E;
+  --color-navy-800: #152A52;
+  --color-navy-900: #0D1B38;
+  --color-navy-950: #080F20;
+
+  /* ─── Semantic Theme Color Aliases (Bound to CSS variables for dynamic dark mode) ─── */
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-surface: var(--color-surface);
+  --color-surface-elevated: var(--color-surface-elevated);
+  --color-border: var(--color-border);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-muted: var(--color-muted);
+  --color-muted-foreground: var(--color-muted-foreground);
+
+  --color-primary: var(--color-primary);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-primary-hover: var(--color-primary-hover);
+
+  --color-secondary: var(--color-secondary);
+  --color-secondary-foreground: var(--color-secondary-foreground);
+  --color-secondary-hover: var(--color-secondary-hover);
+
+  --color-accent: var(--color-accent);
+  --color-accent-foreground: var(--color-accent-foreground);
+
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
+  --color-warning: var(--color-warning);
+  --color-warning-light: var(--color-warning-light);
+  --color-danger: var(--color-danger);
+  --color-danger-light: var(--color-danger-light);
+  --color-info: var(--color-info);
+  --color-info-light: var(--color-info-light);
+
+  /* ─── Typography ─── */
+  --font-sans: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ─── Spacing ─── */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ─── Shadows ─── */
+  --shadow-sm: var(--color-shadow-sm);
+  --shadow-md: var(--color-shadow-md);
+  --shadow-lg: var(--color-shadow-lg);
+  --shadow-xl: var(--color-shadow-xl);
+  --shadow-glow: var(--color-shadow-glow);
+
+  /* ─── Animations ─── */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Base Styles ─── */
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s var(--ease-smooth), color 0.3s var(--ease-smooth);
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted-foreground);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* ─── Focus Styles ─── */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Glassmorphism Utility ─── */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.dark .glass {
+  background: rgba(13, 27, 56, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Gradient Text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, #92400E, #B45309, #1E3A6E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.dark .gradient-text {
+  background: linear-gradient(135deg, var(--color-saffron-300), var(--color-saffron-400), var(--color-navy-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Pulse Animation (for voice button) ─── */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.2s ease-out infinite;
+}
+
+/* ─── Shimmer (loading skeleton) ─── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    var(--color-border) 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ─── Fade In Animation ─── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s var(--ease-smooth) forwards;
+}
+
+/* ─── Slide Up Animation ─── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s var(--ease-spring) forwards;
+}
+
+/* ─── Accessibility: Reduced Motion Override ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-slide-up,
+  .animate-fade-in,
+  .animate-pulse-ring,
+  .skeleton {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ─── Number Tag Styles ─── */
+.tag-user-provided {
+  background: var(--color-info-light);
+  color: var(--color-info);
+  border: 1px solid var(--color-info);
+}
+.tag-app-calculated {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+.tag-ai-estimated {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
+}

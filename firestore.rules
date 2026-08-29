@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper Functions ───
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Strict Server-Side Admin Check (Email-based restriction)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == "sayantansinha2005@gmail.com";
+    }
+
+    // ─── 1. User Profiles ───
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ─── 2. Government Schemes (Public Read, Strictly Admin-Only Write) ───
+    match /schemes/{schemeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ─── 3. Scheme Proposals & Audit Trail (Admin Only) ───
+    match /scheme_updates/{proposalId} {
+      allow read, write: if isAdmin();
+    }
+    match /adminActions/{actionId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─── 4. Financial Plans ───
+    match /plans/{planId} {
+      allow read, delete, update: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ─── 5. Saved Advice ───
+    match /saved_advice/{adviceId} {
+      allow read, delete, update: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+    match /advice/{adviceId} {
+      allow read, delete, update: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}
