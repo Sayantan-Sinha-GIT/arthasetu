@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import TextToSpeechButton from '@/components/ui/TextToSpeechButton';
@@ -117,9 +118,10 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
   return (
     <>
       <Navbar />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
+      <main className="relative overflow-hidden flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
+        <AmbientBackground variant="subtle" />
         {/* Back Link */}
-        <div className="flex items-center justify-between">
+        <div className="relative z-10 flex items-center justify-between">
           <Link
             href="/schemes"
             className="inline-flex items-center gap-1 text-xs font-semibold text-muted hover:text-foreground transition-colors"

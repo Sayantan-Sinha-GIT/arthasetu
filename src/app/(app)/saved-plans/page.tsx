@@ -9,6 +9,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { getSavedPlans, deletePlan } from '@/lib/firestore/plans';
 import { downloadPlanPdf } from '@/lib/pdf/export-plan-pdf';
@@ -91,9 +92,10 @@ export default function SavedPlansPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
+      <main className="relative overflow-hidden flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
+        <AmbientBackground variant="subtle" />
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground flex items-center gap-2">
               <span>📋</span>

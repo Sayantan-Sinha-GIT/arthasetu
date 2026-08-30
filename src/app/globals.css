@@ -297,6 +297,68 @@ body {
 .stagger-5 { animation-delay: 250ms; }
 .stagger-6 { animation-delay: 300ms; }
 
+/* ─── Bold Ambient Drift (Phase 9) ─── */
+@keyframes ambientDriftBold {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.15); }
+  100% { transform: translate(-30px, 25px) scale(0.9); }
+}
+.animate-ambient-drift-bold {
+  animation: ambientDriftBold 22s ease-in-out infinite alternate;
+}
+.animate-ambient-drift-bold-slow {
+  animation: ambientDriftBold 32s ease-in-out infinite alternate-reverse;
+}
+
+/* ─── Ken Burns slow zoom for hero photo ─── */
+@keyframes kenBurns {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.08) translate(-1%, -0.5%); }
+}
+.animate-kenburns {
+  animation: kenBurns 25s ease-in-out infinite alternate;
+}
+
+/* ─── Film grain texture overlay ─── */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ─── 3D tilt card perspective helper ─── */
+.tilt-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ─── Parallax Photo Band (Phase 9.5) ─── */
+.parallax-band {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+@media (max-width: 768px) {
+  .parallax-band { background-attachment: scroll; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .parallax-band { background-attachment: scroll; }
+}
+
+/* ─── Infinite Marquee Ticker Strip (Phase 9.5) ─── */
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marqueeScroll 25s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
 /* ─── Accessibility: Reduced Motion Override ─── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -313,6 +375,10 @@ body {
   .animate-pulse-ring,
   .animate-ambient-drift,
   .animate-ambient-drift-slow,
+  .animate-ambient-drift-bold,
+  .animate-ambient-drift-bold-slow,
+  .animate-kenburns,
+  .marquee-track,
   .skeleton {
     animation: none !important;
     opacity: 1 !important;

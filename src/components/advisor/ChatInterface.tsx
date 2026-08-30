@@ -30,16 +30,39 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   const [activeSpeakingMessageId, setActiveSpeakingMessageId] = useState<string | null>(null);
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
 
-  // Speech Recognition Language (inherits UI language speechCode, with 1-click toggle to English)
-  const [speechLanguage, setSpeechLanguage] = useState<string>(
-    currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN')
-  );
+  // Speech Recognition Language with localStorage persistence (key: arthasetu-speech-language)
+  const SPEECH_LANG_KEY = 'arthasetu-speech-language';
+  const [speechLanguage, setSpeechLanguage] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arthasetu-speech-language');
+      if (saved) return saved;
+    }
+    return currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN');
+  });
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(SPEECH_LANG_KEY);
+      if (saved) {
+        setSpeechLanguage(saved);
+        return;
+      }
+    }
     if (currentMeta?.speechCode) {
       setSpeechLanguage(currentMeta.speechCode);
     }
   }, [currentMeta?.speechCode]);
+
+  const handleSpeechLanguageChange = (newCode: string) => {
+    setSpeechLanguage(newCode);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(SPEECH_LANG_KEY, newCode);
+      } catch (err) {
+        console.warn('Failed to persist speech language:', err);
+      }
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -239,11 +262,6 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
     }
   };
 
-  const handleToggleSpeechLanguage = () => {
-    const nativeSpeechCode = currentMeta?.speechCode || 'hi-IN';
-    setSpeechLanguage((prev) => (prev.toLowerCase().startsWith('en') ? nativeSpeechCode : 'en-IN'));
-  };
-
   const handleSpeakMessage = (msgId: string, content: string) => {
     if (isTtsSpeaking && activeSpeakingMessageId === msgId) {
       ttsStop();
@@ -367,7 +385,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
               onKeyDown={handleKeyDown}
               placeholder={
                 isListening
-                  ? `${t.voice.listening} (${speechLanguage === 'hi-IN' ? 'हिन्दी' : 'English'})...`
+                  ? `${t.voice.listening} (${speechLanguage})...`
                   : t.advisor.placeholder
               }
               rows={1}
@@ -376,12 +394,13 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
             />
           </div>
 
-          {/* Multi-State Voice Mic Button */}
+          {/* Multi-State Voice Mic Button & 23-Language Picker */}
           <VoiceButton
             state={currentVoiceState}
             onClick={handleMicClick}
-            onLanguageToggle={handleToggleSpeechLanguage}
+            onLanguageChange={handleSpeechLanguageChange}
             speechLanguage={speechLanguage}
+            selectAriaLabel={t.voice.selectLanguage || 'Select voice language'}
           />
 
           {/* Send Button */}

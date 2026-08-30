@@ -50,7 +50,7 @@ export default function Footer() {
             <span className="text-border-subtle">•</span>
             <span className="text-foreground font-medium">Soumyadeep Das</span>
             <span className="text-border-subtle">•</span>
-            <span className="text-foreground font-medium">Rupam Das</span>
+            <span className="text-foreground font-medium">Rupam Ghosh</span>
           </div>
         </div>
       </div>

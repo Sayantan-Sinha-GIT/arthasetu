@@ -87,19 +87,29 @@ export function sanitizeFirestoreObject<T extends Record<string, any>>(obj: T): 
 }
 
 /**
- * Create or overwrite a user profile safely (with undefined field sanitization)
+ * Create or overwrite a user profile safely (with undefined field sanitization & profile integrity checks)
  */
 export async function createUserProfile(profile: Partial<UserProfile> & { uid: string }): Promise<void> {
   try {
     const docRef = doc(db, 'users', profile.uid);
+
+    const nameVal = profile.name?.trim() || '';
+    const stateVal = profile.state?.trim() || '';
+    const districtVal = profile.district?.trim() || '';
+
+    // Server-side profile integrity: onboardingComplete requires non-empty name, state, and district
+    const requestedComplete = profile.onboardingComplete ?? false;
+    const isIntegrityValid = Boolean(nameVal) && Boolean(stateVal) && Boolean(districtVal);
+    const effectiveOnboardingComplete = requestedComplete && isIntegrityValid;
+
     const sanitizedProfile = sanitizeFirestoreObject({
       ...profile,
-      name: profile.name || '',
+      name: nameVal,
       email: profile.email || '',
       language: profile.language || 'en',
       theme: profile.theme || 'light',
-      state: profile.state || '',
-      district: profile.district || '',
+      state: stateVal,
+      district: districtVal,
       locality: profile.locality || '',
       pinCode: profile.pinCode || '',
       businessStatus: profile.businessStatus || 'planning',
@@ -115,7 +125,7 @@ export async function createUserProfile(profile: Partial<UserProfile> & { uid: s
       employeeCount: Number(profile.employeeCount) || 0,
       existingLoans: Boolean(profile.existingLoans),
       annualTurnover: Number(profile.annualTurnover) || 0,
-      onboardingComplete: profile.onboardingComplete ?? true,
+      onboardingComplete: effectiveOnboardingComplete,
     });
 
     await setDoc(docRef, {
@@ -129,12 +139,25 @@ export async function createUserProfile(profile: Partial<UserProfile> & { uid: s
 }
 
 /**
- * Update specific fields in a user profile
+ * Update specific fields in a user profile (with server-side profile integrity checks)
  */
 export async function updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
   try {
     const docRef = doc(db, 'users', uid);
     const sanitizedUpdates = sanitizeFirestoreObject(updates);
+
+    if (sanitizedUpdates.onboardingComplete === true) {
+      const docSnap = await getDoc(docRef);
+      const existingData = docSnap.exists() ? (docSnap.data() as UserProfile) : null;
+      const effectiveName = (sanitizedUpdates.name !== undefined ? sanitizedUpdates.name : existingData?.name)?.trim();
+      const effectiveState = (sanitizedUpdates.state !== undefined ? sanitizedUpdates.state : existingData?.state)?.trim();
+      const effectiveDistrict = (sanitizedUpdates.district !== undefined ? sanitizedUpdates.district : existingData?.district)?.trim();
+
+      if (!effectiveName || !effectiveState || !effectiveDistrict) {
+        sanitizedUpdates.onboardingComplete = false;
+      }
+    }
+
     await setDoc(
       docRef,
       {

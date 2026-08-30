@@ -9,12 +9,14 @@ import Footer from '@/components/layout/Footer';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import ProgressBar from '@/components/onboarding/ProgressBar';
 import StepBasicInfo from '@/components/onboarding/StepBasicInfo';
 import StepBusinessInfo from '@/components/onboarding/StepBusinessInfo';
 import StepFinancialInfo from '@/components/onboarding/StepFinancialInfo';
 import StepEligibility from '@/components/onboarding/StepEligibility';
 import { getUserProfile, createUserProfile } from '@/lib/firestore/users';
+import { getDistrictsByState } from '@/lib/constants/districts';
 import type { UserProfile } from '@/types';
 
 export default function OnboardingPage() {
@@ -26,6 +28,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [legacyDistrict, setLegacyDistrict] = useState<string>('');
 
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     name: '',
@@ -78,9 +81,22 @@ export default function OnboardingPage() {
       try {
         const existing = await getUserProfile(user.uid);
         if (existing) {
+          let loadedDistrict = existing.district || '';
+          let legacyVal = '';
+          if (existing.state && loadedDistrict) {
+            const validDistricts = getDistrictsByState(existing.state);
+            if (validDistricts.includes(loadedDistrict)) {
+              // Valid canonical district
+            } else {
+              legacyVal = loadedDistrict;
+              loadedDistrict = '';
+            }
+          }
+          setLegacyDistrict(legacyVal);
           setFormData((prev) => ({
             ...prev,
             ...existing,
+            district: loadedDistrict,
             name: existing.name || user.displayName || '',
           }));
         } else {
@@ -149,8 +165,8 @@ export default function OnboardingPage() {
   const handleNext = async () => {
     if (!validateStep(currentStep)) return;
 
-    // AI validation step on relevant transitions (Step 0, Step 1, Step 2)
-    if (currentStep <= 2) {
+    // AI validation step on relevant transitions (Step 1: Business Info, Step 2: Financial Info)
+    if (currentStep === 1 || currentStep === 2) {
       const cacheKey = JSON.stringify({
         step: currentStep,
         businessType: formData.businessType,
@@ -209,6 +225,7 @@ export default function OnboardingPage() {
             ...formData,
             uid: user.uid,
             email: user.email || '',
+            onboardingComplete: false,
           });
         } catch (err) {
           console.warn('Progress autosave warning:', err);
@@ -254,11 +271,14 @@ export default function OnboardingPage() {
     if (!user) return;
     setSaving(true);
     try {
+      const isEligibleForComplete =
+        !!formData.name?.trim() && !!formData.state?.trim() && !!formData.district?.trim();
+
       await createUserProfile({
         ...formData,
         uid: user.uid,
         email: user.email || '',
-        onboardingComplete: true,
+        onboardingComplete: isEligibleForComplete,
       });
       router.push('/dashboard');
       setTimeout(() => {
@@ -290,7 +310,8 @@ export default function OnboardingPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
+      <main className="relative overflow-hidden flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
+        <AmbientBackground variant="subtle" />
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center mx-auto mb-3 shadow-md shadow-saffron-500/20">
@@ -320,6 +341,7 @@ export default function OnboardingPage() {
 
           {/* Form Step Body */}
           <form
+            noValidate
             onSubmit={(e) => {
               e.preventDefault();
               handleNext();
@@ -330,6 +352,8 @@ export default function OnboardingPage() {
                 data={formData}
                 onChange={updateFormData}
                 errors={errors}
+                legacyDistrict={legacyDistrict}
+                onClearLegacyDistrict={() => setLegacyDistrict('')}
               />
             )}
 

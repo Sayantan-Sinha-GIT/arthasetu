@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Card from '@/components/ui/Card';
 
 interface SchemeDeadlineItem {
   id: string;
@@ -97,7 +98,7 @@ export default function SchemeDeadlinesCard() {
   };
 
   return (
-    <div className="p-6 rounded-3xl bg-surface-elevated border border-border space-y-6 shadow-sm">
+    <Card padding="md" className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div>
@@ -238,6 +239,6 @@ export default function SchemeDeadlinesCard() {
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }

@@ -58,7 +58,12 @@ async function runPhase2Tests() {
   if ((rawAdminKey.startsWith("'") && rawAdminKey.endsWith("'")) || (rawAdminKey.startsWith('"') && rawAdminKey.endsWith('"'))) {
     rawAdminKey = rawAdminKey.slice(1, -1);
   }
-  const serviceAccount = JSON.parse(rawAdminKey) as ServiceAccount;
+  const sa = JSON.parse(rawAdminKey);
+  const serviceAccount: ServiceAccount = {
+    projectId: sa.projectId || sa.project_id,
+    clientEmail: sa.clientEmail || sa.client_email,
+    privateKey: (sa.privateKey || sa.private_key || '').replace(/\\n/g, '\n'),
+  };
   const adminApp = getAdminApps().length === 0 ? initAdminApp({ credential: cert(serviceAccount) }, 'admin-p2-test') : getAdminApps()[0];
   const adminAuth = getAdminAuth(adminApp);
 

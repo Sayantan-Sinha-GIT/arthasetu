@@ -3,6 +3,7 @@ import { Inter, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import IntroSplash from "@/components/layout/IntroSplash";
+import PageBackgroundVideo from "@/components/ui/PageBackgroundVideo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col font-sans antialiased">
         <Providers>
           <IntroSplash />
+          <PageBackgroundVideo />
           {children}
         </Providers>
       </body>

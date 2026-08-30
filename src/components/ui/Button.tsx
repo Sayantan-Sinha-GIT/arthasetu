@@ -1,4 +1,7 @@
+'use client';
+
 import type { ReactNode, ButtonHTMLAttributes } from 'react';
+import { useMagnetic } from '@/hooks/useMagnetic';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -40,8 +43,16 @@ export default function Button({
   className = '',
   ...props
 }: ButtonProps) {
+  const isPrimaryLg = variant === 'primary' && size === 'lg';
+  const isPrimary = variant === 'primary';
+  const magnetic = useMagnetic(isPrimaryLg ? 0.4 : 0.25);
+  const isMagnetic = isPrimary;
+
   return (
     <button
+      ref={isMagnetic ? magnetic.ref : undefined}
+      onMouseMove={isMagnetic ? magnetic.handleMouseMove : undefined}
+      onMouseLeave={isMagnetic ? magnetic.handleMouseLeave : undefined}
       className={`
         inline-flex items-center justify-center font-semibold
         transition-all duration-200 ease-smooth

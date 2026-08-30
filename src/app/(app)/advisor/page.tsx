@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import ChatInterface from '@/components/advisor/ChatInterface';
 import { getUserProfile } from '@/lib/firestore/users';
 import type { UserProfile } from '@/types';
@@ -62,8 +63,9 @@ export default function AdvisorPage() {
       <Navbar />
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 space-y-4 animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-surface-elevated/60 border border-border flex items-center justify-between">
+          <AmbientBackground variant="subtle" />
+          <div className="relative z-10">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
               <span>🎙️</span>
               <span>{t.advisor.title}</span>
@@ -74,7 +76,7 @@ export default function AdvisorPage() {
           </div>
 
           {profile?.state && (
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-surface border border-border text-muted">
+            <div className="relative z-10 hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-surface/90 border border-border text-muted">
               <span>📍</span>
               <span>{profile.district ? `${profile.district}, ${profile.state}` : profile.state}</span>
             </div>

@@ -117,6 +117,8 @@ const auditItems: TestItem[] = [
   { page: 'Landing', element: 'Hero Badge Text vs Badge Bg', fgKey: 'saffronBadgeText', bgKey: 'saffronBadgeBg' },
   { page: 'Landing', element: 'Feature Card Title', fgKey: 'foreground', bgKey: 'surfaceElevated', isLargeText: true },
   { page: 'Landing', element: 'Feature Card Description', fgKey: 'muted', bgKey: 'surfaceElevated' },
+  { page: 'Landing', element: 'Marquee Strip Label', fgKey: 'muted', bgKey: 'surface' },
+  { page: 'Landing', element: 'Parallax Band Badge Text', fgKey: 'foreground', bgKey: 'background', isLargeText: true },
 
   // Auth (Login & Signup)
   { page: 'Login & Signup', element: 'Form Heading', fgKey: 'foreground', bgKey: 'background', isLargeText: true },

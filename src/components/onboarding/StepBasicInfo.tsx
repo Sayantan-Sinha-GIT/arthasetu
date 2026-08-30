@@ -3,6 +3,7 @@
 import Input, { Select } from '@/components/ui/Input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ALL_INDIAN_REGIONS } from '@/lib/firestore/users';
+import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
 import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { UserProfile } from '@/types';
 
@@ -10,9 +11,17 @@ interface StepBasicInfoProps {
   data: Partial<UserProfile>;
   onChange: (fields: Partial<UserProfile>) => void;
   errors?: Record<string, string>;
+  legacyDistrict?: string;
+  onClearLegacyDistrict?: () => void;
 }
 
-export default function StepBasicInfo({ data, onChange, errors = {} }: StepBasicInfoProps) {
+export default function StepBasicInfo({
+  data,
+  onChange,
+  errors = {},
+  legacyDistrict,
+  onClearLegacyDistrict,
+}: StepBasicInfoProps) {
   const { t, setLanguage, language } = useLanguage();
 
   const stateOptions = [
@@ -20,10 +29,29 @@ export default function StepBasicInfo({ data, onChange, errors = {} }: StepBasic
     ...ALL_INDIAN_REGIONS.map((s) => ({ value: s, label: s })),
   ];
 
+  const districtOptions = data.state
+    ? [{ value: '', label: 'Select district' }, ...getDistrictOptions(data.state)]
+    : [{ value: '', label: 'Select a state first' }];
+
   const languageOptions = SUPPORTED_LANGUAGES.map((l) => ({
     value: l.code,
     label: `${l.nativeName} (${l.name})${l.isMachineTranslated ? ' — AI' : ''}`,
   }));
+
+  const handleStateChange = (newState: string) => {
+    const validDistricts = getDistrictsByState(newState);
+    const shouldClearDistrict = data.district && !validDistricts.includes(data.district);
+    if (onClearLegacyDistrict) onClearLegacyDistrict();
+    onChange({
+      state: newState,
+      district: shouldClearDistrict ? '' : data.district,
+    });
+  };
+
+  const handleDistrictChange = (newDistrict: string) => {
+    if (onClearLegacyDistrict) onClearLegacyDistrict();
+    onChange({ district: newDistrict });
+  };
 
   const handleLanguageChange = (code: string) => {
     onChange({ language: code });
@@ -70,19 +98,24 @@ export default function StepBasicInfo({ data, onChange, errors = {} }: StepBasic
         <Select
           label={t.onboarding.state}
           value={data.state || ''}
-          onChange={(e) => onChange({ state: e.target.value })}
+          onChange={(e) => handleStateChange(e.target.value)}
           options={stateOptions}
           error={errors.state}
           required
         />
-        <Input
+        <Select
           label={t.onboarding.district}
-          type="text"
           value={data.district || ''}
-          onChange={(e) => onChange({ district: e.target.value })}
-          placeholder={t.onboarding.districtPlaceholder}
+          onChange={(e) => handleDistrictChange(e.target.value)}
+          options={districtOptions}
+          disabled={!data.state}
           required
           error={errors.district}
+          hint={
+            legacyDistrict
+              ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
+              : undefined
+          }
         />
       </div>
 

@@ -73,7 +73,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<V
 Analyze the user's business inputs for realism and coherence. Support all 22 Indian regional languages and English.
 
 Rules:
-1. "businessType": Check if this is a genuine enterprise, craft, trade, agriculture, shop, or service (e.g., "पोल्ट्री फार्म", "সরিষার তেলের মিল", "tailoring shop", "tea stall", "kirana"). If it is gibberish, spam, offensive, or random characters (e.g., "asdfghjk", "wallah wallah", "123456", "nonsense"), mark as invalid with a friendly localized error.
+1. "businessType": If provided and non-empty, check if this is a genuine enterprise, craft, trade, agriculture, shop, or service (e.g., "पोल्ट्री फार्म", "सरीषार तेलर मिल", "tailoring shop", "tea stall", "kirana"). If it is gibberish, spam, offensive, or random characters (e.g., "asdfghjk", "wallah wallah", "123456", "nonsense"), mark isBusinessValid as false with a friendly localized error. If businessType is empty or not provided, set isBusinessValid as true and businessError as null.
 2. "district": Check if the district/city is plausible for the given Indian state "${state}". If clearly contradictory (e.g. State is "Kerala" but district is "Patna"), add an error or warning.
 3. Output strictly valid JSON matching this schema:
 {
@@ -110,10 +110,10 @@ Return ALL text in language: "${language}".`;
       const cleaned = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(cleaned);
 
-      if (parsed.isBusinessValid === false && parsed.businessError) {
+      if (businessType.trim() && parsed.isBusinessValid === false && parsed.businessError) {
         errors.businessType = parsed.businessError;
       }
-      if (parsed.isLocationValid === false && parsed.locationError) {
+      if (district.trim() && parsed.isLocationValid === false && parsed.locationError) {
         errors.district = parsed.locationError;
       }
       if (parsed.advisoryNote) {

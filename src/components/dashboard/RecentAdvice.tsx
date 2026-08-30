@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useLanguage } from '@/contexts/LanguageContext';
+import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import type { Advice } from '@/types';
 
@@ -50,7 +51,7 @@ export default function RecentAdvice({ userId }: RecentAdviceProps) {
   }, [userId]);
 
   return (
-    <div className="p-6 rounded-3xl border border-border bg-surface-elevated shadow-sm space-y-4">
+    <Card padding="md" className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -111,6 +112,6 @@ export default function RecentAdvice({ userId }: RecentAdviceProps) {
           </Link>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

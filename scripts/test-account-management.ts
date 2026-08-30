@@ -220,7 +220,7 @@ async function runTargetedTests() {
     footerSource.includes('Adrija Roy') &&
     footerSource.includes('Madhurya Ghosh') &&
     footerSource.includes('Soumyadeep Das') &&
-    footerSource.includes('Rupam Das')
+    footerSource.includes('Rupam Ghosh')
   );
 
   console.log('\n═══════════════════════════════════════════════════════════════════════');

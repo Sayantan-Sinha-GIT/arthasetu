@@ -12,14 +12,19 @@ async function deployRules() {
   if (!rawKey) throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY');
 
   const sa = JSON.parse(rawKey);
-  const projectId = sa.project_id || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const formattedPrivateKey = (sa.private_key || sa.privateKey || '').replace(/\\n/g, '\n');
+  const projectId = sa.project_id || sa.projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
   // Read rules file
   const rulesContent = fs.readFileSync(resolve(process.cwd(), 'firestore.rules'), 'utf-8');
 
   // Authenticate with Google Auth
   const auth = new GoogleAuth({
-    credentials: sa,
+    credentials: {
+      client_email: sa.client_email || sa.clientEmail,
+      private_key: formattedPrivateKey,
+      project_id: projectId,
+    },
     scopes: ['https://www.googleapis.com/auth/firebase', 'https://www.googleapis.com/auth/cloud-platform'],
   });
 

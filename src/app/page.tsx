@@ -9,10 +9,14 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Button from '@/components/ui/Button';
 import AmbientBackground from '@/components/ui/AmbientBackground';
+import BackgroundVideo from '@/components/ui/BackgroundVideo';
+import TiltWrapper from '@/components/ui/TiltWrapper';
+import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
 
 export default function LandingPage() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { quality } = useNetworkQuality();
   const { ref: featuresRef, inView: featuresInView } = useInView<HTMLElement>({ threshold: 0.1 });
   const { ref: ctaRef, inView: ctaInView } = useInView<HTMLElement>({ threshold: 0.15 });
 
@@ -22,60 +26,119 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden">
-          {/* Ambient Background Atmosphere */}
-          <AmbientBackground variant="hero" />
+          {/* Optional Background Video with graceful onError fallback */}
+          <BackgroundVideo src="/videos/hero-background.mp4" className="opacity-20 -z-20" />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-28">
-            <div className="max-w-3xl mx-auto text-center animate-slide-up">
-              {/* Badge - High Contrast */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-saffron-100 dark:bg-saffron-950/80 border border-saffron-300 dark:border-saffron-700 mb-6 shadow-sm">
-                <div className="w-2 h-2 rounded-full bg-saffron-600 dark:bg-saffron-400 animate-pulse" />
-                <span className="text-xs font-bold text-saffron-900 dark:text-saffron-300">
-                  {t.landing.badge}
-                </span>
+          {/* Ambient Background Atmosphere */}
+          <AmbientBackground variant="hero" grain />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+            <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+              {/* Text Column */}
+              <div className="text-center lg:text-left animate-slide-up">
+                {/* Badge - High Contrast */}
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-saffron-100 dark:bg-saffron-950/80 border border-saffron-300 dark:border-saffron-700 mb-6 shadow-sm">
+                  <div className="w-2 h-2 rounded-full bg-saffron-600 dark:bg-saffron-400 animate-pulse" />
+                  <span className="text-xs font-bold text-saffron-900 dark:text-saffron-300">
+                    {t.landing.badge}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.12]">
+                  <span className="text-amber-600 dark:text-saffron-300 font-extrabold">{t.appName}</span>
+                  <br />
+                  <span className="text-foreground">{t.tagline}</span>
+                </h1>
+
+                {/* Subtitle - High Contrast Slate 700 / Slate 200 */}
+                <p className="mt-6 text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                  {t.landing.subtitle}
+                </p>
+
+                {/* CTAs */}
+                <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                  {user ? (
+                    <Link href="/dashboard">
+                      <Button size="lg" className="text-base px-8 font-bold shadow-md">
+                        {t.landing.ctaDashboard} →
+                      </Button>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link href="/signup">
+                        <Button size="lg" className="text-base px-8 font-bold shadow-md shadow-saffron-500/20">
+                          {t.landing.ctaSignup}
+                        </Button>
+                      </Link>
+                      <Link href="/login">
+                        <Button variant="outline" size="lg" className="text-base px-8 font-semibold">
+                          {t.landing.ctaLogin}
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* Title */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.12]">
-                <span className="text-amber-600 dark:text-saffron-300 font-extrabold">{t.appName}</span>
-                <br />
-                <span className="text-foreground">{t.tagline}</span>
-              </h1>
+              {/* Photo Column */}
+              <div className="relative mt-8 lg:mt-0">
+                <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-full min-h-[300px] lg:min-h-[460px] bg-surface-elevated">
+                  {quality !== 'minimal' ? (
+                    <>
+                      <Image
+                        src="/images/artisan-weaving.webp"
+                        alt="Indian artisan weaving traditional Ikat patterned fabric on a handloom"
+                        fill
+                        priority
+                        className={`object-cover ${quality === 'full' ? 'animate-kenburns' : ''}`}
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
+                    </>
+                  ) : (
+                    <div className="w-full h-full min-h-[300px] flex items-center justify-center p-8 text-center bg-gradient-to-br from-saffron-500/10 to-navy-500/10">
+                      <div className="space-y-2">
+                        <span className="text-4xl">🇮🇳</span>
+                        <h2 className="text-xl font-bold text-foreground">{t.appName}</h2>
+                        <p className="text-xs text-muted max-w-xs">{t.landing.subtitle}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-              {/* Subtitle - High Contrast Slate 700 / Slate 200 */}
-              <p className="mt-6 text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl mx-auto leading-relaxed font-normal">
-                {t.landing.subtitle}
-              </p>
-
-              {/* CTAs */}
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                {user ? (
-                  <Link href="/dashboard">
-                    <Button size="lg" className="text-base px-8 font-bold shadow-md">
-                      {t.landing.ctaDashboard} →
-                    </Button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/signup">
-                      <Button size="lg" className="text-base px-8 font-bold shadow-md shadow-saffron-500/20">
-                        {t.landing.ctaSignup}
-                      </Button>
-                    </Link>
-                    <Link href="/login">
-                      <Button variant="outline" size="lg" className="text-base px-8 font-semibold">
-                        {t.landing.ctaLogin}
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                {/* Floating Stat Card Over Hero Photo */}
+                <div
+                  className="absolute -bottom-6 -left-6 sm:bottom-6 sm:left-6 bg-surface-elevated/95 backdrop-blur-md border border-border rounded-2xl px-5 py-4 shadow-xl animate-slide-up z-10"
+                  style={{ animationDelay: '400ms' }}
+                >
+                  <div className="text-2xl font-black text-primary">22</div>
+                  <div className="text-xs font-semibold text-muted mt-0.5">Indian languages supported</div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Infinite Marquee Ticker Strip - Only rendered on full network quality */}
+        {quality === 'full' && (
+          <div className="border-y border-border-subtle bg-surface/50 py-4 overflow-hidden whitespace-nowrap">
+            <div className="inline-flex marquee-track">
+              {[...Array(2)].map((_, dup) => (
+                <div key={dup} className="inline-flex">
+                  {['AI-Powered Advisor', '22 Indian Languages', 'Government Scheme Matching', 'Instant Eligibility Check', 'Built for Rural India'].map((label) => (
+                    <span key={label} className="inline-flex items-center gap-3 px-8 text-sm font-semibold text-muted">
+                      {label} <span className="text-primary">/</span>
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Features Section */}
-        <section ref={featuresRef} className="py-16 sm:py-24 bg-surface/50 border-y border-border-subtle overflow-hidden">
+        <section ref={featuresRef} className="py-16 sm:py-24 bg-surface/50 border-b border-border-subtle overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className={`text-center mb-12 sm:mb-16 transition-all duration-700 ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
@@ -144,31 +207,44 @@ export default function LandingPage() {
                   desc: t.landing.featureGovernanceDesc,
                 },
               ].map((feature, i) => (
-                <div
-                  key={i}
-                  className={`
-                    group bg-surface-elevated border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-500
-                    ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
-                  `}
-                  style={{
-                    transitionDelay: featuresInView ? `${i * 80}ms` : '0ms',
-                    transitionTimingFunction: 'var(--ease-smooth)',
-                  }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-saffron-400/20 to-navy-500/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 shadow-sm">
-                    {feature.icon}
+                <TiltWrapper key={i} maxTilt={11}>
+                  <div
+                    className={`
+                      group bg-surface-elevated border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-500
+                      ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
+                    `}
+                    style={{
+                      transitionDelay: featuresInView ? `${i * 80}ms` : '0ms',
+                      transitionTimingFunction: 'var(--ease-smooth)',
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-saffron-400/20 to-navy-500/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                      {feature.icon}
+                    </div>
+                    <h3 className="mt-4 text-base sm:text-lg font-bold text-foreground tracking-tight">
+                      {feature.title}
+                    </h3>
+                    <p className="mt-2 text-sm text-muted leading-relaxed">
+                      {feature.desc}
+                    </p>
                   </div>
-                  <h3 className="mt-4 text-base sm:text-lg font-bold text-foreground tracking-tight">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-muted leading-relaxed">
-                    {feature.desc}
-                  </p>
-                </div>
+                </TiltWrapper>
               ))}
             </div>
           </div>
         </section>
+
+        {/* Full-Bleed Parallax Photo Band - Only rendered on full network quality */}
+        {quality === 'full' && (
+          <section
+            className="parallax-band relative h-[45vh] flex items-center justify-center text-center"
+            style={{ backgroundImage: "linear-gradient(180deg, rgba(8,15,32,0.4), rgba(8,15,32,0.75)), url('/images/pottery-artisan.webp')" }}
+          >
+            <span className="font-mono text-xs sm:text-sm tracking-widest uppercase text-white border border-white/30 px-5 py-2.5 rounded-full backdrop-blur-sm bg-black/20">
+              Built for India&apos;s Real Economy
+            </span>
+          </section>
+        )}
 
         {/* Authentic Grassroots Enterprise Showcase */}
         <section className="py-16 sm:py-20 border-b border-border-subtle bg-surface/30">
@@ -192,38 +268,49 @@ export default function LandingPage() {
                   title: 'Handloom & Textiles',
                   subtitle: 'Rural weavers & traditional textile craft',
                   alt: 'Indian artisan weaving traditional Ikat patterned fabric on a handloom',
+                  icon: '🧵',
                 },
                 {
                   src: '/images/small-shopkeeper.webp',
                   title: 'Kirana & Retail',
                   subtitle: 'Village grocery stores & local merchants',
                   alt: 'Indian local grocery and kirana shopkeeper at a neighborhood general store counter',
+                  icon: '🏪',
                 },
                 {
                   src: '/images/pottery-artisan.webp',
                   title: 'Pottery & Craft',
                   subtitle: 'Terracotta artisans & clay craft workshops',
                   alt: 'Hands of an artisan shaping an earthen terracotta pot on a spinning pottery wheel',
+                  icon: '🏺',
                 },
                 {
                   src: '/images/women-entrepreneur.webp',
                   title: 'Women Entrepreneurs',
                   subtitle: 'Community micro-enterprises & local trade',
                   alt: 'Smiling Indian woman micro-entrepreneur in traditional red printed attire',
+                  icon: '💼',
                 },
               ].map((item, idx) => (
                 <div
                   key={idx}
                   className="group relative overflow-hidden rounded-2xl bg-surface-elevated border border-border shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 flex flex-col"
                 >
-                  <div className="relative aspect-4/3 w-full overflow-hidden bg-surface">
-                    <Image
-                      src={item.src}
-                      alt={item.alt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                  <div className="relative aspect-4/3 w-full overflow-hidden bg-surface flex items-center justify-center">
+                    {quality !== 'minimal' ? (
+                      <Image
+                        src={item.src}
+                        alt={item.alt}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className={`object-cover ${quality === 'full' ? 'group-hover:scale-105 transition-transform duration-500' : ''}`}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-primary/5 to-primary/10">
+                        <span className="text-3xl mb-1">{item.icon}</span>
+                        <span className="text-xs font-semibold text-foreground">{item.title}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>

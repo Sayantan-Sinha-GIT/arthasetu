@@ -80,6 +80,20 @@ const en = {
     accountDeletedDesc: 'Your profile, saved plans, advisor history, and Gramin Score data have been completely removed from our servers.',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
+    quoteText: 'Your business deserves a plan as ambitious as you are.',
+    quoteSubtext: "Built for India's Real Economy",
+    verifyEmailTitle: 'Verify Your Email',
+    verifyEmailSubtitle: 'We sent a verification link to {email}. Please check your inbox (and spam folder), then refresh or wait for automatic confirmation.',
+    resendEmail: 'Resend Verification Email',
+    resendCountdown: 'Resend in {seconds}s',
+    resendSuccess: 'Verification email resent successfully! Check your inbox.',
+    verifiedRedirecting: 'Email verified! Redirecting...',
+    autoChecking: 'Checking for verification in background (every 5s)...',
+    logout: 'Log Out',
+    checkEmailTitle: 'Check Your Email',
+    checkEmailSubtitle: 'We sent a password reset link to {email}.',
+    checkSpamNotice: 'Did not receive it? Please check your spam or junk folder, or wait a minute before requesting another link.',
+    sendAgain: 'Send Link Again',
   },
 
   // Onboarding
@@ -258,6 +272,8 @@ const en = {
     notSupported: 'Voice is not supported in this browser. Please use text input.',
     retry: 'Tap to try again',
     stop: 'Stop',
+    selectLanguage: 'Select speech language',
+    speechLanguage: 'Voice Language',
   },
 
   // Planner
@@ -382,6 +398,9 @@ const en = {
     addNewScheme: 'Add New Scheme',
     editScheme: 'AI Edit / Propose →',
     searchPlaceholder: 'Search by name, state, or category...',
+    deleteSchemeTitle: 'Permanent Scheme Deletion',
+    deleteSchemeSubtitle: 'Destructive action logged to admin audit trail',
+    confirmDeleteScheme: 'Confirm & Delete Scheme',
   },
 
   // Common

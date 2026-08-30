@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AdminGuard from '@/components/admin/AdminGuard';
 import Card from '@/components/ui/Card';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import Button from '@/components/ui/Button';
 import DiffViewer from '@/components/admin/DiffViewer';
 import { getAllSchemes } from '@/lib/firestore/schemes';
@@ -143,8 +144,9 @@ export default function AdminDashboardClient() {
       <Navbar />
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
         {/* Admin Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
-          <div>
+        <div className="relative overflow-hidden rounded-2xl p-6 bg-surface-elevated/60 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <AmbientBackground variant="subtle" />
+          <div className="relative z-10">
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-navy-600 text-white dark:bg-navy-400 dark:text-navy-950 uppercase tracking-wider">
                 🛡️ {t.adminNav.badge} Console
@@ -158,7 +160,7 @@ export default function AdminDashboardClient() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="relative z-10 flex items-center gap-3">
             <Link
               href={`/${ADMIN_ROUTE_KEY}/admin/schemes/new`}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm"

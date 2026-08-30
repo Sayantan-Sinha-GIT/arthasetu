@@ -102,7 +102,8 @@ export function useSpeechRecognition({
       recognition.continuous = false; // Stop after a complete thought
       recognition.interimResults = true; // Show live words while speaking
       recognition.maxAlternatives = 1;
-      recognition.lang = lang || defaultLanguage;
+      const targetLang = (typeof lang === 'string' && lang.trim().length > 0) ? lang.trim() : (defaultLanguage || 'hi-IN');
+      recognition.lang = targetLang;
 
       recognition.onstart = () => {
         setIsListening(true);

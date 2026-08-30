@@ -158,6 +158,7 @@ export default Input;
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
+  hint?: string;
   options: { value: string; label: string }[];
   wrapperClassName?: string;
 }
@@ -165,6 +166,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({
   label,
   error,
+  hint,
   options,
   wrapperClassName = '',
   className = '',
@@ -205,6 +207,9 @@ export function Select({
       </select>
       {error && (
         <p className="text-xs text-danger">{error}</p>
+      )}
+      {hint && !error && (
+        <p className="text-xs text-muted">{hint}</p>
       )}
     </div>
   );

@@ -29,14 +29,19 @@ function getServiceAccount(): ServiceAccount {
     raw = raw.slice(1, -1);
   }
   try {
-    const sa = JSON.parse(raw) as ServiceAccount;
-    if (sa.privateKey && typeof sa.privateKey === 'string') {
-      sa.privateKey = sa.privateKey.replace(/\\n/g, '\n');
+    const sa: any = JSON.parse(raw);
+    const privateKey = (sa.privateKey || sa.private_key || '').replace(/\\n/g, '\n');
+    const projectId = sa.projectId || sa.project_id;
+    const clientEmail = sa.clientEmail || sa.client_email;
+    if (!privateKey || !projectId || !clientEmail) {
+      throw new Error(
+        'FIREBASE_SERVICE_ACCOUNT_KEY is missing required fields (project_id, client_email, private_key).'
+      );
     }
-    return sa;
+    return { projectId, clientEmail, privateKey } as ServiceAccount;
   } catch (err) {
     throw new Error(
-      'FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON: ' + (err instanceof Error ? err.message : String(err))
+      'FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON or missing fields: ' + (err instanceof Error ? err.message : String(err))
     );
   }
 }

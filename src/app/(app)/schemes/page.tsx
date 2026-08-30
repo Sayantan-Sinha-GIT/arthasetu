@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import Button from '@/components/ui/Button';
 import SchemeCard from '@/components/schemes/SchemeCard';
 import SchemeFilters from '@/components/schemes/SchemeFilters';
@@ -111,9 +112,10 @@ export default function SchemesPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
+      <main className="relative overflow-hidden flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
+        <AmbientBackground variant="subtle" />
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground flex items-center gap-2">
               <span>🏛️</span>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import TextToSpeechButton from '@/components/ui/TextToSpeechButton';
+import TiltWrapper from '@/components/ui/TiltWrapper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Scheme, SchemeMatchResult } from '@/types';
 
@@ -18,10 +19,11 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
   const schemeSummarySpeech = `${scheme.name}. ${scheme.description}. Max subsidy is ${scheme.benefits.maxSubsidyPercent || 0} percent.`;
 
   return (
-    <Card
-      padding="lg"
-      className="relative overflow-hidden flex flex-col justify-between space-y-4 hover:border-primary/50 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
-    >
+    <TiltWrapper maxTilt={8} className="h-full">
+      <Card
+        padding="lg"
+        className="relative overflow-hidden flex flex-col justify-between space-y-4 hover:border-primary/50 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group h-full"
+      >
       {/* Category Accent Indicator Top Bar */}
       <div
         className={`absolute top-0 left-0 right-0 h-1 ${
@@ -148,5 +150,6 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
         </div>
       </div>
     </Card>
+    </TiltWrapper>
   );
 }

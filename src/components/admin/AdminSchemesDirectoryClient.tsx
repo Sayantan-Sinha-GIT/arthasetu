@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Input from '@/components/ui/Input';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAllSchemes } from '@/lib/firestore/schemes';
 import type { Scheme } from '@/types';
@@ -16,10 +17,17 @@ import type { Scheme } from '@/types';
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
 
 export default function AdminSchemesDirectoryClient() {
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  // Scheme deletion states
+  const [targetSchemeToDelete, setTargetSchemeToDelete] = useState<Scheme | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteSuccessMsg, setDeleteSuccessMsg] = useState('');
+  const [deleteErrorMsg, setDeleteErrorMsg] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -34,6 +42,47 @@ export default function AdminSchemesDirectoryClient() {
     }
     load();
   }, []);
+
+  const handleAdminDeleteScheme = async () => {
+    if (!targetSchemeToDelete) return;
+    setDeleteLoading(true);
+    setDeleteSuccessMsg('');
+    setDeleteErrorMsg('');
+
+    try {
+      if (!user) {
+        throw new Error('Admin user session expired. Please re-login.');
+      }
+      const token = await user.getIdToken(true);
+
+      const res = await fetch('/api/admin/schemes/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          schemeId: targetSchemeToDelete.id,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete government scheme');
+      }
+
+      setSchemes((prev) => prev.filter((s) => s.id !== targetSchemeToDelete.id));
+      setDeleteSuccessMsg(
+        data.message || `Scheme "${targetSchemeToDelete.name}" was permanently deleted.`
+      );
+      setTargetSchemeToDelete(null);
+    } catch (err: any) {
+      console.error('Scheme deletion failed:', err);
+      setDeleteErrorMsg(err.message || 'Failed to delete scheme. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const filtered = schemes.filter((s) => {
     if (!search.trim()) return true;
@@ -73,6 +122,39 @@ export default function AdminSchemesDirectoryClient() {
           </Link>
         </div>
 
+        {/* Global Feedback Banners */}
+        {deleteSuccessMsg && (
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between gap-2 animate-fade-in shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-base">✅</span>
+              <span className="font-bold">{deleteSuccessMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDeleteSuccessMsg('')}
+              className="text-xs text-muted hover:text-foreground"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {deleteErrorMsg && (
+          <div className="p-4 rounded-2xl bg-danger-light border border-danger/30 text-danger text-xs flex items-center justify-between gap-2 animate-fade-in shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-base">⚠️</span>
+              <span className="font-bold">{deleteErrorMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDeleteErrorMsg('')}
+              className="text-xs text-muted hover:text-foreground"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Search */}
         <div className="max-w-md">
           <Input
@@ -111,14 +193,23 @@ export default function AdminSchemesDirectoryClient() {
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-border flex items-center justify-between">
-                  <span className="text-[10px] text-muted">ID: {scheme.id}</span>
-                  <Link
-                    href={`/${ADMIN_ROUTE_KEY}/admin/schemes/${scheme.id}/edit`}
-                    className="text-xs font-bold text-primary hover:underline"
-                  >
-                    Edit / AI Update →
-                  </Link>
+                <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-muted truncate max-w-[120px]">ID: {scheme.id}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link
+                      href={`/${ADMIN_ROUTE_KEY}/admin/schemes/${scheme.id}/edit`}
+                      className="text-xs font-bold text-primary hover:underline"
+                    >
+                      {t.common.edit || 'Edit'} →
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setTargetSchemeToDelete(scheme)}
+                      className="px-2 py-0.5 rounded bg-danger/10 text-danger hover:bg-danger hover:text-white text-[11px] font-bold transition-all cursor-pointer"
+                    >
+                      🗑️ {t.common.delete || 'Delete'}
+                    </button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -126,6 +217,58 @@ export default function AdminSchemesDirectoryClient() {
         ) : (
           <div className="p-12 text-center bg-surface rounded-2xl border border-dashed border-border text-muted text-sm">
             No schemes found matching your search.
+          </div>
+        )}
+
+        {/* Scheme Deletion Confirmation Dialog Modal */}
+        {targetSchemeToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-md bg-surface-elevated border border-danger/30 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-in">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-danger/10 text-danger flex items-center justify-center text-xl shrink-0">
+                  🏛️
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">
+                    {t.admin.deleteSchemeTitle || 'Permanent Scheme Deletion'}
+                  </h3>
+                  <p className="text-xs text-muted">
+                    {t.admin.deleteSchemeSubtitle || 'Destructive action logged to admin audit trail'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-danger-light/30 border border-danger/20 text-xs text-danger-dark dark:text-danger space-y-1.5">
+                <p className="font-bold">Target Scheme:</p>
+                <p className="font-semibold text-foreground">{targetSchemeToDelete.name}</p>
+                <p className="font-mono text-[11px] opacity-80">ID: {targetSchemeToDelete.id}</p>
+                <p className="pt-1 leading-relaxed opacity-95">
+                  <strong>Warning:</strong> This cannot be undone. It will permanently remove this scheme from Firestore and invalidate all references in saved user plans.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={deleteLoading}
+                  onClick={() => setTargetSchemeToDelete(null)}
+                >
+                  {t.common.cancel || 'Cancel'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  isLoading={deleteLoading}
+                  onClick={handleAdminDeleteScheme}
+                  className="shadow-md font-bold"
+                >
+                  {t.admin.confirmDeleteScheme || 'Confirm & Delete Scheme'}
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </main>

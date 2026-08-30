@@ -147,16 +147,50 @@ function LoginFormContent() {
   );
 }
 
+import Image from 'next/image';
+import AmbientBackground from '@/components/ui/AmbientBackground';
+import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
+
 export default function LoginPage() {
+  const { t } = useLanguage();
+  const { quality } = useNetworkQuality();
+
   return (
-    <>
+    <div className="min-h-dvh flex flex-col">
       <Navbar />
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <Suspense fallback={<div className="w-full max-w-md h-96 flex items-center justify-center text-xs text-muted">Loading...</div>}>
-          <LoginFormContent />
-        </Suspense>
+      <main className="flex-1 grid lg:grid-cols-2">
+        <div className="relative flex items-center justify-center px-4 py-12 overflow-hidden">
+          <AmbientBackground variant="subtle" />
+          <Suspense fallback={<div className="w-full max-w-md h-96 flex items-center justify-center text-xs text-muted">Loading...</div>}>
+            <LoginFormContent />
+          </Suspense>
+        </div>
+        <div className="hidden lg:block relative overflow-hidden bg-surface-elevated">
+          {quality !== 'minimal' ? (
+            <Image
+              src="/images/login-hero.webp"
+              alt="Indian woman micro-entrepreneur in a cotton saree working at her self-help group enterprise"
+              fill
+              priority
+              className={`object-cover ${quality === 'full' ? 'animate-kenburns' : ''}`}
+              sizes="50vw"
+            />
+          ) : (
+            <AmbientBackground variant="hero" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-navy-950/20 to-transparent" />
+          <div className="grain-overlay" />
+          <div className="absolute bottom-12 left-12 right-12 text-white">
+            <p className="text-2xl font-black leading-snug">
+              &ldquo;{t.auth.quoteText || "Your business deserves a plan as ambitious as you are."}&rdquo;
+            </p>
+            <p className="mt-3 text-sm text-white/70 font-mono uppercase tracking-widest">
+              {t.appName} — {t.auth.quoteSubtext || "Built for India's Real Economy"}
+            </p>
+          </div>
+        </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

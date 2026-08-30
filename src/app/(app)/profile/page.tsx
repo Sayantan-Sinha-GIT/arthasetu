@@ -12,6 +12,7 @@ import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Input, { Select, NumberInput } from '@/components/ui/Input';
 import { DatePicker } from '@/components/ui/DatePicker';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import AmbientBackground from '@/components/ui/AmbientBackground';
 import ProfileCompleteness from '@/components/dashboard/ProfileCompleteness';
 import { EmailAuthProvider, reauthenticateWithCredential, deleteUser } from 'firebase/auth';
 import {
@@ -23,12 +24,15 @@ import {
   EXPERIENCE_LEVELS,
   GENDERS,
 } from '@/lib/firestore/users';
+import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
+import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
 import type { UserProfile, LoanDetail } from '@/types';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  const { manualOverride, setManualOverride } = useNetworkQuality();
 
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     name: '',
@@ -54,6 +58,7 @@ export default function ProfilePage() {
     theme: 'light',
   });
 
+  const [legacyDistrict, setLegacyDistrict] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -76,9 +81,23 @@ export default function ProfilePage() {
       try {
         const profile = await getUserProfile(user.uid);
         if (profile) {
+          let loadedDistrict = profile.district || '';
+          let legacyVal = '';
+          if (profile.state && loadedDistrict) {
+            const validDistricts = getDistrictsByState(profile.state);
+            if (validDistricts.includes(loadedDistrict)) {
+              // Valid canonical district
+            } else {
+              // Legacy non-canonical district
+              legacyVal = loadedDistrict;
+              loadedDistrict = '';
+            }
+          }
+          setLegacyDistrict(legacyVal);
           setFormData((prev) => ({
             ...prev,
             ...profile,
+            district: loadedDistrict,
             loanDetails: profile.loanDetails || [],
           }));
         }
@@ -216,6 +235,9 @@ export default function ProfilePage() {
   }
 
   const stateOptions = [{ value: '', label: t.onboarding.selectState }, ...ALL_INDIAN_REGIONS.map((s) => ({ value: s, label: s }))];
+  const districtOptions = formData.state
+    ? [{ value: '', label: 'Select district' }, ...getDistrictOptions(formData.state)]
+    : [{ value: '', label: 'Select a state first' }];
   const categoryOptions = [{ value: '', label: t.onboarding.selectCategory }, ...BUSINESS_CATEGORIES.map((c) => ({ value: c, label: c }))];
   const experienceOptions = [{ value: '', label: t.onboarding.selectExperience }, ...EXPERIENCE_LEVELS.map((exp) => ({ value: exp, label: exp }))];
   const genderOptions = [{ value: '', label: t.onboarding.selectGender }, ...GENDERS.map((g) => ({ value: g, label: g }))];
@@ -228,11 +250,28 @@ export default function ProfilePage() {
   ];
   const loansList = formData.loanDetails || [];
 
+  const handleProfileStateChange = (newState: string) => {
+    const validDistricts = getDistrictsByState(newState);
+    const shouldClearDistrict = formData.district && !validDistricts.includes(formData.district);
+    setLegacyDistrict('');
+    setFormData((prev) => ({
+      ...prev,
+      state: newState,
+      district: shouldClearDistrict ? '' : prev.district,
+    }));
+  };
+
+  const handleDistrictChange = (newDistrict: string) => {
+    setLegacyDistrict('');
+    setFormData((prev) => ({ ...prev, district: newDistrict }));
+  };
+
   return (
     <>
       <Navbar />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
+      <main className="relative overflow-hidden flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
+        <AmbientBackground variant="subtle" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
           <div className="space-y-1">
             <h1 className="text-2xl sm:text-3xl font-black text-foreground">{t.profile.title}</h1>
             <p className="text-muted text-xs sm:text-sm">{t.profile.subtitle}</p>
@@ -272,8 +311,20 @@ export default function ProfilePage() {
                     <Input label={t.auth.email} value={user?.email || ''} disabled hint="Account email linked with Firebase Auth" />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Select label={t.onboarding.state} value={formData.state || ''} onChange={(e) => setFormData((prev) => ({ ...prev, state: e.target.value }))} options={stateOptions} required />
-                    <Input label={t.onboarding.district} value={formData.district || ''} onChange={(e) => setFormData((prev) => ({ ...prev, district: e.target.value }))} required />
+                    <Select label={t.onboarding.state} value={formData.state || ''} onChange={(e) => handleProfileStateChange(e.target.value)} options={stateOptions} required />
+                    <Select
+                      label={t.onboarding.district}
+                      value={formData.district || ''}
+                      onChange={(e) => handleDistrictChange(e.target.value)}
+                      options={districtOptions}
+                      disabled={!formData.state}
+                      required
+                      hint={
+                        legacyDistrict
+                          ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
+                          : undefined
+                      }
+                    />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label={t.onboarding.locality} value={formData.locality || ''} onChange={(e) => setFormData((prev) => ({ ...prev, locality: e.target.value }))} required />
@@ -388,6 +439,32 @@ export default function ProfilePage() {
                 <span>{t.onboarding.preferredLanguage}</span>
               </h3>
               <Select value={formData.language || language || 'en'} onChange={(e) => handleLanguageChange(e.target.value)} options={languageOptions} />
+            </Card>
+
+            {/* Data Saver Mode Card */}
+            <Card padding="md" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <span>⚡</span>
+                  <span>Data Saver</span>
+                </h3>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={manualOverride}
+                    onChange={(e) => setManualOverride(e.target.checked)}
+                    className="sr-only peer"
+                    aria-label="Toggle Data Saver mode"
+                  />
+                  <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary" />
+                </label>
+              </div>
+              <p className="text-xs font-medium text-foreground">
+                Reduce animations, videos, and background images to save data
+              </p>
+              <p className="text-[11px] text-muted leading-relaxed">
+                Your financial plans, scheme matches, and chat always load at full speed regardless of this setting.
+              </p>
             </Card>
             <div className="rounded-2xl border border-danger/30 bg-danger-light/20 p-4 space-y-3">
               <div className="flex items-center gap-2 text-danger">

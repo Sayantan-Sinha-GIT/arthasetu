@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { calculateProfileCompleteness } from '@/lib/firestore/users';
+import Card from '@/components/ui/Card';
 import type { UserProfile } from '@/types';
 
 interface ProfileCompletenessProps {
@@ -10,13 +12,16 @@ interface ProfileCompletenessProps {
 }
 
 export default function ProfileCompleteness({ profile }: ProfileCompletenessProps) {
+  const { user } = useAuth();
   const { t } = useLanguage();
   const { percentage, completedCount, totalCount, missingFields } = calculateProfileCompleteness(profile);
 
-  const isFull = percentage >= 100;
+  const isEmailVerified = user ? user.emailVerified : true;
+  const isFull = percentage >= 100 && isEmailVerified;
+  const isFieldsCompleteUnverified = percentage >= 100 && !isEmailVerified;
 
   return (
-    <div className="p-6 rounded-3xl border border-border bg-surface-elevated shadow-sm space-y-4">
+    <Card padding="md" className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -41,7 +46,7 @@ export default function ProfileCompleteness({ profile }: ProfileCompletenessProp
             }
           `}
         >
-          {percentage}%
+          {isFieldsCompleteUnverified ? '90%' : `${percentage}%`}
         </span>
       </div>
 
@@ -55,12 +60,25 @@ export default function ProfileCompleteness({ profile }: ProfileCompletenessProp
               ? 'bg-primary'
               : 'bg-warning'
           }`}
-          style={{ width: `${percentage}%` }}
+          style={{ width: isFieldsCompleteUnverified ? '90%' : `${percentage}%` }}
         />
       </div>
 
-      {/* Missing items or all done nudge */}
-      {!isFull ? (
+      {/* Missing items, email verification notice, or all done nudge */}
+      {isFieldsCompleteUnverified ? (
+        <div className="space-y-2 pt-1">
+          <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+            ⚠️ Profile details entered. Verify your email to unlock fully tailored schemes & 100% verified status.
+          </p>
+          <Link
+            href="/verify-email"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-hover transition-colors"
+          >
+            <span>Verify Email Address</span>
+            <span>→</span>
+          </Link>
+        </div>
+      ) : !isFull ? (
         <div className="space-y-3 pt-1">
           <p className="text-xs text-muted leading-relaxed">
             {t.dashboard.completeProfile}:
@@ -94,6 +112,6 @@ export default function ProfileCompleteness({ profile }: ProfileCompletenessProp
           <span>✓</span> {t.dashboard.allSet}
         </p>
       )}
-    </div>
+    </Card>
   );
 }

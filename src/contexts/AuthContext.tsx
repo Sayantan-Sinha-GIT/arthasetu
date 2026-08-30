@@ -13,6 +13,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
   type User,
 } from 'firebase/auth';
@@ -26,6 +27,7 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  resendVerification: () => Promise<void>;
 }
 
 const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').toLowerCase().trim();
@@ -51,6 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (name: string, email: string, password: string): Promise<User> => {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(credential.user, { displayName: name });
+    // Send email verification to the newly registered user
+    try {
+      await sendEmailVerification(credential.user);
+    } catch (verErr) {
+      console.warn('sendEmailVerification non-fatal error during signup:', verErr);
+    }
     return credential.user;
   };
 
@@ -62,12 +70,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await sendPasswordResetEmail(auth, email);
   };
 
+  const resendVerification = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No user is currently authenticated.');
+    }
+    await sendEmailVerification(currentUser);
+  };
+
   // Derive isAdmin from email comparison — no custom claims needed
   const isAdmin = !!user && !!ADMIN_EMAIL && user.email?.toLowerCase().trim() === ADMIN_EMAIL;
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, isAdmin, login, signup, logout, resetPassword }}
+      value={{ user, loading, isAdmin, login, signup, logout, resetPassword, resendVerification }}
     >
       {children}
     </AuthContext.Provider>
@@ -79,3 +95,4 @@ export function useAuth() {
   if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }
+
