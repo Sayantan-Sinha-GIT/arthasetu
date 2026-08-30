@@ -3,23 +3,24 @@ import { resolve } from 'path';
 
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 
-import { adminAuth } from '../src/lib/firebase-admin';
+import { adminAuth, adminDb } from '../src/lib/firebase-admin';
 
-async function cleanupOldTestAuths() {
-  const testUids = [
-    'Kb7cJ3Wuh6ZT8zPuAQIYyBtbqCG3',
-    'SupeIqbyCXUZKdyFFkRWderOMIF3',
-    'dMBfo5QAfrgt1cbCdPCNLr14tRo2'
+async function cleanup() {
+  const uids = [
+    '21hVIArsBOZ7M83QfWu3dA9Z94s2',
+    'E9imKFs80zVidFpo51kOFTC7aks1',
+    'qqOn7r9vHmVfy4Ax3iEYEE9cPUo2',
   ];
 
-  for (const uid of testUids) {
+  for (const uid of uids) {
     try {
       await adminAuth.deleteUser(uid);
-      console.log(`🧹 Cleaned up old test auth: ${uid}`);
+      await adminDb.collection('users').doc(uid).delete();
+      console.log('Cleaned up:', uid);
     } catch (e: any) {
-      console.log(`Could not delete ${uid}: ${e.message}`);
+      console.log(`Could not delete ${uid}:`, e.message);
     }
   }
 }
 
-cleanupOldTestAuths();
+cleanup();
