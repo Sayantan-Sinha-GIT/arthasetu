@@ -35,7 +35,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
               {/* Text Column */}
-              <div className="text-center lg:text-left animate-slide-up">
+              <div className="text-center lg:text-left animate-slide-up min-w-0">
                 {/* Badge - High Contrast */}
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-saffron-100 dark:bg-saffron-950/80 border border-saffron-300 dark:border-saffron-700 mb-6 shadow-sm">
                   <div className="w-2 h-2 rounded-full bg-saffron-600 dark:bg-saffron-400 animate-pulse" />
@@ -45,14 +45,14 @@ export default function LandingPage() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.12]">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.12] break-words">
                   <span className="text-amber-600 dark:text-saffron-300 font-extrabold">{t.appName}</span>
                   <br />
                   <span className="text-foreground">{t.tagline}</span>
                 </h1>
 
                 {/* Subtitle - High Contrast Slate 700 / Slate 200 */}
-                <p className="mt-6 text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                <p className="mt-6 text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal break-words">
                   {t.landing.subtitle}
                 </p>
 
@@ -82,7 +82,7 @@ export default function LandingPage() {
               </div>
 
               {/* Photo Column */}
-              <div className="relative mt-8 lg:mt-0">
+              <div className="relative mt-8 lg:mt-0 min-w-0">
                 <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-full min-h-[300px] lg:min-h-[460px] bg-surface-elevated">
                   {quality !== 'minimal' ? (
                     <>
@@ -109,7 +109,7 @@ export default function LandingPage() {
 
                 {/* Floating Stat Card Over Hero Photo */}
                 <div
-                  className="absolute -bottom-6 -left-6 sm:bottom-6 sm:left-6 bg-surface-elevated/95 backdrop-blur-md border border-border rounded-2xl px-5 py-4 shadow-xl animate-slide-up z-10"
+                  className="absolute -bottom-4 left-3 sm:bottom-6 sm:left-6 bg-surface-elevated/95 backdrop-blur-md border border-border rounded-2xl px-5 py-4 shadow-xl animate-slide-up z-10"
                   style={{ animationDelay: '400ms' }}
                 >
                   <div className="text-2xl font-black text-primary">22</div>
@@ -247,7 +247,7 @@ export default function LandingPage() {
         )}
 
         {/* Authentic Grassroots Enterprise Showcase */}
-        <section className="py-16 sm:py-20 border-b border-border-subtle bg-surface/30">
+        <section className="relative py-16 sm:py-20 border-b border-border-subtle bg-surface/30 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-10 sm:mb-14">
               <span className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -294,7 +294,7 @@ export default function LandingPage() {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="group relative overflow-hidden rounded-2xl bg-surface-elevated border border-border shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                  className="group relative overflow-hidden rounded-2xl bg-surface-elevated border border-border shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 flex flex-col min-w-0"
                 >
                   <div className="relative aspect-4/3 w-full overflow-hidden bg-surface flex items-center justify-center">
                     {quality !== 'minimal' ? (
@@ -312,12 +312,12 @@ export default function LandingPage() {
                       </div>
                     )}
                   </div>
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-4 flex-1 flex flex-col justify-between min-w-0">
                     <div>
-                      <h3 className="font-bold text-base text-foreground tracking-tight group-hover:text-primary transition-colors">
+                      <h3 className="font-bold text-base text-foreground tracking-tight group-hover:text-primary transition-colors break-words">
                         {item.title}
                       </h3>
-                      <p className="text-xs text-muted mt-1 leading-relaxed">
+                      <p className="text-xs text-muted mt-1 leading-relaxed break-words">
                         {item.subtitle}
                       </p>
                     </div>
@@ -329,7 +329,7 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section ref={ctaRef} className="py-16 sm:py-24 overflow-hidden">
+        <section ref={ctaRef} className="relative py-16 sm:py-24 overflow-hidden">
           <div
             className={`max-w-3xl mx-auto px-4 sm:px-6 text-center transition-all duration-700 ${
               ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'

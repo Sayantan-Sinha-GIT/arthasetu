@@ -68,7 +68,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1.5">
+          <div className="hidden lg:flex items-center gap-1.5">
             {navLinks.map((link) => {
               const active = isActive(link.href);
               return (
@@ -117,7 +117,7 @@ export default function Navbar() {
 
             {/* User Menu (desktop) */}
             {user ? (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 {isAdmin ? (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-border text-xs">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -146,7 +146,7 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <Link
                   href="/login"
                   className="px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-colors"
@@ -165,7 +165,7 @@ export default function Navbar() {
             {/* Mobile Hamburger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
+              className="lg:hidden p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -184,7 +184,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border/50 bg-surface-elevated animate-fade-in">
+        <div className="lg:hidden border-t border-border/50 bg-surface-elevated animate-fade-in">
           <div className="py-3 px-2 space-y-1">
             {navLinks.map((link) => {
               const active = isActive(link.href);

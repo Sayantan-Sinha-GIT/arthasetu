@@ -150,6 +150,7 @@ async function runPhase13Verification() {
       email: testUserEmail,
       password: testUserPassword,
       displayName: 'Data Saver Tester',
+      emailVerified: true,
     });
     await adminDb.collection('users').doc(testUser.uid).set({
       uid: testUser.uid,

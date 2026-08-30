@@ -155,13 +155,13 @@ export default function SchemeDeadlinesCard() {
                 }
               `}
             >
-              <div className="space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
+              <div className="space-y-2 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                  <div className="min-w-0">
                     <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">
                       {item.agency}
                     </span>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
+                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug break-words">
                       {item.schemeName}
                     </h4>
                   </div>
@@ -169,7 +169,7 @@ export default function SchemeDeadlinesCard() {
                   {/* Softened Status Badge */}
                   <span
                     className={`
-                      shrink-0 text-[10px] px-2 py-0.5 rounded-full font-bold
+                      self-start sm:shrink-0 text-[10px] px-2 py-0.5 rounded-full font-bold
                       ${item.status === 'closing_soon'
                         ? 'bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30'
                         : item.status === 'open'
