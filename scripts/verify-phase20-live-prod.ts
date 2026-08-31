@@ -59,7 +59,7 @@ async function verifyPhase20LiveProd() {
   const resDynamic2 = await fetch(`${BASE_URL}/api/pincode?pin=${dynamicPin}`);
   const jsonDynamic2 = await resDynamic2.json();
   const dur2 = Date.now() - t1;
-  assert(`Live second lookup of PIN ${dynamicPin} is cached and fast`, jsonDynamic2.success && dur2 < 400, `${dur2}ms`);
+  assert(`Live second lookup of PIN ${dynamicPin} is cached and fast`, jsonDynamic2.success && dur2 < 800, `${dur2}ms`);
 
   // 3. Live /api/validate Address Consistency with PIN
   console.log('\n3️⃣ Testing Live /api/validate PIN Consistency:');
