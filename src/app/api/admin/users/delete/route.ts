@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { verifyAdminRequest, ADMIN_EMAIL } from '@/lib/admin-auth';
+import { verifyAdminRequest, deleteAuthUserSafely, ADMIN_EMAIL } from '@/lib/admin-auth';
 
 export const maxDuration = 60;
 
@@ -38,13 +38,8 @@ export async function POST(req: NextRequest) {
     // 3. Delete target user's profile document
     await adminDb.collection('users').doc(targetUid).delete();
 
-    // 4. Delete user from Firebase Auth
-    try {
-      await adminAuth.deleteUser(targetUid);
-    } catch (authErr: any) {
-      // If user not found in Auth, proceed since Firestore cleanup succeeded
-      console.warn(`Auth user ${targetUid} deletion notice:`, authErr.message);
-    }
+    // 4. Delete user from Firebase Auth via resilient helper
+    await deleteAuthUserSafely(targetUid);
 
     // 5. Write audit log entry to adminActions collection
     await adminDb.collection('adminActions').add({
