@@ -32,10 +32,10 @@ async function testAdminDeleteLive() {
   console.log('═══════════════════════════════════════════════════════════════\n');
 
   const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').trim().toLowerCase();
-  const adminPassword = process.env.ADMIN_TEST_PASSWORD || '';
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
 
   if (!adminEmail || !adminPassword) {
-    console.error('❌ Error: Missing NEXT_PUBLIC_ADMIN_EMAIL or ADMIN_TEST_PASSWORD in .env.local');
+    console.error('❌ Error: Missing NEXT_PUBLIC_ADMIN_EMAIL or ADMIN_PASSWORD in .env.local');
     process.exit(1);
   }
 

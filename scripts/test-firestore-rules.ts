@@ -113,15 +113,12 @@ async function testSecurityRules() {
   // 3. TEST NEW ADMIN EMAIL (sayantansinha2005@gmail.com) -> MUST BE ALLOWED TO WRITE
   console.log(`\n3️⃣ Testing New Admin Email (${adminEmail}) -> MUST BE ALLOWED...`);
   const newAdminEmail = adminEmail!;
-  try {
-    await adminAuth.createUser({ email: newAdminEmail, password: testPassword });
-  } catch (err: any) {
-    if (err.code === 'auth/email-already-exists') {
-      await adminAuth.updateUser((await adminAuth.getUserByEmail(newAdminEmail)).uid, { password: testPassword });
-    }
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
+  if (!adminPassword) {
+    throw new Error('ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) is required in .env.local');
   }
 
-  await signInWithEmailAndPassword(auth, newAdminEmail, testPassword);
+  await signInWithEmailAndPassword(auth, newAdminEmail, adminPassword);
   console.log(`   • Logged in as new admin: ${newAdminEmail}`);
 
   let newAdminSucceeded = false;

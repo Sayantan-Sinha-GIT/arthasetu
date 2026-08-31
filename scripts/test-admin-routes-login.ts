@@ -45,19 +45,24 @@ async function runTargetedTests() {
 
   const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim().toLowerCase();
   const adminRouteKey = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
-  const adminPassword = 'AdminSecurePassword123!';
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
 
-  // Create fresh Admin Auth Account for testing
+  if (!adminPassword) {
+    throw new Error('ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) is required in .env.local');
+  }
+
+  // Ensure Admin Auth Account exists and has claims
   try {
-    try {
-      const existing = await adminAuth.getUserByEmail(adminEmail);
-      if (existing) await adminAuth.deleteUser(existing.uid);
-    } catch {}
-
-    await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
-    await signOut(auth);
+    const adminUser = await adminAuth.getUserByEmail(adminEmail);
+    await adminAuth.setCustomUserClaims(adminUser.uid, { admin: true });
   } catch (err: any) {
-    console.error('Setup admin account error:', err);
+    if (err.code === 'auth/user-not-found') {
+      await adminAuth.createUser({
+        email: adminEmail,
+        password: adminPassword,
+        emailVerified: true,
+      });
+    }
   }
 
   // ───────────────────────────────────────────────────────────────────

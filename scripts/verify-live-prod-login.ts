@@ -4,11 +4,21 @@ import { chromium } from 'playwright';
 import { adminAuth, adminDb } from '../src/lib/firebase-admin';
 
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 async function verifyLiveLogin() {
   const timestamp = Date.now();
   const testEmail = `prod_test_${timestamp}@example.com`;
   const testPassword = 'Password123!@#';
+
+  const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim().toLowerCase();
+  const adminRouteKey = (process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632').trim();
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
+
+  if (!adminPassword) {
+    console.error('❌ Error: ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) is not set in .env.local');
+    process.exit(1);
+  }
 
   // 1. Create a verified regular user
   const user = await adminAuth.createUser({
@@ -40,24 +50,21 @@ async function verifyLiveLogin() {
 
   try {
     console.log('👤 1. Testing Regular User Login on Live Production (/login)...');
-    await page.goto('https://arthasetu-sigma.vercel.app/login');
+    await page.goto('https://arthasetu-sigma.vercel.app/login', { waitUntil: 'networkidle' });
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[type="password"]', testPassword);
     await page.click('button[type="submit"]');
 
-    await page.waitForURL((u) => u.pathname === '/dashboard', { timeout: 15000 });
+    await page.waitForURL((u) => u.pathname === '/dashboard', { timeout: 20000 });
     console.log(`   ✅ Regular user login confirmed! Reached: ${page.url()}`);
 
-    console.log('🛡️ 2. Testing Secure Admin Portal Login on Live Production (/4632/admin/login)...');
-    const adminEmail = process.env.ADMIN_EMAIL || 'sayantansinha2005@gmail.com';
-    const adminPassword = process.env.ADMIN_SEED_PASSWORD || 'ArthaSetu@Admin2026!#';
-
-    await page.goto('https://arthasetu-sigma.vercel.app/4632/admin/login');
+    console.log(`🛡️ 2. Testing Secure Admin Portal Login on Live Production (/${adminRouteKey}/admin/login)...`);
+    await page.goto(`https://arthasetu-sigma.vercel.app/${adminRouteKey}/admin/login`, { waitUntil: 'networkidle' });
     await page.fill('input[type="email"]', adminEmail);
     await page.fill('input[type="password"]', adminPassword);
     await page.click('button[type="submit"]');
 
-    await page.waitForURL((u) => u.pathname === '/4632/admin', { timeout: 15000 });
+    await page.waitForURL((u) => u.pathname === `/${adminRouteKey}/admin`, { timeout: 20000 });
     console.log(`   ✅ Admin portal login confirmed! Reached: ${page.url()}`);
 
     console.log('🎉 LIVE PRODUCTION AUTHENTICATION 100% VERIFIED!');
@@ -68,4 +75,7 @@ async function verifyLiveLogin() {
   }
 }
 
-verifyLiveLogin();
+verifyLiveLogin().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

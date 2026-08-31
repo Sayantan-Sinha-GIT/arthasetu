@@ -9,7 +9,7 @@ dotenv.config({ path: resolve(process.cwd(), '.env') });
 const VIEWPORTS = [320, 360, 375, 390, 412, 428, 768, 1024, 1440];
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
 const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').toLowerCase().trim();
-const ADMIN_PASSWORD = process.env.ADMIN_TEST_PASSWORD || 'ArthaSetu@Admin2026!#';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '';
 
 interface RouteResult {
   route: string;

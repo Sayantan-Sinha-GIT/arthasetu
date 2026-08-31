@@ -2,21 +2,24 @@ import * as dotenv from 'dotenv';
 import { resolve } from 'path';
 
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 import { chromium } from 'playwright';
-import { adminAuth, adminDb } from '../src/lib/firebase-admin';
+import { adminAuth } from '../src/lib/firebase-admin';
 
 async function verifyAdminAuth() {
+  const targetUrl = (process.argv[2] || process.env.TEST_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
   console.log('============================================================');
-  console.log('🔒 VERIFYING TASK 1: ADMIN AUTHENTICATION END-TO-END');
+  console.log('🔒 VERIFYING ADMIN AUTHENTICATION END-TO-END');
+  console.log(`🌐 Target: ${targetUrl}`);
   console.log('============================================================\n');
 
-  const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim();
-  const adminRouteKey = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
-  const adminPassword = process.env.ADMIN_TEST_PASSWORD || '';
+  const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim().toLowerCase();
+  const adminRouteKey = (process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632').trim();
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
 
   if (!adminPassword) {
-    console.error('❌ ADMIN_TEST_PASSWORD not found in .env.local');
+    console.error('❌ ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) not found in .env.local');
     process.exit(1);
   }
 
@@ -31,9 +34,6 @@ async function verifyAdminAuth() {
   }
 
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-  const page = await context.newPage();
-
   let passed = 0;
   let total = 0;
 
@@ -53,18 +53,14 @@ async function verifyAdminAuth() {
     const context1 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page1 = await context1.newPage();
     page1.on('console', (msg) => console.log(`   [Admin Login Console] ${msg.type()}: ${msg.text()}`));
-    await page1.goto(`http://localhost:3000/${adminRouteKey}/admin/login`, { waitUntil: 'domcontentloaded' });
+    await page1.goto(`${targetUrl}/${adminRouteKey}/admin/login`, { waitUntil: 'networkidle' });
     await page1.waitForSelector('input[type="email"]', { timeout: 10000 });
 
     await page1.fill('input[type="email"]', adminEmail);
     await page1.fill('input[type="password"]', adminPassword);
     await page1.click('button[type="submit"]');
 
-    await page1.waitForFunction(
-      (expectedPath) => window.location.pathname === expectedPath,
-      `/${adminRouteKey}/admin`,
-      { timeout: 20000 }
-    );
+    await page1.waitForURL((u) => u.pathname === `/${adminRouteKey}/admin`, { timeout: 20000 });
     assert('Secure admin login reaches Admin Dashboard', page1.url().includes(`/${adminRouteKey}/admin`));
     await context1.close();
 
@@ -73,7 +69,7 @@ async function verifyAdminAuth() {
     const context2 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page2 = await context2.newPage();
     page2.on('console', (msg) => console.log(`   [Public Login Console] ${msg.type()}: ${msg.text()}`));
-    await page2.goto('http://localhost:3000/login', { waitUntil: 'domcontentloaded' });
+    await page2.goto(`${targetUrl}/login`, { waitUntil: 'networkidle' });
     await page2.waitForSelector('input[type="email"]', { timeout: 10000 });
 
     await page2.fill('input[type="email"]', adminEmail);
@@ -101,18 +97,14 @@ async function verifyAdminAuth() {
     const context3 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page3 = await context3.newPage();
     page3.on('console', (msg) => console.log(`   [Unverified User Console] ${msg.type()}: ${msg.text()}`));
-    await page3.goto('http://localhost:3000/login', { waitUntil: 'domcontentloaded' });
+    await page3.goto(`${targetUrl}/login`, { waitUntil: 'networkidle' });
     await page3.waitForSelector('input[type="email"]', { timeout: 10000 });
     await page3.fill('input[type="email"]', testUnverifiedEmail);
     await page3.fill('input[type="password"]', testPassword);
     await page3.click('button[type="submit"]');
 
     // Should be redirected to /verify-email
-    await page3.waitForFunction(
-      () => window.location.pathname.includes('/verify-email'),
-      null,
-      { timeout: 20000 }
-    );
+    await page3.waitForURL((u) => u.pathname.includes('/verify-email'), { timeout: 20000 });
     assert('Unverified normal user is redirected to /verify-email gate', page3.url().includes('/verify-email'));
     await context3.close();
 

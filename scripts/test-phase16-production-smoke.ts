@@ -8,7 +8,7 @@ import { adminAuth, adminDb } from '../src/lib/firebase-admin';
 
 const PROD_URL = 'https://arthasetu-sigma.vercel.app';
 const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').toLowerCase().trim();
-const ADMIN_PASSWORD = 'AdminSecurePassword2026!';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '';
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
 
 async function runProductionSmokeSuite() {
@@ -260,7 +260,6 @@ async function runProductionSmokeSuite() {
     // -------------------------------------------------------------
     console.log('\n🔟 TEST 10: Logging in as Admin to secret admin route...');
     const adminUser = await adminAuth.getUserByEmail(ADMIN_EMAIL);
-    await adminAuth.updateUser(adminUser.uid, { password: ADMIN_PASSWORD });
 
     await page.goto(`${PROD_URL}/${ADMIN_ROUTE_KEY}/admin/login`, { waitUntil: 'networkidle' });
     await page.waitForSelector('input[type="email"], input[type="password"]', { timeout: 10000 });

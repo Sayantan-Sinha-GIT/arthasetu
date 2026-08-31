@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import { resolve } from 'path';
 
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 import { initializeApp, getApps } from 'firebase/app';
 import {
@@ -23,16 +24,18 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 const auth = getAuth(app);
 
 async function verify() {
+  const targetUrl = process.argv[2] || process.env.TEST_BASE_URL || 'http://localhost:3000';
   console.log('═══════════════════════════════════════════════════════════════');
-  console.log('🔒 VERIFYING PHASE A: ADMIN AUTH & ROUTE DUAL-BEHAVIOR');
+  console.log('🔒 VERIFYING ADMIN AUTH & ROUTE DUAL-BEHAVIOR');
+  console.log(`🌐 Target: ${targetUrl}`);
   console.log('═══════════════════════════════════════════════════════════════\n');
 
-  const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim();
-  const adminRouteKey = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
-  const adminPassword = process.env.ADMIN_TEST_PASSWORD || '';
+  const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim().toLowerCase();
+  const adminRouteKey = (process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632').trim();
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
 
   if (!adminPassword) {
-    console.error('❌ Error: ADMIN_TEST_PASSWORD is not set in .env.local');
+    console.error('❌ Error: ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) is not set in .env.local');
     process.exit(1);
   }
 
@@ -50,7 +53,7 @@ async function verify() {
   }
 
   // Check 1: Route endpoints
-  const baseUrl = 'http://localhost:3000';
+  const baseUrl = targetUrl.replace(/\/$/, '');
   async function checkUrl(path: string): Promise<number> {
     try {
       const res = await fetch(`${baseUrl}${path}`);
@@ -67,12 +70,12 @@ async function verify() {
   assert('Dedicated Admin Dashboard page HTTP 200', dashStatus === 200, `/${adminRouteKey}/admin -> ${dashStatus}`);
   assert('Invalid Admin Key Route HTTP 404', badKeyStatus === 404, `/9999/admin -> ${badKeyStatus}`);
 
-  // Check 2: Dedicated login authentication with new password
+  // Check 2: Dedicated login authentication with synchronized password
   console.log('\n▶ Testing Dedicated Admin Login Flow:');
   try {
     const cred = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
     const loggedInEmail = cred.user.email?.toLowerCase().trim();
-    assert('Firebase Auth signInWithEmailAndPassword succeeds with new password', loggedInEmail === adminEmail.toLowerCase(), `Logged in as ${loggedInEmail}`);
+    assert('Firebase Auth signInWithEmailAndPassword succeeds with admin password', loggedInEmail === adminEmail, `Logged in as ${loggedInEmail}`);
     assert('Session active after dedicated login', auth.currentUser !== null);
     await signOut(auth);
     assert('Session clears on signOut', auth.currentUser === null);
@@ -84,7 +87,7 @@ async function verify() {
   console.log('\n▶ Testing Public /login Behavior:');
   try {
     const cred = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-    const isEnteredEmailAdmin = cred.user.email?.toLowerCase().trim() === adminEmail.toLowerCase();
+    const isEnteredEmailAdmin = cred.user.email?.toLowerCase().trim() === adminEmail;
     
     let publicSessionActive = true;
     let errorMessage = '';
@@ -102,7 +105,7 @@ async function verify() {
   }
 
   console.log('\n═══════════════════════════════════════════════════════════════');
-  console.log(`🏁 PHASE A VERIFICATION RESULT: ${passed}/${total} checks passed`);
+  console.log(`🏁 VERIFICATION RESULT: ${passed}/${total} checks passed`);
   console.log('═══════════════════════════════════════════════════════════════\n');
 
   if (passed !== total) process.exit(1);

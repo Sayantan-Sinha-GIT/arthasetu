@@ -76,7 +76,11 @@ async function runTargetedTestSuite() {
 
   const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim().toLowerCase();
   const adminRouteKey = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
-  const testPassword = 'AdminSecurePassword123!';
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
+
+  if (!adminPassword) {
+    throw new Error('ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) is required in .env.local');
+  }
 
   // ───────────────────────────────────────────────────────────────────
   // TEST 1: CONTRAST & WCAG AA RATIO DIAGNOSIS
@@ -111,21 +115,12 @@ async function runTargetedTestSuite() {
   assert('Dark Mode Signup Subtitle Contrast (WCAG AA >= 4.5:1)', darkCardMutedRatio >= 4.5, `${darkCardMutedRatio}:1 on #152A52`);
 
   // ───────────────────────────────────────────────────────────────────
-  // TEST 2: ADMIN SIGNUP END-TO-END — NO ONBOARDING & NO PROFILE DOC
+  // TEST 2: ADMIN SIGNUP / USER PROFILE INTEGRITY — NO ONBOARDING & NO USER DOC
   // ───────────────────────────────────────────────────────────────────
-  console.log('\n▶ 2. Admin Signup End-to-End Flow:');
+  console.log('\n▶ 2. Admin User Profile Integrity Flow:');
   try {
-    // Delete any existing auth account with admin email to test fresh signup
-    try {
-      const existingUser = await adminAuth.getUserByEmail(adminEmail);
-      if (existingUser) {
-        await adminAuth.deleteUser(existingUser.uid);
-      }
-    } catch {}
-
-    // Sign up fresh with admin email
-    const cred = await createUserWithEmailAndPassword(auth, adminEmail, testPassword);
-    const adminUid = cred.user.uid;
+    const adminUserRecord = await adminAuth.getUserByEmail(adminEmail);
+    const adminUid = adminUserRecord.uid;
 
     // Simulate signup handler logic:
     // If email === adminEmail -> do NOT write to 'users' collection, route straight to /${adminRouteKey}/admin
@@ -133,12 +128,10 @@ async function runTargetedTestSuite() {
     assert('Admin User Doc Not Created in Firestore', !userDocSnap.exists, `UID: ${adminUid}`);
 
     // Verify admin check in AuthContext
-    const isAdmin = cred.user.email?.toLowerCase().trim() === adminEmail;
+    const isAdmin = adminUserRecord.email?.toLowerCase().trim() === adminEmail;
     assert('Admin Recognition in AuthContext', isAdmin, `Email: ${adminEmail}`);
-
-    await signOut(auth);
   } catch (err: any) {
-    assert('Admin Signup Flow', false, err.message);
+    assert('Admin User Profile Integrity', false, err.message);
   }
 
   // ───────────────────────────────────────────────────────────────────
@@ -146,7 +139,7 @@ async function runTargetedTestSuite() {
   // ───────────────────────────────────────────────────────────────────
   console.log('\n▶ 3. Public /login Page with Admin Email Redirect:');
   try {
-    const cred = await signInWithEmailAndPassword(auth, adminEmail, testPassword);
+    const cred = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
     const loggedInEmail = cred.user.email?.toLowerCase().trim();
     const isAdminEmail = loggedInEmail === adminEmail;
 
@@ -167,7 +160,7 @@ async function runTargetedTestSuite() {
   // ───────────────────────────────────────────────────────────────────
   console.log('\n▶ 4. Dedicated Hidden Admin Login Form:');
   try {
-    const cred = await signInWithEmailAndPassword(auth, adminEmail, testPassword);
+    const cred = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
     const loggedInEmail = cred.user.email?.toLowerCase().trim();
     assert('Admin Login Form Accepts Admin Credentials', loggedInEmail === adminEmail, `Email: ${loggedInEmail}`);
 

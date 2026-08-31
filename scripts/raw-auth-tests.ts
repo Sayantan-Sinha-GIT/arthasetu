@@ -26,10 +26,10 @@ const auth = getAuth(app);
 
 const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim().toLowerCase();
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
-const PASSWORD = process.env.ADMIN_TEST_PASSWORD || '';
+const PASSWORD = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
 
 if (!PASSWORD) {
-  console.error('❌ Error: ADMIN_TEST_PASSWORD is not set in .env.local');
+  console.error('❌ Error: ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) is not set in .env.local');
   process.exit(1);
 }
 

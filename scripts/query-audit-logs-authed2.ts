@@ -22,7 +22,7 @@ const db = getFirestore(app);
 
 async function main() {
   const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').trim();
-  const adminPassword = (process.env.ADMIN_TEST_PASSWORD || '').trim();
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
 
   console.log(`Signing in as admin: ${adminEmail}...`);
   const userCred = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);

@@ -70,15 +70,12 @@ async function testAdminHardening() {
 
   // 3. TEST TRUE ADMIN AUTHENTICATION
   console.log(`\n2️⃣ Testing True Admin Sign-In (${adminEmail})...`);
-  try {
-    await adminAuth.createUser({ email: adminEmail, password: testPassword });
-  } catch (err: any) {
-    if (err.code === 'auth/email-already-exists') {
-      await adminAuth.updateUser((await adminAuth.getUserByEmail(adminEmail)).uid, { password: testPassword });
-    }
+  const adminPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '').trim();
+  if (!adminPassword) {
+    throw new Error('ADMIN_PASSWORD (or ADMIN_TEST_PASSWORD) is required in .env.local');
   }
 
-  await signInWithEmailAndPassword(clientAuth, adminEmail, testPassword);
+  await signInWithEmailAndPassword(clientAuth, adminEmail, adminPassword);
   console.log(`   • Authenticated as admin: ${clientAuth.currentUser?.email}`);
 
   const isTrueAdmin = isAdminEmail(clientAuth.currentUser?.email);
