@@ -18,13 +18,10 @@ interface AdminGuardProps {
  * Non-matching users are kicked to the secured admin login route.
  */
 export default function AdminGuard({ children }: AdminGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
 
-  const isAuthorizedAdmin =
-    !!user &&
-    !!ADMIN_EMAIL &&
-    user.email?.toLowerCase().trim() === ADMIN_EMAIL;
+  const isAuthorizedAdmin = !!user && isAdmin;
 
   useEffect(() => {
     if (!loading && !isAuthorizedAdmin) {

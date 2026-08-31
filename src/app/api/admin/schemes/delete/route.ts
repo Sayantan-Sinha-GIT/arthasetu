@@ -1,36 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { verifyAdminRequest, ADMIN_EMAIL } from '@/lib/admin-auth';
 
 export const maxDuration = 60;
 
-const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').toLowerCase().trim();
-
-async function verifyAdmin(req: NextRequest): Promise<{ isAdmin: boolean; email?: string }> {
-  try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return { isAdmin: false };
-    }
-    const token = authHeader.split('Bearer ')[1];
-    const decoded = await adminAuth.verifyIdToken(token);
-    const email = decoded.email?.toLowerCase().trim();
-    if (email && email === ADMIN_EMAIL) {
-      return { isAdmin: true, email };
-    }
-    return { isAdmin: false, email };
-  } catch (err) {
-    console.error('Admin token verification failed:', err);
-    return { isAdmin: false };
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const { isAdmin, email: adminEmail } = await verifyAdmin(req);
+    const { isAdmin, email: adminEmail, error: authError } = await verifyAdminRequest(req);
     if (!isAdmin) {
       return NextResponse.json(
-        { success: false, error: 'Forbidden: Valid admin credentials required.' },
+        { success: false, error: authError || 'Forbidden: Valid admin credentials required.' },
         { status: 403 }
       );
     }

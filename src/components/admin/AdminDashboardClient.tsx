@@ -109,8 +109,9 @@ export default function AdminDashboardClient() {
     setDeleteSuccessMsg('');
 
     try {
-      const idToken = await user.getIdToken();
-      const res = await fetch('/api/admin/users/delete', {
+      // Force refresh the token before mutating admin API call
+      let idToken = await user.getIdToken(true);
+      let res = await fetch('/api/admin/users/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,6 +123,22 @@ export default function AdminDashboardClient() {
         }),
       });
 
+      // If token had a transient issue, attempt one retry with forced refresh
+      if (res.status === 401 || res.status === 403) {
+        idToken = await user.getIdToken(true);
+        res = await fetch('/api/admin/users/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            targetUid: targetUserToDelete.uid,
+            targetEmail: targetUserToDelete.email,
+          }),
+        });
+      }
+
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to delete user');
@@ -130,7 +147,7 @@ export default function AdminDashboardClient() {
       setDeleteSuccessMsg(`User ${targetUserToDelete.email} and all data were successfully erased.`);
       setTargetUserToDelete(null);
       await loadData();
-      setTimeout(() => setDeleteSuccessMsg(''), 5000);
+      setTimeout(() => setDeleteSuccessMsg(''), 6000);
     } catch (err: any) {
       console.error('Admin user deletion failed:', err);
       setDeleteErrorMsg(err.message || 'Deletion failed.');
@@ -171,17 +188,35 @@ export default function AdminDashboardClient() {
           </div>
         </div>
 
-        {/* Global Alerts */}
+        {/* Dismissible Feedback Alerts */}
         {deleteSuccessMsg && (
-          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
-            <span>✅</span>
-            <span className="font-bold">{deleteSuccessMsg}</span>
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between gap-2 shadow-sm animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span>✅</span>
+              <span className="font-bold">{deleteSuccessMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDeleteSuccessMsg('')}
+              className="text-emerald-700 dark:text-emerald-300 hover:opacity-75 font-bold px-2 py-0.5"
+            >
+              ✕
+            </button>
           </div>
         )}
-        {deleteErrorMsg && (
-          <div className="p-4 rounded-2xl bg-danger-light border border-danger/30 text-danger text-xs flex items-center gap-2">
-            <span>⚠️</span>
-            <span className="font-bold">{deleteErrorMsg}</span>
+        {deleteErrorMsg && !targetUserToDelete && (
+          <div className="p-4 rounded-2xl bg-danger-light border border-danger/30 text-danger text-xs flex items-center justify-between gap-2 shadow-sm animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span>⚠️</span>
+              <span className="font-bold">{deleteErrorMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDeleteErrorMsg('')}
+              className="text-danger hover:opacity-75 font-bold px-2 py-0.5"
+            >
+              ✕
+            </button>
           </div>
         )}
 
@@ -459,6 +494,13 @@ export default function AdminDashboardClient() {
                   This server-side action will permanently wipe their Firestore documents across all collections, delete their Firebase Auth login account, and record an audit log in <code>adminActions</code>.
                 </p>
               </div>
+
+              {deleteErrorMsg && (
+                <div className="p-3 rounded-xl bg-danger-light border border-danger/30 text-danger text-xs flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span className="font-bold">{deleteErrorMsg}</span>
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <Button

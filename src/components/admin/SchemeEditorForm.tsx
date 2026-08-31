@@ -91,19 +91,41 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
     setAiLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/admin/schemes/draft', {
+      if (!user) {
+        throw new Error('Admin session expired. Please log in again.');
+      }
+      let token = await user.getIdToken(true);
+      let res = await fetch('/api/admin/schemes/draft', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           circularText,
           currentScheme: isNew ? null : formData,
           sourceUrl,
-          adminEmail: user?.email || '',
         }),
       });
 
+      if (res.status === 401 || res.status === 403) {
+        token = await user.getIdToken(true);
+        res = await fetch('/api/admin/schemes/draft', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            circularText,
+            currentScheme: isNew ? null : formData,
+            sourceUrl,
+          }),
+        });
+      }
+
       const json = await res.json();
-      if (!json.success) {
+      if (!res.ok || !json.success) {
         throw new Error(json.error || 'Failed to draft scheme update');
       }
 

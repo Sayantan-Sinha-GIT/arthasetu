@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(firebaseUser);
       if (firebaseUser) {
         try {
-          const tokenResult = await firebaseUser.getIdTokenResult();
+          const tokenResult = await firebaseUser.getIdTokenResult(true);
           setHasAdminClaim(!!tokenResult.claims.admin);
         } catch {
           setHasAdminClaim(false);

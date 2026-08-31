@@ -247,6 +247,13 @@ export default function AdminSchemesDirectoryClient() {
                 </p>
               </div>
 
+              {deleteErrorMsg && (
+                <div className="p-3 rounded-xl bg-danger-light border border-danger/30 text-danger text-xs flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span className="font-bold">{deleteErrorMsg}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-end gap-3 pt-2">
                 <Button
                   type="button"
