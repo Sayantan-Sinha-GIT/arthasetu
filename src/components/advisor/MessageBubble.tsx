@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { ChatMessage } from '@/types';
 
 interface MessageBubbleProps {
@@ -14,18 +15,59 @@ interface MessageBubbleProps {
 export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = false }: MessageBubbleProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  
+  // Translation state
+  const [showTranslateOptions, setShowTranslateOptions] = useState(false);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [activeTranslationCode, setActiveTranslationCode] = useState<string | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const isUser = message.role === 'user';
 
-  const handleCopy = async () => {
+  const handleCopy = async (content: string) => {
     try {
-      await navigator.clipboard.writeText(message.content);
+      await navigator.clipboard.writeText(content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.warn('Copy failed:', err);
     }
   };
+
+  const handleTranslate = async (langCode: string) => {
+    setShowTranslateOptions(false);
+    if (activeTranslationCode === langCode) {
+      setActiveTranslationCode(null);
+      return;
+    }
+    if (translations[langCode]) {
+      setActiveTranslationCode(langCode);
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const res = await fetch('/api/translate-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: message.content,
+          targetLangCode: langCode,
+        }),
+      });
+      if (!res.ok) throw new Error('Translation failed');
+      const data = await res.json();
+      setTranslations((prev) => ({ ...prev, [langCode]: data.translatedText }));
+      setActiveTranslationCode(langCode);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to translate message.');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const displayContent = activeTranslationCode ? translations[activeTranslationCode] : message.content;
 
   // Simple Markdown renderer for headings, lists, bold, italics, and lines
   const renderFormattedContent = (content: string) => {
@@ -138,7 +180,7 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
 
         <div
           className={`
-            p-4 sm:p-5 rounded-3xl text-sm leading-relaxed shadow-sm transition-all
+            relative p-4 sm:p-5 rounded-3xl text-sm leading-relaxed shadow-sm transition-all
             ${isUser
               ? 'bg-gradient-to-br from-primary to-saffron-600 text-primary-foreground rounded-br-none'
               : 'bg-surface-elevated border border-border text-foreground rounded-bl-none'
@@ -153,19 +195,60 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
             </div>
           )}
 
+          {isTranslating && (
+             <div className="flex items-center gap-2 mb-2">
+               <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
+               <span className="text-xs text-muted-foreground font-medium">Translating...</span>
+             </div>
+          )}
+
           {/* Formatted body */}
           <div className="space-y-1">
-            {renderFormattedContent(message.content)}
+            {displayContent ? renderFormattedContent(displayContent) : null}
           </div>
 
           {/* Action buttons (only for AI assistant message) */}
           {!isUser && message.content && (
-            <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-border-subtle text-xs text-muted">
+            <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-border-subtle text-xs text-muted relative">
+              {/* Translate Dropdown Button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowTranslateOptions(!showTranslateOptions)}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors ${activeTranslationCode ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-surface text-muted hover:text-foreground'}`}
+                  title="Translate this message"
+                >
+                  <span>🌐</span>
+                  <span>{activeTranslationCode ? SUPPORTED_LANGUAGES.find(l => l.code === activeTranslationCode)?.name : 'Translate ▾'}</span>
+                </button>
+                {showTranslateOptions && (
+                  <div className="absolute top-full left-0 mt-1 w-48 max-h-60 overflow-y-auto bg-surface-elevated border border-border rounded-xl shadow-xl z-10 flex flex-col p-1">
+                     <button
+                        type="button"
+                        onClick={() => { setShowTranslateOptions(false); setActiveTranslationCode(null); }}
+                        className="text-left px-3 py-2 text-xs hover:bg-surface rounded-lg w-full"
+                      >
+                        Original
+                      </button>
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => handleTranslate(lang.code)}
+                        className="text-left px-3 py-2 text-xs hover:bg-surface rounded-lg w-full flex items-center justify-between"
+                      >
+                        <span>{lang.nativeName} ({lang.name})</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Read Aloud / Speak button */}
               {onSpeak && (
                 <button
                   type="button"
-                  onClick={() => onSpeak(message.content)}
+                  onClick={() => onSpeak(displayContent)}
                   className={`
                     inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors
                     ${isSpeaking
@@ -194,7 +277,7 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
               {/* Copy button */}
               <button
                 type="button"
-                onClick={handleCopy}
+                onClick={() => handleCopy(displayContent)}
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-surface text-muted hover:text-foreground transition-colors"
                 title="Copy to clipboard"
               >
@@ -217,7 +300,7 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
               {onSave && (
                 <button
                   type="button"
-                  onClick={() => onSave(message.content)}
+                  onClick={() => onSave(displayContent)}
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-primary/10 text-primary font-medium transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -238,4 +321,3 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
     </div>
   );
 }
-

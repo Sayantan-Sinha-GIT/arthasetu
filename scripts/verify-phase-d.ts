@@ -68,7 +68,7 @@ async function verifyPhaseD() {
       actionableNextSteps: ['Submit Udyam registration', 'Apply for PMEGP 35% capital subsidy'],
     };
 
-    const pdfDoc = generateBankReadyPlanPdf({
+    const pdfDoc = await generateBankReadyPlanPdf({
       inputs: mockInputs,
       calculated: mockCalculated,
       narrative: mockNarrative,

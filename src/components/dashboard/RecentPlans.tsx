@@ -91,7 +91,7 @@ export default function RecentPlans({ userId }: RecentPlansProps) {
                     {p.title || p.businessType || 'Financial Plan'}
                   </h4>
                   <p className="text-xs text-muted mt-0.5">
-                    Funding Gap: ₹{(p.calculatedValues?.fundingGap || 0).toLocaleString('en-IN')} • Profit: ₹{(p.calculatedValues?.monthlyNetProfit || 0).toLocaleString('en-IN')}/mo
+                    Funding Gap: {typeof p.calculatedValues?.fundingGap === 'number' ? `₹${p.calculatedValues.fundingGap.toLocaleString('en-IN')}` : 'N/A'} • Profit: {typeof p.calculatedValues?.monthlyNetProfit === 'number' ? `₹${p.calculatedValues.monthlyNetProfit.toLocaleString('en-IN')}/mo` : 'N/A'}
                   </p>
                 </div>
                 <span className="text-xs text-muted group-hover:text-primary transition-colors shrink-0">

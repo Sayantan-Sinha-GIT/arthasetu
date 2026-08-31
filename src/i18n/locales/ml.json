@@ -104,7 +104,7 @@
     "districtPlaceholder": "ഉദാ: കാമ്രൂപ്പ് / വാരണാസി",
     "locality": "ഗ്രാമം / നഗരം",
     "localityPlaceholder": "ഉദാ: ഗുവാഹത്തി / സാരനാഥ്",
-    "pinCode": "പിൻ കോഡ് (ഓപ്ഷണൽ)",
+    "pinCode": "പിൻ കോഡ്",
     "pinCodePlaceholder": "ഉദാ: 781001",
     "businessStatus": "ബിസിനസ്സ് നില",
     "existingBusiness": "എനിക്ക് നിലവിലുള്ള ബിസിനസ്സ് ഉണ്ട്",

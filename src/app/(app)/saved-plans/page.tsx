@@ -18,7 +18,7 @@ import type { Plan } from '@/types';
 export default function SavedPlansPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,9 +59,9 @@ export default function SavedPlansPage() {
     }
   };
 
-  const handleDownloadPlan = (plan: Plan) => {
+  const handleDownloadPlan = async (plan: Plan) => {
     try {
-      downloadPlanPdf({
+      await downloadPlanPdf({
         inputs: plan.inputs,
         calculated: plan.calculatedValues,
         narrative: plan.aiNarrative || {
@@ -70,6 +70,8 @@ export default function SavedPlansPage() {
           riskAnalysis: [],
           actionableNextSteps: [],
         },
+        t,
+        language: language || 'en'
       }, `ArthaSetu_${plan.businessType.replace(/\s+/g, '_')}_Plan.pdf`);
     } catch (err) {
       console.error('Error downloading saved plan PDF:', err);
@@ -152,14 +154,14 @@ export default function SavedPlansPage() {
                     <div className="p-2.5 rounded-2xl bg-surface border border-border text-center">
                       <span className="text-[9px] font-bold uppercase text-muted block">{t.planner.loanGap}</span>
                       <span className="text-xs sm:text-sm font-bold text-foreground mt-0.5 block">
-                        ₹{plan.calculatedValues?.fundingGap?.toLocaleString('en-IN') || 0}
+                        {typeof plan.calculatedValues?.fundingGap === 'number' ? `₹${plan.calculatedValues.fundingGap.toLocaleString('en-IN')}` : 'N/A'}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-2xl bg-surface border border-border text-center">
                       <span className="text-[9px] font-bold uppercase text-muted block">{t.planner.netProfit}</span>
                       <span className="text-xs sm:text-sm font-bold text-success mt-0.5 block">
-                        ₹{plan.calculatedValues?.monthlyNetProfit?.toLocaleString('en-IN') || 0}
+                        {typeof plan.calculatedValues?.monthlyNetProfit === 'number' ? `₹${plan.calculatedValues.monthlyNetProfit.toLocaleString('en-IN')}` : 'N/A'}
                       </span>
                     </div>
 

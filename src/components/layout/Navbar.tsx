@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/ui/LanguageSelector';
+import { DataSaverToggle } from '@/components/layout/DataSaverToggle';
 
 const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').toLowerCase().trim();
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -94,6 +95,9 @@ export default function Navbar() {
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
+            {/* Data Saver Toggle */}
+            <DataSaverToggle />
+
             {/* Language Selector */}
             <LanguageSelector />
 

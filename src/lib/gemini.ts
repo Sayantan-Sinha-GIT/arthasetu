@@ -129,6 +129,71 @@ export async function* generateContentStream(
   }
 }
 
+// ─── Helper: Agent loop for tool execution ───
+export async function* generateAgentStream(
+  model: string,
+  systemInstruction: string,
+  userMessage: string | any[],
+  tools: any[],
+  toolHandler: (name: string, args: any) => Promise<any>,
+  options?: {
+    temperature?: number;
+    maxOutputTokens?: number;
+    disableFallback?: boolean;
+  }
+): AsyncGenerator<string> {
+  const client = getClient();
+  const targetModel = model;
+  const genModel = client.getGenerativeModel({
+    model: targetModel,
+    systemInstruction,
+    tools,
+    generationConfig: {
+      temperature: options?.temperature ?? 0.7,
+      maxOutputTokens: options?.maxOutputTokens ?? 4096,
+    },
+  });
+
+  let history: any[] = typeof userMessage === 'string' ? [{ role: 'user', parts: [{ text: userMessage }] }] : userMessage;
+
+  const chat = genModel.startChat({ history: history.slice(0, -1) });
+  const lastMessage = history[history.length - 1];
+  let msgContent = lastMessage.parts;
+
+  let streamResult = await retryWithBackoff(() => chat.sendMessageStream(msgContent));
+
+  let handledTool = false;
+  
+  for await (const chunk of streamResult.stream) {
+    if (chunk.functionCalls && chunk.functionCalls() && chunk.functionCalls()!.length > 0) {
+      const calls = chunk.functionCalls();
+      const call = calls![0];
+      try {
+        const result = await toolHandler(call.name, call.args);
+        msgContent = [{ functionResponse: { name: call.name, response: result } }];
+        handledTool = true;
+      } catch (err: any) {
+        msgContent = [{ functionResponse: { name: call.name, response: { error: err.message } } }];
+        handledTool = true;
+      }
+      break; // stop reading this stream, we will send the tool response
+    }
+    const text = chunk.text();
+    if (text) {
+      yield text;
+    }
+  }
+
+  if (handledTool) {
+    // Send tool response and yield the final stream
+    const finalStreamResult = await retryWithBackoff(() => chat.sendMessageStream(msgContent));
+    for await (const chunk of finalStreamResult.stream) {
+      const text = chunk.text();
+      if (text) yield text;
+    }
+  }
+}
+
 // ─── Shared Advisor Scope Definition ───
 export const ADVISOR_SCOPE_RULES = `
 ALLOWED TOPICS:

@@ -26,8 +26,8 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
 
   const monthlyIncome = isIncomeSet ? profile.monthlyIncome! : 0;
   const monthlyExpenses = isExpensesSet ? profile.monthlyExpenses! : 0;
-  const hasCashFlowData = isIncomeSet || isExpensesSet;
-  const netCashFlow = monthlyIncome - monthlyExpenses;
+  const hasCashFlowData = isIncomeSet && isExpensesSet;
+  const netCashFlow = hasCashFlowData ? (monthlyIncome - monthlyExpenses) : 0;
 
   let locationText = '';
   if (locality && district && state) {
@@ -110,7 +110,7 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   href="/profile"
                   className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
                 >
-                  <span>Not set</span>
+                  <span>N/A</span>
                   <span className="text-[10px]">→</span>
                 </Link>
               )}
@@ -133,7 +133,7 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   href="/profile"
                   className="inline-flex items-center gap-1 text-xs text-saffron-400/80 hover:text-saffron-300 underline font-medium pt-1"
                 >
-                  <span>Not set</span>
+                  <span>N/A</span>
                   <span className="text-[10px]">→</span>
                 </Link>
               )}
@@ -156,7 +156,7 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   href="/profile"
                   className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
                 >
-                  <span>Not set</span>
+                  <span>N/A</span>
                   <span className="text-[10px]">→</span>
                 </Link>
               )}
@@ -179,7 +179,7 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   href="/profile"
                   className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
                 >
-                  <span>Not set</span>
+                  <span>N/A</span>
                   <span className="text-[10px]">→</span>
                 </Link>
               )}

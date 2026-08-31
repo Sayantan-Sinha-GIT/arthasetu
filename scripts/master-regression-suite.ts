@@ -396,7 +396,7 @@ async function runMasterRegressionSuite() {
   console.log('\n▶ MODULE 9: All 6 Phase D Features Verification');
 
   // Feature 1: PDF Export
-  const pdfDoc = generateBankReadyPlanPdf({
+  const pdfDoc = await generateBankReadyPlanPdf({
     inputs: startupInputs,
     calculated: startupCalc,
     narrative: {

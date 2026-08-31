@@ -104,7 +104,7 @@
     "districtPlaceholder": "যেমন: কামরূপ / হাওড়া",
     "locality": "গ্রাম / শহর",
     "localityPlaceholder": "যেমন: গুয়াহাটি / কলকাতা",
-    "pinCode": "পিন কোড (ঐচ্ছিক)",
+    "pinCode": "পিন কোড",
     "pinCodePlaceholder": "যেমন: ৭০০০০১",
     "businessStatus": "ব্যবসায়ের স্থিতি",
     "existingBusiness": "আমার একটি চলমান ব্যবসা আছে",

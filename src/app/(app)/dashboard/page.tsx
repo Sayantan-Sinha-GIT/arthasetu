@@ -83,46 +83,50 @@ export default function DashboardPage() {
         {/* Welcome & Business Summary Banner */}
         <WelcomeBanner profile={profile} userName={displayName} />
 
-        {/* Section: 3 Primary Actions */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-foreground">
-              {t.dashboard.quickActions}
-            </h2>
+        {/* Primary Action: Ask ArthaSetu */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-saffron-500 to-saffron-700 text-white shadow-xl hover:shadow-2xl transition-all cursor-pointer group" onClick={() => router.push('/advisor')}>
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+          <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                ArthaSetu AI Ready
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black">{t.dashboard.askAI}</h2>
+              <p className="text-saffron-50 text-sm md:text-base leading-relaxed">
+                {t.dashboard.askAIDesc} Build your business plan, check scheme eligibility, and get financial advice just by talking to ArthaSetu.
+              </p>
+            </div>
+            <div className="shrink-0 w-full md:w-auto">
+              <button className="w-full md:w-auto flex items-center justify-center gap-2 bg-white text-saffron-600 px-6 py-4 rounded-2xl font-bold hover:bg-saffron-50 transition-colors shadow-lg active:scale-95 text-base sm:text-lg">
+                <span>🎙️</span>
+                Open Advisor
+              </button>
+            </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Action 1: Ask ArthaSetu */}
-            <ActionCard
-              href="/advisor"
-              title={t.dashboard.askAI}
-              description={t.dashboard.askAIDesc}
-              icon="🎙️"
-              badge="Voice + Text"
-              gradient="from-saffron-400 to-saffron-600"
-              ctaText="Open Advisor"
-            />
-
-            {/* Action 2: Create Financial Plan */}
+        {/* Secondary / Manual Actions */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-muted uppercase tracking-wider ml-1">Advanced / Manual Tools</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ActionCard
               href="/planner"
               title={t.dashboard.createPlan}
               description={t.dashboard.createPlanDesc}
               icon="📊"
-              badge="Deterministic Math"
-              gradient="from-primary to-accent"
-              ctaText="Build Plan"
+              badge="Manual Entry"
+              gradient="from-surface-elevated to-surface"
+              ctaText="Open Form"
             />
-
-            {/* Action 3: Government Schemes */}
             <ActionCard
               href="/schemes"
               title={t.dashboard.findSchemes}
               description={t.dashboard.findSchemesDesc}
               icon="🏛️"
-              badge="Central & State"
-              gradient="from-navy-500 to-navy-700"
-              ctaText="Check Eligibility"
+              badge="Manual Browse"
+              gradient="from-surface-elevated to-surface"
+              ctaText="Browse Schemes"
             />
           </div>
         </div>

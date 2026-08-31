@@ -101,7 +101,7 @@
     "districtPlaceholder": "e.g. Kamrup / Varanasi",
     "locality": "Village / Town",
     "localityPlaceholder": "e.g. Guwahati / Sarnath",
-    "pinCode": "PIN Code (optional)",
+    "pinCode": "PIN Code",
     "pinCodePlaceholder": "e.g. 781001",
     "businessStatus": "Business Status",
     "existingBusiness": "I have an existing business",

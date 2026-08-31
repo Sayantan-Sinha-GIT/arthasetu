@@ -10,6 +10,8 @@ import VoiceVisualizer from '@/components/voice/VoiceVisualizer';
 import Button from '@/components/ui/Button';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { detectScriptLanguage } from '@/lib/lang/detectScript';
+import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { ChatMessage, UserProfile, VoiceState } from '@/types';
 
 interface ChatInterfaceProps {
@@ -29,27 +31,26 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   const [toastMessage, setToastMessage] = useState('');
   const [activeSpeakingMessageId, setActiveSpeakingMessageId] = useState<string | null>(null);
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Speech Recognition Language with localStorage persistence (key: arthasetu-speech-language)
+  // Default speech language derived from user's UI preference
+  const defaultSpeechLanguage = currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN');
+
   const SPEECH_LANG_KEY = 'arthasetu-speech-language';
   const [speechLanguage, setSpeechLanguage] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('arthasetu-speech-language');
+      const saved = localStorage.getItem(SPEECH_LANG_KEY);
       if (saved) return saved;
     }
-    return currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN');
+    return defaultSpeechLanguage;
   });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(SPEECH_LANG_KEY);
-      if (saved) {
-        setSpeechLanguage(saved);
-        return;
+      if (!saved && currentMeta?.speechCode) {
+        setSpeechLanguage(currentMeta.speechCode);
       }
-    }
-    if (currentMeta?.speechCode) {
-      setSpeechLanguage(currentMeta.speechCode);
     }
   }, [currentMeta?.speechCode]);
 
@@ -121,7 +122,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       const greetingEn = userName
         ? `Hello **${userName}**! I am **ArthaSetu**, your dedicated AI business advisor.${
             business ? ` I see you are working on your **${business}**${location ? ` in **${location}**` : ''}.` : ''
-          }\n\nHow can I help you today? You can type or tap the microphone to speak in Hindi or English.`
+          }\n\nHow can I help you today? You can type or tap the microphone to speak.`
         : `Namaste! I am **ArthaSetu**, your AI business advisor.\n\nAsk me anything about starting, funding, or growing your micro-enterprise. How can I assist your business today?`;
 
       const greetingHi = userName
@@ -155,6 +156,9 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
     const query = (textToSend || inputValue).trim();
     if (!query || isStreaming) return;
 
+    // Detect language script before sending
+    const detectedLanguageCode = detectScriptLanguage(query);
+
     // Stop ongoing speech when user sends a new message
     ttsStop();
     setActiveSpeakingMessageId(null);
@@ -187,7 +191,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
           message: query,
           conversationHistory: messages,
           userProfile,
-          language,
+          language: detectedLanguageCode, // Override language to the detected one!
         }),
       });
 
@@ -280,23 +284,66 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   return (
     <div className="flex flex-col h-[78vh] sm:h-[82vh] bg-surface-elevated rounded-3xl border border-border overflow-hidden shadow-xl">
       {/* Top Status & Controls Bar */}
-      <div className="px-4 py-2 bg-surface border-b border-border flex items-center justify-between gap-3 text-xs text-muted">
+      <div className="px-4 py-2 bg-surface border-b border-border flex items-center justify-between gap-3 text-xs text-muted relative">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-success" />
           <span className="font-semibold text-foreground">Gemini Flash Active</span>
         </div>
 
-        {/* Auto-read toggle & TTS info */}
-        {isTtsSupported && (
-          <label className="flex items-center gap-2 cursor-pointer select-none hover:text-foreground transition-colors">
-            <input
-              type="checkbox"
-              checked={autoSpeakEnabled}
-              onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
-              className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
-            />
-            <span>Auto-Read Answers</span>
-          </label>
+        <div className="flex items-center gap-4">
+          {/* Auto-read toggle & TTS info */}
+          {isTtsSupported && (
+            <label className="hidden sm:flex items-center gap-2 cursor-pointer select-none hover:text-foreground transition-colors">
+              <input
+                type="checkbox"
+                checked={autoSpeakEnabled}
+                onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
+                className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
+              />
+              <span>Auto-Read Answers</span>
+            </label>
+          )}
+          
+          <button
+            onClick={() => setSettingsOpen(!settingsOpen)}
+            className="p-1 hover:bg-surface-elevated rounded-md transition-colors"
+            title="Chat settings"
+          >
+            ⚙️
+          </button>
+        </div>
+
+        {/* Settings Popup */}
+        {settingsOpen && (
+          <div className="absolute right-4 top-full mt-2 w-64 bg-surface border border-border rounded-xl shadow-xl z-10 p-3">
+             <div className="font-semibold mb-2 text-foreground">Voice Input Language</div>
+             <div className="text-xs text-muted-foreground mb-3">
+                Change the language used when you click the microphone to speak.
+             </div>
+             <select
+                value={speechLanguage}
+                onChange={(e) => handleSpeechLanguageChange(e.target.value)}
+                className="w-full bg-surface-elevated border border-border rounded-lg p-2 text-sm text-foreground focus:outline-none focus:border-primary"
+             >
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.speechCode || lang.code}>
+                    {lang.nativeName} ({lang.name})
+                  </option>
+                ))}
+             </select>
+             
+             {isTtsSupported && (
+              <label className="flex sm:hidden mt-4 items-center gap-2 cursor-pointer select-none text-foreground transition-colors">
+                <input
+                  type="checkbox"
+                  checked={autoSpeakEnabled}
+                  onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
+                />
+                <span>Auto-Read Answers</span>
+              </label>
+            )}
+          </div>
         )}
       </div>
 
@@ -394,13 +441,10 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
             />
           </div>
 
-          {/* Multi-State Voice Mic Button & 23-Language Picker */}
+          {/* Voice Mic Button */}
           <VoiceButton
             state={currentVoiceState}
             onClick={handleMicClick}
-            onLanguageChange={handleSpeechLanguageChange}
-            speechLanguage={speechLanguage}
-            selectAriaLabel={t.voice.selectLanguage || 'Select voice language'}
           />
 
           {/* Send Button */}

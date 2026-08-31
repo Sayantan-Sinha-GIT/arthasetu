@@ -6,54 +6,16 @@ import type { VoiceState } from '@/types';
 interface VoiceButtonProps {
   state: VoiceState;
   onClick: () => void;
-  onLanguageChange?: (speechCode: string) => void;
-  speechLanguage?: string;
   className?: string;
-  selectAriaLabel?: string;
 }
 
 export default function VoiceButton({
   state,
   onClick,
-  onLanguageChange,
-  speechLanguage = 'en-IN',
   className = '',
-  selectAriaLabel = 'Voice Input Language',
 }: VoiceButtonProps) {
-  const currentLangMeta =
-    SUPPORTED_LANGUAGES.find((l) => l.speechCode === speechLanguage) ||
-    SUPPORTED_LANGUAGES.find((l) => l.speechCode.toLowerCase() === speechLanguage.toLowerCase()) ||
-    SUPPORTED_LANGUAGES[0];
-
   return (
     <div className="flex items-center gap-1.5 shrink-0">
-      {/* Speech Language Dropdown Picker */}
-      {onLanguageChange && state !== 'disconnected' && (
-        <div className="relative inline-flex items-center shrink-0">
-          <label htmlFor="voice-language-picker" className="sr-only">
-            {selectAriaLabel}
-          </label>
-          <select
-            id="voice-language-picker"
-            data-testid="voice-language-picker"
-            value={speechLanguage}
-            onChange={(e) => onLanguageChange(e.target.value)}
-            disabled={state === 'listening' || state === 'processing'}
-            className="text-[11px] font-bold py-2 pl-2.5 pr-6 rounded-2xl border bg-surface-elevated text-foreground border-border hover:border-primary/50 focus:border-primary transition-all cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 max-w-[120px] sm:max-w-[150px] truncate shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            title={`Speech Language: ${currentLangMeta.nativeName} (${currentLangMeta.name}) [${speechLanguage}]`}
-          >
-            {SUPPORTED_LANGUAGES.map((lang) => (
-              <option key={lang.code} value={lang.speechCode}>
-                🎙️ {lang.nativeName} ({lang.name})
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-muted">
-            ▼
-          </div>
-        </div>
-      )}
-
       {/* Main Multi-State Voice Mic Button */}
       <button
         type="button"
@@ -68,7 +30,7 @@ export default function VoiceButton({
             ? 'ArthaSetu is speaking. Tap to stop'
             : state === 'disconnected'
             ? 'Voice recognition not supported in this browser'
-            : `Tap to speak in ${currentLangMeta.nativeName} (${currentLangMeta.name})`
+            : 'Tap to speak'
         }
         className={`
           relative p-3 rounded-2xl border transition-all duration-300 active:scale-95 shadow-sm

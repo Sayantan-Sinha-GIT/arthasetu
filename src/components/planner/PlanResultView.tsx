@@ -37,7 +37,7 @@ export default function PlanResultView({
   userId,
   onEdit,
 }: PlanResultViewProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState('');
@@ -91,6 +91,8 @@ export default function PlanResultView({
         inputs,
         calculated,
         narrative,
+        t,
+        language
       });
     } catch (err) {
       console.error('Error generating PDF:', err);
