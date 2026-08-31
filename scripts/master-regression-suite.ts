@@ -606,7 +606,7 @@ async function runMasterRegressionSuite() {
     businessType: 'Fake',
     narrative: {}
   }, { uid: 'test-user' });
-  record('13. Data Integrity', 'Reject saveGeneratedPlan without prior calculation', saveWithoutCalc.error === 'You must run calculateFinancials first before saving a plan. Do not guess the numbers.', `Error returned: ${saveWithoutCalc.error}`);
+  record('13. Data Integrity', 'Reject saveGeneratedPlan without prior calculation', (saveWithoutCalc as any).error === 'You must run calculateFinancials first before saving a plan. Do not guess the numbers.', `Error returned: ${(saveWithoutCalc as any).error}`);
 
   // Test 13.2: Use cached calculation values instead of passed-in
   await sessionObj.toolHandler('calculateFinancials', startupInputs, { uid: 'test-user' });

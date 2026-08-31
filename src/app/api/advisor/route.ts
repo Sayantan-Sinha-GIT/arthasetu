@@ -42,6 +42,7 @@ export function createAdvisorSession(savePlanFn = savePlan) {
         }
         try {
           const docId = await savePlanFn(userProfile.uid, {
+            userId: userProfile.uid,
             title: args.title || 'Generated Business Plan',
             businessType: args.businessType || 'Micro-Enterprise',
             inputs: lastCalculatedPlan.inputs,
