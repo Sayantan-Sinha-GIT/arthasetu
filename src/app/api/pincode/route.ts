@@ -36,16 +36,20 @@ export async function GET(req: NextRequest) {
     if (PINCODE_MASTER_RECORDS[pin]) {
       const master = PINCODE_MASTER_RECORDS[pin];
       L1_CACHE.set(pin, master);
-      // Seed to L2 Firestore Cache
-      adminDb
-        .collection('pincode_cache')
-        .doc(pin)
-        .set({
-          ...master,
-          source: 'static_master_dataset',
-          cachedAt: new Date().toISOString(),
-        })
-        .catch((err) => console.warn('Failed to seed master pincode to Firestore:', err));
+      // Seed to L2 Firestore Cache safely
+      try {
+        adminDb
+          .collection('pincode_cache')
+          .doc(pin)
+          .set({
+            ...master,
+            source: 'static_master_dataset',
+            cachedAt: new Date().toISOString(),
+          })
+          .catch((err) => console.warn('Failed to seed master pincode to Firestore:', err));
+      } catch (dbErr) {
+        console.warn('Firestore admin initialization deferred:', dbErr);
+      }
 
       return NextResponse.json({
         success: true,

@@ -68,7 +68,8 @@ function ensureInitialized() {
 export const adminAuth = new Proxy({} as ReturnType<typeof getAuth>, {
   get(_, prop) {
     ensureInitialized();
-    const authInstance = getAuth();
+    const { getAuth: resolveAuth } = require('firebase-admin/auth');
+    const authInstance = resolveAuth();
     const val = (authInstance as any)[prop];
     return typeof val === 'function' ? val.bind(authInstance) : val;
   },
@@ -77,7 +78,8 @@ export const adminAuth = new Proxy({} as ReturnType<typeof getAuth>, {
 export const adminDb = new Proxy({} as ReturnType<typeof getFirestore>, {
   get(_, prop) {
     ensureInitialized();
-    const dbInstance = getFirestore();
+    const { getFirestore: resolveDb } = require('firebase-admin/firestore');
+    const dbInstance = resolveDb();
     const val = (dbInstance as any)[prop];
     return typeof val === 'function' ? val.bind(dbInstance) : val;
   },
