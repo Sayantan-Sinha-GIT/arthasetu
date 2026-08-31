@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "દા.ત. 2",
     "existingLoans": "શું કોઈ અસ્તિત્વ ધરાવતી સક્રિય બેંક લોન છે?",
     "annualTurnover": "વાર્ષિક ટર્નઓવર (₹, જો કોઈ હોય તો)",
-    "annualTurnoverPlaceholder": "દા.ત. 300000"
+    "annualTurnoverPlaceholder": "દા.ત. 300000",
+    "employeeCountHint": "તમારી જાતને શામેલ કરીને"
   },
   "dashboard": {
     "welcome": "ફરી સ્વાગત છે,",

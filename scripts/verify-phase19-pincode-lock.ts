@@ -94,14 +94,16 @@ async function verifyPincodeLock() {
   try {
     // Login
     await page.goto('http://localhost:3000/login', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('input[type="email"]', { timeout: 10000 });
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[type="password"]', testPassword);
     await page.click('button[type="submit"]');
 
-    await page.waitForFunction(() => window.location.pathname.includes('/onboarding') || window.location.pathname.includes('/dashboard'), null, { timeout: 15000 });
+    // Wait for navigation after login
+    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 15000 });
     
     await page.goto('http://localhost:3000/onboarding', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('input[placeholder*="Ramesh"]', { timeout: 10000 });
+    await page.waitForSelector('input[placeholder*="Ramesh"]', { timeout: 15000 });
 
     // Enter name
     await page.fill('input[placeholder*="Ramesh"]', 'Pincode Tester');
@@ -110,9 +112,8 @@ async function verifyPincodeLock() {
     const pinInput = page.locator('input[maxlength="6"]');
     await pinInput.fill('781001');
 
-    // Wait for auto-resolution badge
-    await page.waitForSelector('text=Auto-resolved', { timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(500);
+    // Wait for auto-resolution
+    await page.waitForTimeout(1000);
 
     // Verify State select contains Assam and is disabled/locked
     const stateSelect = page.locator('select').nth(1); // 0 is Language, 1 is State

@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "जैसे- 2",
     "existingLoans": "क्या कोई बैंक कर्जा चलदा पिए ऐ?",
     "annualTurnover": "सालाना कारोबार (₹, जेकर ऐ)",
-    "annualTurnoverPlaceholder": "जैसे- 300000"
+    "annualTurnoverPlaceholder": "जैसे- 300000",
+    "employeeCountHint": "अपने की शामल करदे होई"
   },
   "dashboard": {
     "welcome": "मुड़ियै स्वागत ऐ,",

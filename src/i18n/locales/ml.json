@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "ഉദാ: 2",
     "existingLoans": "നിലവിലുള്ള ബാങ്ക് വായ്പകൾ എന്തെങ്കിലും ഉണ്ടോ?",
     "annualTurnover": "വാർഷിക വിറ്റുവരവ് (₹, ഉണ്ടെങ്കിൽ)",
-    "annualTurnoverPlaceholder": "ഉദാ: 300000"
+    "annualTurnoverPlaceholder": "ഉദാ: 300000",
+    "employeeCountHint": "സ്വയം ഉൾപ്പെടെ"
   },
   "dashboard": {
     "welcome": "വീണ്ടും സ്വാഗതം,",

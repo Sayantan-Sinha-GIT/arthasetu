@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "எ.கா. 2",
     "existingLoans": "ஏற்கனவே செயலில் உள்ள வங்கிக் கடன்கள் எதுவும் உள்ளதா?",
     "annualTurnover": "ஆண்டு விற்றுமுதல் (₹, ஏதேனும் இருந்தால்)",
-    "annualTurnoverPlaceholder": "எ.கா. 300000"
+    "annualTurnoverPlaceholder": "எ.கா. 300000",
+    "employeeCountHint": "உங்களையும் சேர்த்து"
   },
   "dashboard": {
     "welcome": "மீண்டும் வருக,",

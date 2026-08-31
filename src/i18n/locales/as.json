@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "যেনে ২",
     "existingLoans": "কোনো চলি থকা বেংক ঋণ আছে নেকি?",
     "annualTurnover": "বাৰ্ষিক কাৰোবাৰ টাৰ্ণঅ’ভাৰ (₹, যদি আছে)",
-    "annualTurnoverPlaceholder": "যেনে ৩০০০০০"
+    "annualTurnoverPlaceholder": "যেনে ৩০০০০০",
+    "employeeCountHint": "নিজক অন্তৰ্ভুক্ত কৰি"
   },
   "dashboard": {
     "welcome": "স্বাগতম জনাইছোঁ,",

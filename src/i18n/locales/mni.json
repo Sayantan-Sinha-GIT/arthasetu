@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "মদম: ২",
     "existingLoans": "হৌজিক লৈরিবা লোন লৈদ্রা?",
     "annualTurnover": "চহিগী তর্নওভার (₹, লৈরমদ্রা)",
-    "annualTurnoverPlaceholder": "মদম: ৩০০০০০"
+    "annualTurnoverPlaceholder": "মদম: ৩০০০০০",
+    "employeeCountHint": "ইশাগী য়াওনা"
   },
   "dashboard": {
     "welcome": "সুগাই খুরুমজরি,",

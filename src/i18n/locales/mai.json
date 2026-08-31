@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "जैसे- 2",
     "existingLoans": "की कोनो सक्रिय बैंक ऋण अछि?",
     "annualTurnover": "वार्षिक कारोबार (₹, जँ अछि)",
-    "annualTurnoverPlaceholder": "जैसे- 300000"
+    "annualTurnoverPlaceholder": "जैसे- 300000",
+    "employeeCountHint": "स्वयं केँ शामिल करैत"
   },
   "dashboard": {
     "welcome": "पुनः स्वागत अछि,",

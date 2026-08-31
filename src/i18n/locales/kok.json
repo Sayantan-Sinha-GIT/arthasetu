@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "उदा. २",
     "existingLoans": "कोणतींय अस्तित्वांत आशिल्लीं बँक कर्जा आसात?",
     "annualTurnover": "वर्सुक उलाढाल (₹, जर आसा)",
-    "annualTurnoverPlaceholder": "उदा. ३०००००"
+    "annualTurnoverPlaceholder": "उदा. ३०००००",
+    "employeeCountHint": "तुमकां धरून"
   },
   "dashboard": {
     "welcome": "परत स्वागत,",

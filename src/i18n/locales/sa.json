@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "यथा - २",
     "existingLoans": "किमपि पूर्ववर्ती सक्रियं बैंकऋणम् अस्ति वा?",
     "annualTurnover": "वार्षिकः टर्नओवर (₹, यदि कोऽपि)",
-    "annualTurnoverPlaceholder": "यथा - ३०००००"
+    "annualTurnoverPlaceholder": "यथा - ३०००००",
+    "employeeCountHint": "स्वयं सम्मिलितं कृत्वा"
   },
   "dashboard": {
     "welcome": "स्वागतम्,",

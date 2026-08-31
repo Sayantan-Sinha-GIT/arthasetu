@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "ਜਿਵੇਂ 2",
     "existingLoans": "ਕੋਈ ਮੌਜੂਦਾ ਕਿਰਿਆਸ਼ੀਲ ਬੈਂਕ ਕਰਜ਼ਾ ਹੈ?",
     "annualTurnover": "ਸਾਲਾਨਾ ਕਾਰੋਬਾਰ (₹, ਜੇ ਕੋਈ ਹੋਵੇ)",
-    "annualTurnoverPlaceholder": "ਜਿਵੇਂ 300000"
+    "annualTurnoverPlaceholder": "ਜਿਵੇਂ 300000",
+    "employeeCountHint": "ਆਪਣੇ ਆਪ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹੋਏ"
   },
   "dashboard": {
     "welcome": "ਜੀ ਆਇਆਂ ਨੂੰ,",

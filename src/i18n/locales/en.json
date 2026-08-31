@@ -128,7 +128,8 @@
     "employeeCountPlaceholder": "e.g. 2",
     "existingLoans": "Any existing active bank loans?",
     "annualTurnover": "Annual Turnover (₹, if any)",
-    "annualTurnoverPlaceholder": "e.g. 300000"
+    "annualTurnoverPlaceholder": "e.g. 300000",
+    "employeeCountHint": "Including yourself"
   },
   "dashboard": {
     "welcome": "Welcome back,",

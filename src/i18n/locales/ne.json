@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "उदा. २",
     "existingLoans": "कुनै हालको सक्रिय बैंक ऋण छ?",
     "annualTurnover": "वार्षिक कारोबार (₹, यदि छ भने)",
-    "annualTurnoverPlaceholder": "उदा. ३०००००"
+    "annualTurnoverPlaceholder": "उदा. ३०००००",
+    "employeeCountHint": "आफूलाई समावेश गर्दै"
   },
   "dashboard": {
     "welcome": "पुनः स्वागत छ,",

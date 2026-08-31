@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "ఉదా. 2",
     "existingLoans": "ఇప్పటికే ఏవైనా సక్రియ బ్యాంక్ రుణాలు ఉన్నాయా?",
     "annualTurnover": "వార్షిక టర్నోవర్ (₹, ఏదైనా ఉంటే)",
-    "annualTurnoverPlaceholder": "ఉదా. 300000"
+    "annualTurnoverPlaceholder": "ఉదా. 300000",
+    "employeeCountHint": "మిమ్మల్ని కలుపుకుని"
   },
   "dashboard": {
     "welcome": "స్వాగతం,",

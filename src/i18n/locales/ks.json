@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "مِثال: 2",
     "existingLoans": "کیا کوئی مُٛے لون چھُ جٲری?",
     "annualTurnover": "سالانہٕ ٹَرنووَر (₹، اَگَر چھُ)",
-    "annualTurnoverPlaceholder": "مِثال: 300000"
+    "annualTurnoverPlaceholder": "مِثال: 300000",
+    "employeeCountHint": "پانہٕ شٲمِل کٔرِتھ"
   },
   "dashboard": {
     "welcome": "خۆش آمَد،",

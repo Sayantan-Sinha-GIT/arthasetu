@@ -9,81 +9,92 @@ export interface PincodeInfo {
 
 /**
  * Curated high-precision PIN code dataset mapping specific 6-digit PIN codes
- * to their verified State, District, and postal localities/areas.
+ * to their verified State, District, and authentic India Post Office names.
  */
 export const PINCODE_MASTER_RECORDS: Record<string, PincodeInfo> = {
+  // West Bengal
+  '700001': { state: 'West Bengal', district: 'Kolkata', areas: ['Kolkata GPO', 'Lalbazar', 'Radha Bazar', 'Writer\'s Building', 'Council House Street', 'Customs House', 'New Secretariat'] },
+  '700029': { state: 'West Bengal', district: 'Kolkata', areas: ['Gariahat', 'Ballygunge', 'Golpark', 'Lake Market', 'Dover Terrace'] },
+  '700091': { state: 'West Bengal', district: 'North 24 Parganas', areas: ['Salt Lake Sector V', 'Bidhannagar', 'Mahisbathan', 'Techno City'] },
+  '711101': { state: 'West Bengal', district: 'Howrah', areas: ['Howrah Station', 'Golabari', 'Salkia', 'Pilkhana'] },
+  '713201': { state: 'West Bengal', district: 'Paschim Bardhaman', areas: ['Durgapur Steel City', 'City Centre', 'Benachity'] },
+  '734001': { state: 'West Bengal', district: 'Darjeeling', areas: ['Siliguri Town', 'Hill Cart Road', 'Sevoke Road', 'Hakimpara'] },
+  '734101': { state: 'West Bengal', district: 'Darjeeling', areas: ['Darjeeling Mall', 'Chauk Bazaar', 'Ghoom', 'Jalapahar'] },
+
+  // Delhi
+  '110001': { state: 'Delhi', district: 'New Delhi', areas: ['New Delhi GPO', 'Connaught Place', 'Janpath', 'Sansad Marg', 'Parliament House', 'Bengali Market', 'Supreme Court'] },
+  '110032': { state: 'Delhi', district: 'Shahdara', areas: ['Shahdara', 'Mansarovar Park', 'Naveen Shahdara', 'Gorakh Park'] },
+  '110085': { state: 'Delhi', district: 'North West Delhi', areas: ['Rohini Sector 3', 'Rohini Sector 7', 'Rohini Sector 8'] },
+  '110016': { state: 'Delhi', district: 'South Delhi', areas: ['Hauz Khas', 'Green Park', 'Safdarjung Enclave'] },
+
+  // Maharashtra
+  '400001': { state: 'Maharashtra', district: 'Mumbai', areas: ['Mumbai GPO', 'Fort', 'Bazargate', 'Stock Exchange', 'Tajmahal', 'Town Hall (Mumbai)'] },
+  '400051': { state: 'Maharashtra', district: 'Mumbai Suburban', areas: ['Bandra East', 'BKC (Bandra Kurla Complex)', 'Kalanagar'] },
+  '411001': { state: 'Maharashtra', district: 'Pune', areas: ['Pune Camp', 'Station Road', 'Bund Garden', 'Sasoon Hospital'] },
+  '440001': { state: 'Maharashtra', district: 'Nagpur', areas: ['Nagpur GPO', 'Civil Lines', 'Sitabuldi'] },
+
+  // Tamil Nadu
+  '600001': { state: 'Tamil Nadu', district: 'Chennai', areas: ['Chennai GPO', 'George Town', 'Parrys', 'Broadway', 'Mannady'] },
+  '636701': { state: 'Tamil Nadu', district: 'Dharmapuri', areas: ['Dharmapuri', 'Dharmapuri Fort', 'Dharmapuri R.S', 'Dharmapuri South', 'Hale Dharmapuri', 'Mathikonpalayam'] },
+  '641001': { state: 'Tamil Nadu', district: 'Coimbatore', areas: ['Coimbatore Town', 'RS Puram', 'Gandhipuram', 'Town Hall'] },
+
+  // Chhattisgarh
+  '492001': { state: 'Chhattisgarh', district: 'Raipur', areas: ['Raipur GPO', 'Pandri', 'Jaistambh Chowk', 'Budhapara'] },
+  '493773': { state: 'Chhattisgarh', district: 'Dhamtari', areas: ['Dhamtari', 'Achhota', 'Amdi', 'Dugli', 'Kukrel', 'Sambalpur', 'Singhpur'] },
+
   // Assam
-  '781001': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Panbazar', 'Fancy Bazar', 'Uzanbazar', 'Paltan Bazar'] },
-  '781005': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Dispur', 'Ganeshguri', 'Last Gate'] },
-  '781006': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Sixmile', 'Khanapara', 'Chachal'] },
-  '781012': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Maligaon', 'Pandu', 'Adabari'] },
+  '781001': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Guwahati GPO', 'Panbazar', 'Fancy Bazar', 'Uzanbazar', 'Paltan Bazar', 'Ambari'] },
+  '781005': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Dispur', 'Ganeshguri', 'Last Gate', 'Assam Secretariat'] },
+  '781006': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Sixmile', 'Khanapara', 'Chachal', 'Panjabari'] },
+  '781012': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Maligaon', 'Pandu', 'Adabari', 'Rest Camp'] },
   '781014': { state: 'Assam', district: 'Kamrup Metropolitan', areas: ['Noonmati', 'Choonsali', 'Sector 1'] },
   '781030': { state: 'Assam', district: 'Kamrup', areas: ['Amingaon', 'North Guwahati', 'IIT Guwahati Campus'] },
-  '781032': { state: 'Assam', district: 'Kamrup', areas: ['Jalukbari', 'Gauhati University Campus'] },
-  '781122': { state: 'Assam', district: 'Kamrup', areas: ['Mirza', 'Palasbari', 'Kochpara'] },
+  '781032': { state: 'Assam', district: 'Kamrup', areas: ['Jalukbari', 'Gauhati University Campus', 'Pandu Port'] },
+  '781122': { state: 'Assam', district: 'Kamrup', areas: ['Mirza', 'Palasbari', 'Kochpara', 'Maliata'] },
   '781125': { state: 'Assam', district: 'Kamrup', areas: ['Boko', 'Chaygaon', 'Singra'] },
   '781380': { state: 'Assam', district: 'Kamrup', areas: ['Rangia', 'Khandikar', 'Murara'] },
-  '785001': { state: 'Assam', district: 'Jorhat', areas: ['Jorhat Town', 'Gar-Ali', 'Barbheta'] },
+  '785001': { state: 'Assam', district: 'Jorhat', areas: ['Jorhat Town', 'Gar-Ali', 'Barbheta', 'AT Road'] },
   '786001': { state: 'Assam', district: 'Dibrugarh', areas: ['Dibrugarh Town', 'Graham Bazar', 'Chowkidinghee'] },
   '782001': { state: 'Assam', district: 'Nagaon', areas: ['Nagaon Town', 'Haibargaon', 'Panigaon'] },
   '783001': { state: 'Assam', district: 'Dhubri', areas: ['Dhubri Town', 'Boro Bazar', 'Gauripur'] },
-  '788001': { state: 'Assam', district: 'Cachar', areas: ['Silchar Town', 'Tarapur', 'Hospital Road'] },
+  '788001': { state: 'Assam', district: 'Cachar', areas: ['Silchar Town', 'Tarapur', 'Hospital Road', 'Premtala'] },
 
-  // West Bengal
-  '700001': { state: 'West Bengal', district: 'Kolkata', areas: ['BBD Bagh', 'Dalhousie Square', 'Fairlie Place'] },
-  '700029': { state: 'West Bengal', district: 'Kolkata', areas: ['Gariahat', 'Ballygunge', 'Golpark'] },
-  '700091': { state: 'West Bengal', district: 'North 24 Parganas', areas: ['Salt Lake Sector V', 'Bidhannagar', 'Mahisbathan'] },
-  '711101': { state: 'West Bengal', district: 'Howrah', areas: ['Howrah Station', 'Golabari', 'Salkia'] },
-  '713201': { state: 'West Bengal', district: 'Paschim Bardhaman', areas: ['Durgapur Steel City', 'City Centre', 'Benachity'] },
-  '734001': { state: 'West Bengal', district: 'Darjeeling', areas: ['Siliguri Town', 'Hill Cart Road', 'Sevoke Road'] },
-  '734101': { state: 'West Bengal', district: 'Darjeeling', areas: ['Darjeeling Mall', 'Chauk Bazaar', 'Ghoom'] },
-
-  // Bihar
-  '800001': { state: 'Bihar', district: 'Patna', areas: ['Patna GPO', 'Fraser Road', 'Dak Bungalow'] },
+  // Bihar & Jharkhand
+  '800001': { state: 'Bihar', district: 'Patna', areas: ['Patna GPO', 'Fraser Road', 'Dak Bungalow', 'Bankipore'] },
   '800020': { state: 'Bihar', district: 'Patna', areas: ['Kankarbagh', 'Hanuman Nagar', 'Lohia Nagar'] },
   '823001': { state: 'Bihar', district: 'Gaya', areas: ['Gaya Town', 'Civil Lines', 'Chand Chaura'] },
   '842001': { state: 'Bihar', district: 'Muzaffarpur', areas: ['Muzaffarpur Town', 'Motijheel', 'Sutapatti'] },
   '812001': { state: 'Bihar', district: 'Bhagalpur', areas: ['Bhagalpur Town', 'Suja Ganj', 'Tilkamanjhi'] },
-
-  // Delhi
-  '110001': { state: 'Delhi', district: 'New Delhi', areas: ['Connaught Place', 'Janpath', 'Barakhamba Road'] },
-  '110032': { state: 'Delhi', district: 'Shahdara', areas: ['Shahdara', 'Mansarovar Park', 'Naveen Shahdara'] },
-  '110085': { state: 'Delhi', district: 'North West Delhi', areas: ['Rohini Sector 3', 'Rohini Sector 7', 'Rohini Sector 8'] },
-  '110016': { state: 'Delhi', district: 'South Delhi', areas: ['Hauz Khas', 'Green Park', 'Safdarjung Enclave'] },
-
-  // Chhattisgarh
-  '492001': { state: 'Chhattisgarh', district: 'Raipur', areas: ['Raipur GPO', 'Pandri', 'Jaistambh Chowk'] },
-  '493773': { state: 'Chhattisgarh', district: 'Dhamtari', areas: ['Dhamtari Town', 'Kurud', 'Nagri', 'Ghatula'] },
-
-  // Maharashtra
-  '400001': { state: 'Maharashtra', district: 'Mumbai', areas: ['Fort', 'Colaba', 'Marine Lines'] },
-  '400051': { state: 'Maharashtra', district: 'Mumbai Suburban', areas: ['Bandra East', 'BKC (Bandra Kurla Complex)', 'Kalanagar'] },
-  '411001': { state: 'Maharashtra', district: 'Pune', areas: ['Pune Camp', 'Station Road', 'Bund Garden'] },
-  '440001': { state: 'Maharashtra', district: 'Nagpur', areas: ['Nagpur GPO', 'Civil Lines', 'Sitabuldi'] },
+  '834001': { state: 'Jharkhand', district: 'Ranchi', areas: ['Ranchi GPO', 'Main Road', 'Doranda', 'Hinoo'] },
 
   // Gujarat
-  '380001': { state: 'Gujarat', district: 'Ahmedabad', areas: ['Ahmedabad GPO', 'Bhadra', 'Relief Road'] },
+  '380001': { state: 'Gujarat', district: 'Ahmedabad', areas: ['Ahmedabad GPO', 'Bhadra', 'Relief Road', 'Lal Darwaja'] },
   '380015': { state: 'Gujarat', district: 'Ahmedabad', areas: ['Vastrapur', 'IIM Ahmedabad Campus', 'Bodakdev'] },
   '364001': { state: 'Gujarat', district: 'Bhavnagar', areas: ['Bhavnagar City', 'Waghawadi Road', 'Kalanala'] },
-  '395001': { state: 'Gujarat', district: 'Surat', areas: ['Surat Station', 'Varachha', 'Athwa Lines'] },
+  '395001': { state: 'Gujarat', district: 'Surat', areas: ['Surat Station', 'Varachha', 'Athwa Lines', 'Chowk Bazar'] },
 
   // Karnataka
-  '560001': { state: 'Karnataka', district: 'Bengaluru Urban', areas: ['MG Road', 'Cubbon Park', 'Shivajinagar'] },
-  '560034': { state: 'Karnataka', district: 'Bengaluru Urban', areas: ['Koramangala', 'Madiwala', 'St Johns'] },
+  '560001': { state: 'Karnataka', district: 'Bengaluru Urban', areas: ['Bengaluru GPO', 'MG Road', 'Cubbon Park', 'Shivajinagar', 'Vidhana Soudha'] },
+  '560034': { state: 'Karnataka', district: 'Bengaluru Urban', areas: ['Koramangala', 'Madiwala', 'St Johns Hospital'] },
   '570001': { state: 'Karnataka', district: 'Mysuru', areas: ['Mysuru Town', 'Devaraja Market', 'Nazarbad'] },
 
-  // Tamil Nadu
-  '600001': { state: 'Tamil Nadu', district: 'Chennai', areas: ['George Town', 'Parrys', 'Broadway'] },
-  '636701': { state: 'Tamil Nadu', district: 'Dharmapuri', areas: ['Dharmapuri Town', 'Collectorate', 'Pennagaram Road'] },
-  '641001': { state: 'Tamil Nadu', district: 'Coimbatore', areas: ['Coimbatore Town', 'RS Puram', 'Gandhipuram'] },
+  // Telangana & Andhra Pradesh
+  '500001': { state: 'Telangana', district: 'Hyderabad', areas: ['Hyderabad GPO', 'Abids', 'Koti', 'Sultan Bazar', 'Mozamjahi Market'] },
+  '520001': { state: 'Andhra Pradesh', district: 'Krishna', areas: ['Vijayawada GPO', 'Governorpet', 'One Town'] },
+  '530001': { state: 'Andhra Pradesh', district: 'Visakhapatnam', areas: ['Visakhapatnam Port', 'Town Hall', 'One Town'] },
 
-  // Uttar Pradesh
-  '226001': { state: 'Uttar Pradesh', district: 'Lucknow', areas: ['Hazratganj', 'Vidhan Sabha Marg', 'Qaiserbagh'] },
-  '201301': { state: 'Uttar Pradesh', district: 'Gautam Buddha Nagar', areas: ['Noida Sector 18', 'Atta Market', 'Sector 15'] },
+  // Kerala
+  '682001': { state: 'Kerala', district: 'Ernakulam', areas: ['Kochi GPO', 'Fort Kochi', 'Mattancherry', 'Willingdon Island'] },
+  '695001': { state: 'Kerala', district: 'Thiruvananthapuram', areas: ['Thiruvananthapuram GPO', 'Statue', 'Palayam', 'Overbridge'] },
+
+  // Uttar Pradesh & Uttarakhand
+  '226001': { state: 'Uttar Pradesh', district: 'Lucknow', areas: ['Lucknow GPO', 'Hazratganj', 'Vidhan Sabha Marg', 'Qaiserbagh'] },
+  '201301': { state: 'Uttar Pradesh', district: 'Gautam Buddha Nagar', areas: ['Noida Sector 18', 'Atta Market', 'Sector 15', 'Sector 16'] },
   '221001': { state: 'Uttar Pradesh', district: 'Varanasi', areas: ['Varanasi Cantt', 'Godowlia', 'Dashashwamedh'] },
+  '248001': { state: 'Uttarakhand', district: 'Dehradun', areas: ['Dehradun GPO', 'Clock Tower', 'Rajpur Road', 'Paltan Bazar'] },
 
   // Rajasthan
-  '302001': { state: 'Rajasthan', district: 'Jaipur', areas: ['Jaipur GPO', 'MI Road', 'Johari Bazar'] },
+  '302001': { state: 'Rajasthan', district: 'Jaipur', areas: ['Jaipur GPO', 'MI Road', 'Johari Bazar', 'Chandpole'] },
   '342001': { state: 'Rajasthan', district: 'Jodhpur', areas: ['Jodhpur City', 'Sojati Gate', 'Ratanada'] },
 
   // Madhya Pradesh
@@ -91,24 +102,26 @@ export const PINCODE_MASTER_RECORDS: Record<string, PincodeInfo> = {
   '452001': { state: 'Madhya Pradesh', district: 'Indore', areas: ['Indore GPO', 'Rajwada', 'MG Road'] },
 
   // Odisha
-  '751001': { state: 'Odisha', district: 'Khordha', areas: ['Bhubaneswar Old Town', 'Master Canteen', 'Bapuji Nagar'] },
+  '751001': { state: 'Odisha', district: 'Khordha', areas: ['Bhubaneswar GPO', 'Master Canteen', 'Bapuji Nagar', 'Ashok Nagar'] },
   '753001': { state: 'Odisha', district: 'Cuttack', areas: ['Cuttack GPO', 'Chandi Mandir', 'Badambadi'] },
 
-  // Punjab & Haryana
-  '160017': { state: 'Chandigarh', district: 'Chandigarh', areas: ['Sector 17', 'City Centre'] },
-  '141001': { state: 'Punjab', district: 'Ludhiana', areas: ['Ludhiana Clock Tower', 'Civil Lines', 'Chaura Bazar'] },
+  // Punjab, Haryana, Chandigarh
+  '160017': { state: 'Chandigarh', district: 'Chandigarh', areas: ['Sector 17', 'City Centre', 'Sector 17 Bank Square'] },
+  '141001': { state: 'Punjab', district: 'Ludhiana', areas: ['Ludhiana GPO', 'Clock Tower', 'Civil Lines', 'Chaura Bazar'] },
   '122001': { state: 'Haryana', district: 'Gurugram', areas: ['Old Gurugram', 'Civil Lines', 'Sadar Bazar'] },
 
   // Himachal Pradesh
-  '171001': { state: 'Himachal Pradesh', district: 'Shimla', areas: ['The Mall', 'The Ridge', 'Lower Bazar'] },
+  '171001': { state: 'Himachal Pradesh', district: 'Shimla', areas: ['Shimla GPO', 'The Mall', 'The Ridge', 'Lower Bazar'] },
 
-  // Sikkim
-  '737101': { state: 'Sikkim', district: 'East Sikkim', areas: ['Gangtok MG Marg', 'Tadong', 'Deorali'] },
-  '737116': { state: 'Sikkim', district: 'North Sikkim', areas: ['Mangan', 'Chungthang', 'Lachung'] },
-
-  // Tripura
+  // North-Eastern States
+  '737101': { state: 'Sikkim', district: 'East Sikkim', areas: ['Gangtok GPO', 'MG Marg', 'Tadong', 'Deorali'] },
   '799001': { state: 'Tripura', district: 'West Tripura', areas: ['Agartala GPO', 'Akhaura Road', 'Melarmath'] },
-  '799144': { state: 'Tripura', district: 'South Tripura', areas: ['Belonia', 'Santirbazar', 'Rajnagar'] },
+  '795001': { state: 'Manipur', district: 'Imphal West', areas: ['Imphal GPO', 'Paona Bazar', 'Thangal Bazar'] },
+  '793001': { state: 'Meghalaya', district: 'East Khasi Hills', areas: ['Shillong GPO', 'Police Bazar', 'Laitumkhrah'] },
+  '796001': { state: 'Mizoram', district: 'Aizawl', areas: ['Aizawl GPO', 'Bara Bazar', 'Zarkawt'] },
+  '797001': { state: 'Nagaland', district: 'Kohima', areas: ['Kohima GPO', 'Main Market', 'Midland'] },
+  '791111': { state: 'Arunachal Pradesh', district: 'Papum Pare', areas: ['Itanagar GPO', 'Ganga Market', 'Zero Point'] },
+  '744101': { state: 'Andaman and Nicobar Islands', district: 'South Andaman', areas: ['Port Blair GPO', 'Aberdeen Bazar', 'Haddo'] },
 };
 
 /**
@@ -265,7 +278,7 @@ export function lookupPincode(pincode: string): PincodeInfo | null {
 }
 
 /**
- * Asynchronously fetch and resolve PIN code details (with local caching and India Post API integration).
+ * Asynchronously fetch and resolve PIN code details (with local caching, persistent Firestore layer, and India Post API).
  */
 export async function fetchPincodeInfo(pincode: string): Promise<PincodeInfo | null> {
   const local = lookupPincode(pincode);
@@ -275,18 +288,36 @@ export async function fetchPincodeInfo(pincode: string): Promise<PincodeInfo | n
     return null;
   }
 
-  // If we already have exact specific areas, return directly
+  // If we already have exact specific areas in local memory, return directly
   if (PINCODE_MASTER_RECORDS[clean] || PINCODE_CACHE.has(clean)) {
     return PINCODE_MASTER_RECORDS[clean] || PINCODE_CACHE.get(clean)!;
   }
 
-  // Attempt online resolution with timeout
+  // If executing in client browser, invoke /api/pincode route (which checks L1 memory, Firestore L2, and India Post L3)
+  if (typeof window !== 'undefined') {
+    try {
+      const res = await fetch(`/api/pincode?pin=${clean}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const resolved: PincodeInfo = json.data;
+          PINCODE_CACHE.set(clean, resolved);
+          return resolved;
+        }
+      }
+    } catch {
+      // API call failed, proceed to direct fallback
+    }
+  }
+
+  // Server-side direct India Post resolution fallback
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
+    const timer = setTimeout(() => controller.abort(), 3500);
 
     const res = await fetch(`https://api.postalpincode.in/pincode/${clean}`, {
       signal: controller.signal,
+      headers: { 'User-Agent': 'ArthaSetu-Pincode-Service' },
     });
     clearTimeout(timer);
 
@@ -296,10 +327,10 @@ export async function fetchPincodeInfo(pincode: string): Promise<PincodeInfo | n
         const postOffices = data[0].PostOffice;
         const state = postOffices[0]?.State || local?.state;
         const district = postOffices[0]?.District || local?.district;
-        const areas = postOffices.map((po: any) => po.Name).filter(Boolean);
+        const areas = Array.from(new Set(postOffices.map((po: any) => (po.Name || '').trim()).filter(Boolean)));
 
         if (state && district && areas.length > 0) {
-          const resolved: PincodeInfo = { state, district, areas };
+          const resolved: PincodeInfo = { state, district, areas: areas as string[] };
           PINCODE_CACHE.set(clean, resolved);
           return resolved;
         }

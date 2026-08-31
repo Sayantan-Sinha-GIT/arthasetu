@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "مثال کے طور پر: 2",
     "existingLoans": "کیا کوئی موجودہ فعال بینک قرض ہے؟",
     "annualTurnover": "سالانہ ٹرن اوور (₹، اگر کوئی ہو)",
-    "annualTurnoverPlaceholder": "مثال کے طور پر: 300000"
+    "annualTurnoverPlaceholder": "مثال کے طور پر: 300000",
+    "employeeCountHint": "خود کو شامل کرتے ہوئے"
   },
   "dashboard": {
     "welcome": "خوش آمدید،",

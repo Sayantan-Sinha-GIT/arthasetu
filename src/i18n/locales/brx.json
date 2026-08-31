@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "दसु 2",
     "existingLoans": "माब्लाबा बैंक लोन दं नामा?",
     "annualTurnover": "बोसोरारि टर्नओभर (₹, जुदि दंब्ला)",
-    "annualTurnoverPlaceholder": "दसु 300000"
+    "annualTurnoverPlaceholder": "दसु 300000",
+    "employeeCountHint": "गावनिबो लाफानानै"
   },
   "dashboard": {
     "welcome": "फिन्ना फैफिनायखौ স্বাগতম,",

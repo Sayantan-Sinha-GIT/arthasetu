@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "ᱡᱮᱞᱮᱠᱟ ᱒",
     "existingLoans": "ᱪᱮ ᱢᱟᱲᱟᱝ ᱠᱷᱚᱱ ᱜᱮ ᱵᱮᱸᱠ ᱨᱤᱱ ᱢᱮᱱᱟᱜᱼᱟ?",
     "annualTurnover": "ᱥᱮᱨᱢᱟᱠᱤᱭᱟᱹ ᱵᱮᱯᱟᱨ (₹, ᱡᱩᱫᱤ ᱢᱮᱱᱟᱜᱼᱟ)",
-    "annualTurnoverPlaceholder": "ᱡᱮᱞᱮᱠᱟ ᱓᱐᱐᱐᱐᱐"
+    "annualTurnoverPlaceholder": "ᱡᱮᱞᱮᱠᱟ ᱓᱐᱐᱐᱐᱐",
+    "employeeCountHint": "ᱟᱯᱱᱟᱨ ᱥᱮᱞᱮᱫ ᱠᱟᱛᱮ"
   },
   "dashboard": {
     "welcome": "ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ ᱨᱩᱣᱟᱹᱲ,",

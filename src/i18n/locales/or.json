@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "ଯଥା: ୨",
     "existingLoans": "କୌଣସି ବିଦ୍ୟମାନ ସକ୍ରିୟ ବ୍ୟାଙ୍କ ଋଣ ଅଛି କି?",
     "annualTurnover": "ବାର୍ଷିକ କାରବାର (₹, ଯଦି କିଛି ଥାଏ)",
-    "annualTurnoverPlaceholder": "ଯଥା: ୩୦୦୦୦୦"
+    "annualTurnoverPlaceholder": "ଯଥା: ୩୦୦୦୦୦",
+    "employeeCountHint": "ନିଜକୁ ଅନ୍ତର୍ଭୁକ୍ତ କରି"
   },
   "dashboard": {
     "welcome": "ପୁନଃସ୍ବାଗତ,",

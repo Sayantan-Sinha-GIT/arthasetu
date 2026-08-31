@@ -132,7 +132,8 @@
     "employeeCountPlaceholder": "مثال طور 2",
     "existingLoans": "ڪي موجوده فعال بئنڪ قرض آهن؟",
     "annualTurnover": "سالانه ٽرن اوور (₹، جيڪڏهن ڪو هجي)",
-    "annualTurnoverPlaceholder": "مثال طور 300000"
+    "annualTurnoverPlaceholder": "مثال طور 300000",
+    "employeeCountHint": "پاڻ کي شامل ڪندي"
   },
   "dashboard": {
     "welcome": "خوش آمديد،",
