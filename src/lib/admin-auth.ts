@@ -203,6 +203,7 @@ export async function deleteAuthUserSafely(uid: string): Promise<boolean> {
           },
           body: JSON.stringify({
             localIds: [uid],
+            force: true,
           }),
         }
       );

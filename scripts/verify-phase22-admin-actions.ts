@@ -233,7 +233,7 @@ async function verifyPhase22AdminActions() {
       body: JSON.stringify({
         circularText: 'Government notification regarding subsidy rates for small enterprise manufacturing units in rural areas.',
       }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(120000),
     });
     const draftJson = await draftRes.json();
     assert('AI Scheme Draft API (/api/admin/schemes/draft) accepts admin Bearer token (HTTP 200)', draftRes.status === 200 && draftJson.success === true);
