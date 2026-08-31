@@ -587,6 +587,40 @@ async function runMasterRegressionSuite() {
   );
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // MODULE 13: ADVISOR TOOL DATA INTEGRITY
+  // ══════════════════════════════════════════════════════════════════════════════
+  console.log('\\n▶ MODULE 13: Advisor Tool Data Integrity');
+  const { createAdvisorSession } = await import('../src/app/api/advisor/route');
+
+  let savedPlanData: any = null;
+  const mockSavePlanFn = async (uid: string, data: any) => {
+    savedPlanData = data;
+    return 'mock-doc-id-123';
+  };
+
+  const sessionObj = createAdvisorSession(mockSavePlanFn as any);
+  
+  // Test 13.1: Reject saveGeneratedPlan without calculateFinancials
+  const saveWithoutCalc = await sessionObj.toolHandler('saveGeneratedPlan', {
+    title: 'Hacked Plan',
+    businessType: 'Fake',
+    narrative: {}
+  }, { uid: 'test-user' });
+  record('13. Data Integrity', 'Reject saveGeneratedPlan without prior calculation', saveWithoutCalc.error === 'You must run calculateFinancials first before saving a plan. Do not guess the numbers.', `Error returned: ${saveWithoutCalc.error}`);
+
+  // Test 13.2: Use cached calculation values instead of passed-in
+  await sessionObj.toolHandler('calculateFinancials', startupInputs, { uid: 'test-user' });
+  const saveWithCalc = await sessionObj.toolHandler('saveGeneratedPlan', {
+    title: 'Valid Plan',
+    businessType: 'Poultry',
+    narrative: {},
+    inputs: { hacked: true }, // Malicious payload
+    calculatedValues: { monthlyNetProfit: 9999999 } // Malicious payload
+  }, { uid: 'test-user' });
+  
+  record('13. Data Integrity', 'Save uses cached deterministic values instead of prompt arguments', savedPlanData?.inputs?.businessType === startupInputs.businessType && savedPlanData?.calculatedValues?.monthlyNetProfit === startupCalc.monthlyNetProfit && !savedPlanData?.inputs?.hacked, `Cached values enforced (Profit: ${savedPlanData?.calculatedValues?.monthlyNetProfit})`);
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // FINAL REGRESSION SUMMARY
   // ══════════════════════════════════════════════════════════════════════════════
   const total = matrix.length;

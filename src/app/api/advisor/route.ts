@@ -16,6 +16,49 @@ import type { ChatMessage, UserProfile, PlanInputs, CalculatedValues } from '@/t
 // Explicit maxDuration config per PRD §6.4 for Vercel Hobby plan
 export const maxDuration = 60;
 
+export function createAdvisorSession(savePlanFn = savePlan) {
+  let lastCalculatedPlan: { inputs: PlanInputs; calculatedValues: CalculatedValues } | null = null;
+
+  const toolHandler = async (name: string, args: any, userProfile?: Partial<UserProfile> | null) => {
+      if (name === 'calculateFinancials') {
+        const calculated = calculateFinancialPlan(args);
+        lastCalculatedPlan = { inputs: args as PlanInputs, calculatedValues: calculated };
+        return calculated;
+      }
+      if (name === 'matchSchemes') {
+        const matches = matchSchemesForProfile(SEED_SCHEMES, userProfile || null);
+        return matches.map(m => ({
+          name: m.scheme.name,
+          description: m.scheme.description,
+          matchScore: m.matchScore,
+          subsidy: m.scheme.benefits.maxSubsidyPercent,
+          maxFunding: m.scheme.benefits.maxFundingAmount,
+        }));
+      }
+      if (name === 'saveGeneratedPlan') {
+        if (!userProfile?.uid) return { error: 'User not logged in or missing ID' };
+        if (!lastCalculatedPlan) {
+          return { error: 'You must run calculateFinancials first before saving a plan. Do not guess the numbers.' };
+        }
+        try {
+          const docId = await savePlanFn(userProfile.uid, {
+            title: args.title || 'Generated Business Plan',
+            businessType: args.businessType || 'Micro-Enterprise',
+            inputs: lastCalculatedPlan.inputs,
+            calculatedValues: lastCalculatedPlan.calculatedValues,
+            aiNarrative: args.narrative,
+          });
+          return { success: true, planId: docId, message: 'Plan saved successfully' };
+        } catch (e: any) {
+          return { error: 'Failed to save plan: ' + e.message };
+        }
+      }
+      return { error: 'Unknown tool' };
+    };
+
+  return { toolHandler };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -111,16 +154,6 @@ export async function POST(req: NextRequest) {
               properties: {
                 title: { type: 'STRING', description: 'A short, descriptive title for the business plan' },
                 businessType: { type: 'STRING', description: 'Type of business' },
-                inputs: {
-                  type: 'OBJECT',
-                  description: 'The PlanInputs object used for calculation. Include all keys like businessType, equipmentCost, unitPrice, etc. from calculateFinancials.',
-                  properties: {} 
-                },
-                calculatedValues: {
-                  type: 'OBJECT',
-                  description: 'The CalculatedValues object returned by calculateFinancials.',
-                  properties: {} 
-                },
                 narrative: {
                   type: 'OBJECT',
                   description: 'Qualitative analysis for the plan.',
@@ -138,40 +171,11 @@ export async function POST(req: NextRequest) {
       }
     ];
 
-    const toolHandler = async (name: string, args: any) => {
-      if (name === 'calculateFinancials') {
-        return calculateFinancialPlan(args);
-      }
-      if (name === 'matchSchemes') {
-        const matches = matchSchemesForProfile(SEED_SCHEMES, userProfile);
-        return matches.map(m => ({
-          name: m.scheme.name,
-          description: m.scheme.description,
-          matchScore: m.matchScore,
-          subsidy: m.scheme.benefits.maxSubsidyPercent,
-          maxFunding: m.scheme.benefits.maxFundingAmount,
-        }));
-      }
-      if (name === 'saveGeneratedPlan') {
-        if (!userProfile?.uid) return { error: 'User not logged in or missing ID' };
-        try {
-          const docId = await savePlan(userProfile.uid, {
-            title: args.title || 'Generated Business Plan',
-            businessType: args.businessType || 'Micro-Enterprise',
-            inputs: args.inputs as PlanInputs,
-            calculatedValues: args.calculatedValues as CalculatedValues,
-            aiNarrative: args.narrative,
-          });
-          return { success: true, planId: docId, message: 'Plan saved successfully' };
-        } catch (e: any) {
-          return { error: 'Failed to save plan: ' + e.message };
-        }
-      }
-      return { error: 'Unknown tool' };
-    };
 
     // Stream the response using ReadableStream
     const encoder = new TextEncoder();
+    const session = createAdvisorSession();
+    
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -180,7 +184,7 @@ export async function POST(req: NextRequest) {
             systemInstruction,
             historyContext,
             tools,
-            toolHandler,
+            (name, args) => session.toolHandler(name, args, userProfile),
             { temperature: 0.7, maxOutputTokens: 2048 }
           );
 
