@@ -133,7 +133,9 @@
     "existingLoans": "ᱪᱮ ᱢᱟᱲᱟᱝ ᱠᱷᱚᱱ ᱜᱮ ᱵᱮᱸᱠ ᱨᱤᱱ ᱢᱮᱱᱟᱜᱼᱟ?",
     "annualTurnover": "ᱥᱮᱨᱢᱟᱠᱤᱭᱟᱹ ᱵᱮᱯᱟᱨ (₹, ᱡᱩᱫᱤ ᱢᱮᱱᱟᱜᱼᱟ)",
     "annualTurnoverPlaceholder": "ᱡᱮᱞᱮᱠᱟ ᱓᱐᱐᱐᱐᱐",
-    "employeeCountHint": "ᱟᱯᱱᱟᱨ ᱥᱮᱞᱮᱫ ᱠᱟᱛᱮ"
+    "employeeCountHint": "ᱟᱯᱱᱟᱨ ᱥᱮᱞᱮᱫ ᱠᱟᱛᱮ",
+    "ageRange": "ᱩᱢᱮᱨ ᱥᱤᱢᱟᱹ",
+    "selectAge": "ᱩᱢᱮᱨ ᱵᱟᱪᱷᱟᱣ ᱢᱮ"
   },
   "dashboard": {
     "welcome": "ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ ᱨᱩᱣᱟᱹᱲ,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "ᱵᱤᱵᱚᱨᱚᱱ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ",
     "allSet": "ᱡᱚᱛᱚ ᱯᱨᱳᱯᱷᱟᱭᱤᱞ ᱵᱤᱵᱚᱨᱚᱱ ᱥᱟᱯᱲᱟᱣ ᱮﻨᱟ! ᱡᱚᱡᱚᱱᱟ ᱟᱨ ᱫᱤᱥᱟᱹ-ᱩᱫᱩᱜ ᱯᱩᱨᱟᱹᱣ ᱞᱮᱠᱟᱛᱮ ᱢᱮᱱᱟᱜᱼᱟ᱾",
     "userTag": "ᱵᱮᱵᱷᱟᱨᱤᱭᱟᱹ",
-    "appCalcTag": "ᱮᱯ ᱦᱤᱥᱟᱹᱵᱽ"
+    "appCalcTag": "ᱮᱯ ᱦᱤᱥᱟᱹᱵᱽ",
+    "aiReadyBadge": "ArthaSetu AI ᱥᱟᱯᱲᱟᱣ ᱢᱮᱱᱟᱜᱼᱟ",
+    "askAIFullDesc": "ArthaSetu ᱥᱟᱶ ᱨᱚᱯᱚᱲ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱵᱮᱯᱟᱨ ᱯᱞᱟᱱ ᱵᱮᱱᱟᱣ ᱢᱮ, ᱡᱚᱡᱚᱱᱟ ᱨᱮᱱᱟᱜ ᱦᱚᱠ ᱧᱮᱞ ᱢᱮ ᱟᱨ ᱠᱟᱹᱣᱰᱤᱟᱹᱨᱤ ᱫᱤᱥᱟᱹ-ᱩᱫᱩᱜ ᱧᱟᱢ ᱢᱮ᱾",
+    "openAdvisorCta": "ᱫᱤᱥᱟᱹ-ᱩᱫᱩᱜᱤᱭᱟᱹ ᱡᱷᱤᱡ ᱢᱮ",
+    "advancedToolsHeading": "ᱞᱟᱦᱟᱱᱛᱤ / ᱛᱤ ᱛᱮ ᱵᱮᱵᱷᱟᱨ ᱦᱟᱹᱛᱭᱟᱹᱨᱠᱚ",
+    "manualEntryBadge": "ᱛᱤ ᱛᱮ ᱚᱞ",
+    "openFormCta": "ᱯᱷᱚᱨᱢ ᱡᱷᱤᱡ ᱢᱮ",
+    "manualBrowseBadge": "ᱛᱤ ᱛᱮ ᱯᱟᱸᱡᱟ",
+    "browseSchemesCta": "ᱡᱚᱡᱚᱱᱟᱠᱚ ᱧᱮᱞ ᱢᱮ"
   },
   "graminScore": {
     "title": "ᱜᱨᱟᱢᱤᱱ ᱠᱨᱮᱰᱤᱴ ᱥᱟᱯᱲᱟᱣ ᱥᱠᱳᱨ",

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import AmbientBackground from '@/components/ui/AmbientBackground';
@@ -78,7 +77,6 @@ export default function SavedAdvicePage() {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">{t.common.loading}</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -195,7 +193,6 @@ export default function SavedAdvicePage() {
           </div>
         )}
       </main>
-      <Footer />
     </>
   );
 }

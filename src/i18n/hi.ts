@@ -177,6 +177,14 @@ const hi: Translations = {
     allSet: 'सभी प्रोफ़ाइल विवरण पूर्ण हैं! योजनाएं और सलाह पूरी तरह आपके अनुकूल हैं।',
     userTag: 'उपयोगकर्ता',
     appCalcTag: 'ऐप गणना',
+    aiReadyBadge: 'अर्थसेतु एआई तैयार है',
+    askAIFullDesc: 'अर्थसेतु से बात करके अपनी व्यावसायिक योजना बनाएं, योजना पात्रता जांचें और वित्तीय सलाह प्राप्त करें।',
+    openAdvisorCta: 'सलाहकार खोलें',
+    advancedToolsHeading: 'उन्नत / मैन्युअल उपकरण',
+    manualEntryBadge: 'मैन्युअल प्रविष्टि',
+    openFormCta: 'फॉर्म खोलें',
+    manualBrowseBadge: 'मैन्युअल ब्राउज़',
+    browseSchemesCta: 'योजनाएं देखें',
   },
 
   graminScore: {

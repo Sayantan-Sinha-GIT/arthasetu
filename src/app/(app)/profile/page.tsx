@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import Button from '@/components/ui/Button';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Input, { Select, NumberInput } from '@/components/ui/Input';
@@ -284,7 +283,6 @@ export default function ProfilePage() {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">{t.common.loading}</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -676,7 +674,6 @@ export default function ProfilePage() {
           </div>
         )}
       </main>
-      <Footer />
     </>
   );
 }

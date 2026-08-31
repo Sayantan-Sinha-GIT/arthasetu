@@ -133,7 +133,9 @@
     "existingLoans": "ڪي موجوده فعال بئنڪ قرض آهن؟",
     "annualTurnover": "سالانه ٽرن اوور (₹، جيڪڏهن ڪو هجي)",
     "annualTurnoverPlaceholder": "مثال طور 300000",
-    "employeeCountHint": "پاڻ کي شامل ڪندي"
+    "employeeCountHint": "پاڻ کي شامل ڪندي",
+    "ageRange": "عمر جي حد",
+    "selectAge": "عمر چونڊيو"
   },
   "dashboard": {
     "welcome": "خوش آمديد،",
@@ -167,7 +169,15 @@
     "detailsCompleted": "تفصيل مڪمل ٿيا",
     "allSet": "پروفائل جا سڀ تفصيل مقرر آهن! اسڪيمون ۽ صلاحون مڪمل طور تي تيار ڪيل آهن.",
     "userTag": "استعمال ڪندڙ",
-    "appCalcTag": "ايپ ڪئلڪ"
+    "appCalcTag": "ايپ ڪئلڪ",
+    "aiReadyBadge": "ارٿ سيتو AI تيار آهي",
+    "askAIFullDesc": "ارٿ سيتو سان ڳالهائي پنهنجو ڪاروباري منصوبو ٺاهيو، اسڪيمن جي اهليت چيڪ ڪريو ۽ مالي صلاح حاصل ڪريو.",
+    "openAdvisorCta": "صلاحڪار کوليو",
+    "advancedToolsHeading": "جديد / دستي اوزار",
+    "manualEntryBadge": "دستي اندراج",
+    "openFormCta": "فارم کوليو",
+    "manualBrowseBadge": "دستي ڳولا",
+    "browseSchemesCta": "اسڪيمون ڏسو"
   },
   "graminScore": {
     "title": "گرامين ڪريڊٽ ريڊينس اسڪور",

@@ -133,7 +133,9 @@
     "existingLoans": "کیا کوئی موجودہ فعال بینک قرض ہے؟",
     "annualTurnover": "سالانہ ٹرن اوور (₹، اگر کوئی ہو)",
     "annualTurnoverPlaceholder": "مثال کے طور پر: 300000",
-    "employeeCountHint": "خود کو شامل کرتے ہوئے"
+    "employeeCountHint": "خود کو شامل کرتے ہوئے",
+    "ageRange": "عمر کی حد",
+    "selectAge": "عمر منتخب کریں"
   },
   "dashboard": {
     "welcome": "خوش آمدید،",
@@ -167,7 +169,15 @@
     "detailsCompleted": "تفصیلات مکمل ہوئیں",
     "allSet": "پروفাইল کی تمام تفصیلات سیٹ ہیں! اسکیمیں اور مشورے مکمل طور پر موزوں ہیں۔",
     "userTag": "صارف",
-    "appCalcTag": "ایپ کیلکولیشن"
+    "appCalcTag": "ایپ کیلکولیشن",
+    "aiReadyBadge": "ارتھ سیتو AI تیار ہے",
+    "askAIFullDesc": "ارتھ سیتو سے بات کر کے اپنا کاروباری منصوبہ بنائیں، اسکیموں کی اہلیت جانچیں اور مالیاتی مشورہ حاصل کریں۔",
+    "openAdvisorCta": "مشیر کھولیں",
+    "advancedToolsHeading": "جدید / دستی ٹولز",
+    "manualEntryBadge": "دستی اندراج",
+    "openFormCta": "فارم کھولیں",
+    "manualBrowseBadge": "دستی براؤز",
+    "browseSchemesCta": "اسکیمیں دیکھیں"
   },
   "graminScore": {
     "title": "گرامین کریڈٹ ریڈی نیس اسکور",

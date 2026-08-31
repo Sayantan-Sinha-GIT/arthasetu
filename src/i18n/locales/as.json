@@ -133,7 +133,9 @@
     "existingLoans": "কোনো চলি থকা বেংক ঋণ আছে নেকি?",
     "annualTurnover": "বাৰ্ষিক কাৰোবাৰ টাৰ্ণঅ’ভাৰ (₹, যদি আছে)",
     "annualTurnoverPlaceholder": "যেনে ৩০০০০০",
-    "employeeCountHint": "নিজক অন্তৰ্ভুক্ত কৰি"
+    "employeeCountHint": "নিজক অন্তৰ্ভুক্ত কৰি",
+    "ageRange": "বয়সৰ পৰিসৰ",
+    "selectAge": "বয়স নিৰ্বাচন কৰক"
   },
   "dashboard": {
     "welcome": "স্বাগতম জনাইছোঁ,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "বিৱৰণ সম্পূৰ্ণ হ’ল",
     "allSet": "সকলো প্ৰফাইল বিৱৰণ ছেট কৰা হৈছে! আঁচনি আৰু পৰামৰ্শসমূহ সম্পূৰ্ণৰূপে প্ৰস্তুত কৰা হৈছে।",
     "userTag": "ব্যৱহাৰকাৰী",
-    "appCalcTag": "এপ কেল্ক"
+    "appCalcTag": "এপ কেল্ক",
+    "aiReadyBadge": "অৰ্থসেতু এআই সাজু",
+    "askAIFullDesc": "অৰ্থসেতুৰ সৈতে কথা পাতি আপোনাৰ ব্যৱসায়িক পৰিকল্পনা তৈয়াৰ কৰক, আঁচনিৰ যোগ্যতা পৰীক্ষা কৰক আৰু বিত্তীয় পৰামৰ্শ লাভ কৰক।",
+    "openAdvisorCta": "পৰামৰ্শদাতা খোলক",
+    "advancedToolsHeading": "উন্নত / মেনুৱেল সঁজুলি",
+    "manualEntryBadge": "মেনুৱেল এন্ট্ৰি",
+    "openFormCta": "ফৰ্ম খোলক",
+    "manualBrowseBadge": "মেনুৱেল ব্ৰাউজ",
+    "browseSchemesCta": "আঁচনিসমূহ চাওক"
   },
   "graminScore": {
     "title": "গ্ৰামীণ ঋণ প্ৰস্তুতিৰ স্ক’ৰ",

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import Card from '@/components/ui/Card';
@@ -86,7 +85,6 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">Loading Scheme Details...</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -107,7 +105,6 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
             <Button size="md">← Back to All Schemes</Button>
           </Link>
         </main>
-        <Footer />
       </>
     );
   }
@@ -317,7 +314,6 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
         {/* Feature 2: Interactive Document Preparation Checklist */}
         <DocumentChecklist scheme={scheme} />
       </main>
-      <Footer />
     </>
   );
 }

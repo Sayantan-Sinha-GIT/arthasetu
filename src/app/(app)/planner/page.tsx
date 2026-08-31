@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import PlannerWizard from '@/components/planner/PlannerWizard';
@@ -126,7 +125,6 @@ export default function PlannerPage() {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">Loading Financial Planner...</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -168,7 +166,6 @@ export default function PlannerPage() {
           />
         )}
       </main>
-      <Footer />
     </>
   );
 }

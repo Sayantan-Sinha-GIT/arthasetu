@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
 import ActionCard from '@/components/dashboard/ActionCard';
@@ -69,7 +68,6 @@ export default function DashboardPage() {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">{t.common.loading}</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -90,17 +88,17 @@ export default function DashboardPage() {
             <div className="space-y-3 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                ArthaSetu AI Ready
+                {t.dashboard.aiReadyBadge}
               </div>
               <h2 className="text-2xl md:text-3xl font-black">{t.dashboard.askAI}</h2>
               <p className="text-saffron-50 text-sm md:text-base leading-relaxed">
-                {t.dashboard.askAIDesc} Build your business plan, check scheme eligibility, and get financial advice just by talking to ArthaSetu.
+                {t.dashboard.askAIFullDesc}
               </p>
             </div>
             <div className="shrink-0 w-full md:w-auto">
               <button className="w-full md:w-auto flex items-center justify-center gap-2 bg-white text-saffron-600 px-6 py-4 rounded-2xl font-bold hover:bg-saffron-50 transition-colors shadow-lg active:scale-95 text-base sm:text-lg">
                 <span>🎙️</span>
-                Open Advisor
+                {t.dashboard.openAdvisorCta}
               </button>
             </div>
           </div>
@@ -108,25 +106,25 @@ export default function DashboardPage() {
 
         {/* Secondary / Manual Actions */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-muted uppercase tracking-wider ml-1">Advanced / Manual Tools</h3>
+          <h3 className="text-xs font-bold text-muted uppercase tracking-wider ml-1">{t.dashboard.advancedToolsHeading}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ActionCard
               href="/planner"
               title={t.dashboard.createPlan}
               description={t.dashboard.createPlanDesc}
               icon="📊"
-              badge="Manual Entry"
+              badge={t.dashboard.manualEntryBadge}
               gradient="from-surface-elevated to-surface"
-              ctaText="Open Form"
+              ctaText={t.dashboard.openFormCta}
             />
             <ActionCard
               href="/schemes"
               title={t.dashboard.findSchemes}
               description={t.dashboard.findSchemesDesc}
               icon="🏛️"
-              badge="Manual Browse"
+              badge={t.dashboard.manualBrowseBadge}
               gradient="from-surface-elevated to-surface"
-              ctaText="Browse Schemes"
+              ctaText={t.dashboard.browseSchemesCta}
             />
           </div>
         </div>
@@ -151,7 +149,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

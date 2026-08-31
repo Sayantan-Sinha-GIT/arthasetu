@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import Button from '@/components/ui/Button';
@@ -104,7 +103,6 @@ export default function SchemesPage() {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">{t.common.loading}</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -290,7 +288,6 @@ export default function SchemesPage() {
           </div>
         )}
       </main>
-      <Footer />
     </>
   );
 }

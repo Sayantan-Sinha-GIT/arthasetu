@@ -8,7 +8,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { auth } from '@/lib/firebase';
 import Button from '@/components/ui/Button';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import AmbientBackground from '@/components/ui/AmbientBackground';
 
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -195,7 +194,6 @@ export default function VerifyEmailPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

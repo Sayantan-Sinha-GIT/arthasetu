@@ -133,7 +133,9 @@
     "existingLoans": "माब्लाबा बैंक लोन दं नामा?",
     "annualTurnover": "बोसोरारि टर्नओभर (₹, जुदि दंब्ला)",
     "annualTurnoverPlaceholder": "दसु 300000",
-    "employeeCountHint": "गावनिबो लाफानानै"
+    "employeeCountHint": "गावनिबो लाफानानै",
+    "ageRange": "बोसोरनि सिमा",
+    "selectAge": "बोसोर सायख'"
   },
   "dashboard": {
     "welcome": "फिन्ना फैफिनायखौ স্বাগতম,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "बिथियै गासै जाबाय",
     "allSet": "गासै प्रफाइल बिथियै थि जाबाय! हांखो आरो सल्लाहफोर गासै मिल्खांबाय।",
     "userTag": "ब्यबहारকারী",
-    "appCalcTag": "एप क्याल्क"
+    "appCalcTag": "एप क्याल्क",
+    "aiReadyBadge": "অৰ্থসেতু AI थियारि",
+    "askAIFullDesc": "অৰ্থসেতুजों रायज्लायनानै नोंथांनि फालांगि बिथांखि बानाय, आंसानि फाथा नाय आरो रां-आरोंदा गोनां सोलो ला।",
+    "openAdvisorCta": "सलाहगिरि खेव",
+    "advancedToolsHeading": "जौगानाय / आखायजों बाहायग्रा आगजु",
+    "manualEntryBadge": "आखायजों सोनावनाय",
+    "openFormCta": "फर्म खेव",
+    "manualBrowseBadge": "आखायजों नायगिरनाय",
+    "browseSchemesCta": "आंसानि नायगिर"
   },
   "graminScore": {
     "title": "ग्रामिन क्रेडिट थियारि स्कोर",

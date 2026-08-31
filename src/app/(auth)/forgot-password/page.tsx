@@ -10,7 +10,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 
 import Image from 'next/image';
 import AmbientBackground from '@/components/ui/AmbientBackground';
@@ -223,7 +222,6 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

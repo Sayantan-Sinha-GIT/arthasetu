@@ -133,7 +133,9 @@
     "existingLoans": "कुनै हालको सक्रिय बैंक ऋण छ?",
     "annualTurnover": "वार्षिक कारोबार (₹, यदि छ भने)",
     "annualTurnoverPlaceholder": "उदा. ३०००००",
-    "employeeCountHint": "आफूलाई समावेश गर्दै"
+    "employeeCountHint": "आफूलाई समावेश गर्दै",
+    "ageRange": "उमेर दायरा",
+    "selectAge": "उमेर चयन गर्नुहोस्"
   },
   "dashboard": {
     "welcome": "पुनः स्वागत छ,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "विवरणहरू पूरा भए",
     "allSet": "सबै प्रोफाइल विवरणहरू सेट गरिएका छन्! योजनाहरू र सल्लाहहरू पूर्ण रूपमा तयार पारिएका छन्।",
     "userTag": "प्रयोगकर्ता",
-    "appCalcTag": "एप क्याल्कुलेटर"
+    "appCalcTag": "एप क्याल्कुलेटर",
+    "aiReadyBadge": "अर्थसेतु AI तयार छ",
+    "askAIFullDesc": "अर्थसेतुसँग कुरा गरेर आफ्नो व्यवसाय योजना बनाउनुहोस्, योजना पात्रता जाँच्नुहोस् र वित्तीय सल्लाह पाउनुहोस्।",
+    "openAdvisorCta": "सल्लाहकार खोल्नुहोस्",
+    "advancedToolsHeading": "उन्नत / म्यानुअल उपकरणहरू",
+    "manualEntryBadge": "म्यानुअल प्रविष्टि",
+    "openFormCta": "फारम खोल्नुहोस्",
+    "manualBrowseBadge": "म्यानुअल ब्राउज",
+    "browseSchemesCta": "योजनाहरू हेर्नुहोस्"
   },
   "graminScore": {
     "title": "ग्रामीण ऋण readiness (तयारी) स्कोर",

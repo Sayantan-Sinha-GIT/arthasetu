@@ -186,6 +186,14 @@ const en = {
     allSet: 'All profile details are set! Schemes and advice are fully tailored.',
     userTag: 'User',
     appCalcTag: 'App Calc',
+    aiReadyBadge: 'ArthaSetu AI Ready',
+    askAIFullDesc: 'Build your business plan, check scheme eligibility, and get financial advice just by talking to ArthaSetu.',
+    openAdvisorCta: 'Open Advisor',
+    advancedToolsHeading: 'Advanced / Manual Tools',
+    manualEntryBadge: 'Manual Entry',
+    openFormCta: 'Open Form',
+    manualBrowseBadge: 'Manual Browse',
+    browseSchemesCta: 'Browse Schemes',
   },
 
   // Gramin Readiness Score

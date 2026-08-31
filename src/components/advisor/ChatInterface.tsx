@@ -181,6 +181,8 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
 
     setMessages((prev) => [...prev, userMessage, assistantMessage]);
     setInputValue('');
+    const el = textareaRef.current;
+    if (el) el.style.height = '46px';
     setIsStreaming(true);
 
     try {
@@ -428,7 +430,14 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
             <textarea
               ref={textareaRef}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                const el = textareaRef.current;
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = Math.min(el.scrollHeight, 128) + 'px';
+                }
+              }}
               onKeyDown={handleKeyDown}
               placeholder={
                 isListening
@@ -436,7 +445,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
                   : t.advisor.placeholder
               }
               rows={1}
-              className="w-full resize-none bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none max-h-32 min-h-[46px]"
+              className="w-full resize-none bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none max-h-32 min-h-[46px] overflow-y-auto"
               disabled={isStreaming}
             />
           </div>

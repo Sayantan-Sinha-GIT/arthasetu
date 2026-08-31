@@ -133,7 +133,9 @@
     "existingLoans": "ਕੋਈ ਮੌਜੂਦਾ ਕਿਰਿਆਸ਼ੀਲ ਬੈਂਕ ਕਰਜ਼ਾ ਹੈ?",
     "annualTurnover": "ਸਾਲਾਨਾ ਕਾਰੋਬਾਰ (₹, ਜੇ ਕੋਈ ਹੋਵੇ)",
     "annualTurnoverPlaceholder": "ਜਿਵੇਂ 300000",
-    "employeeCountHint": "ਆਪਣੇ ਆਪ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹੋਏ"
+    "employeeCountHint": "ਆਪਣੇ ਆਪ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹੋਏ",
+    "ageRange": "ਉਮਰ ਸੀਮਾ",
+    "selectAge": "ਉਮਰ ਚੁਣੋ"
   },
   "dashboard": {
     "welcome": "ਜੀ ਆਇਆਂ ਨੂੰ,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "ਵੇਰਵੇ ਪੂਰੇ ਹੋਏ",
     "allSet": "ਸਾਰੇ ਪ੍ਰੋਫਾਈਲ ਵੇਰਵੇ ਸੈੱਟ ਹਨ! ਸਕੀਮਾਂ ਅਤੇ ਸਲਾਹ ਪੂਰੀ ਤਰ੍ਹਾਂ ਅਨੁਕੂਲਿਤ ਹਨ।",
     "userTag": "ਉਪਭੋਗਤਾ",
-    "appCalcTag": "ਐਪ ਗਣਨਾ"
+    "appCalcTag": "ਐਪ ਗਣਨਾ",
+    "aiReadyBadge": "ਅਰਥਸੇਤੂ AI ਤਿਆਰ ਹੈ",
+    "askAIFullDesc": "ਅਰਥਸੇਤੂ ਨਾਲ ਗੱਲਬਾਤ ਕਰਕੇ ਆਪਣੀ ਵਪਾਰਕ ਯੋਜਨਾ ਬਣਾਓ, ਸਕੀਮਾਂ ਦੀ ਯੋਗਤਾ ਜਾਂਚੋ ਅਤੇ ਵਿੱਤੀ ਸਲਾਹ ਪ੍ਰਾਪਤ ਕਰੋ।",
+    "openAdvisorCta": "ਸਲਾਹਕਾਰ ਖੋਲ੍ਹੋ",
+    "advancedToolsHeading": "ਉੱਨਤ / ਮੈਨੁਅਲ ਟੂਲ",
+    "manualEntryBadge": "ਮੈਨੁਅਲ ਐਂਟਰੀ",
+    "openFormCta": "ਫ਼ਾਰਮ ਖੋਲ੍ਹੋ",
+    "manualBrowseBadge": "ਮੈਨੁਅਲ ਬ੍ਰਾਊਜ਼",
+    "browseSchemesCta": "ਸਕੀਮਾਂ ਵੇਖੋ"
   },
   "graminScore": {
     "title": "ਗ੍ਰਾਮੀਣ ਕ੍ਰੈਡਿਟ ਤਿਆਰੀ ਸਕੋਰ",

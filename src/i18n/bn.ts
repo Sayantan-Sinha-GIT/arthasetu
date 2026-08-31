@@ -177,6 +177,14 @@ const bn: Translations = {
     allSet: 'সমস্ত প্রোফাইল তথ্য সম্পন্ন হয়েছে! প্রকল্প ও পরামর্শ সম্পূর্ণ আপনার উপযোগী।',
     userTag: 'ব্যবহারকারী',
     appCalcTag: 'অ্যাপ গণনা',
+    aiReadyBadge: 'অর্থসেতু এআই প্রস্তুত',
+    askAIFullDesc: 'অর্থসেতুর সাথে কথা বলে আপনার ব্যবসার পরিকল্পনা তৈরি করুন, প্রকল্পের যোগ্যতা যাচাই করুন এবং আর্থিক পরামর্শ পান।',
+    openAdvisorCta: 'উপদেষ্টা খুলুন',
+    advancedToolsHeading: 'উন্নত / ম্যানুয়াল সরঞ্জাম',
+    manualEntryBadge: 'ম্যানুয়াল এন্ট্রি',
+    openFormCta: 'ফর্ম খুলুন',
+    manualBrowseBadge: 'ম্যানুয়াল ব্রাউজ',
+    browseSchemesCta: 'প্রকল্পগুলি ব্রাউজ করুন',
   },
 
   graminScore: {

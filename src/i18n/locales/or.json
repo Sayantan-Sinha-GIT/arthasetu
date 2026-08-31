@@ -133,7 +133,9 @@
     "existingLoans": "କୌଣସି ବିଦ୍ୟମାନ ସକ୍ରିୟ ବ୍ୟାଙ୍କ ଋଣ ଅଛି କି?",
     "annualTurnover": "ବାର୍ଷିକ କାରବାର (₹, ଯଦି କିଛି ଥାଏ)",
     "annualTurnoverPlaceholder": "ଯଥା: ୩୦୦୦୦୦",
-    "employeeCountHint": "ନିଜକୁ ଅନ୍ତର୍ଭୁକ୍ତ କରି"
+    "employeeCountHint": "ନିଜକୁ ଅନ୍ତର୍ଭୁକ୍ତ କରି",
+    "ageRange": "ବୟସ ସୀମା",
+    "selectAge": "ବୟସ ବାଛନ୍ତୁ"
   },
   "dashboard": {
     "welcome": "ପୁନଃସ୍ବାଗତ,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "ବିବରଣୀ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି",
     "allSet": "ସମସ୍ତ ପ୍ରୋଫାଇଲ୍ ବିବରଣୀ ସେଟ୍ ହୋଇଛି! ଯୋଜନା ଏବଂ ପରାମର୍ଶ ସମ୍ପୂର୍ଣ୍ଣ ରୂପେ ଅନୁକୂଳିତ।",
     "userTag": "ବ୍ୟବହାରକାରୀ",
-    "appCalcTag": "ଆପ୍ ଗଣନା"
+    "appCalcTag": "ଆପ୍ ଗଣନା",
+    "aiReadyBadge": "ଅର୍ଥସେତୁ AI ପ୍ରସ୍ତୁତ",
+    "askAIFullDesc": "ଅର୍ଥସେତୁ ସହିତ କଥାବାର୍ତ୍ତା କରି ଆପଣଙ୍କ ବ୍ୟବସାୟ ଯୋଜନା ପ୍ରସ୍ତୁତ କରନ୍ତୁ, ଯୋଜନା ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ଆର୍ଥିକ ପରାମର୍ଶ ପାଆନ୍ତୁ।",
+    "openAdvisorCta": "ପରାମର୍ଶଦାତା ଖୋଲନ୍ତୁ",
+    "advancedToolsHeading": "ଉନ୍ନତ / ମାନୁଆଲ୍ ଉପକରଣ",
+    "manualEntryBadge": "ମାନୁଆଲ୍ ଏଣ୍ଟ୍ରି",
+    "openFormCta": "ଫର୍ମ ଖୋଲନ୍ତୁ",
+    "manualBrowseBadge": "ମାନୁଆଲ୍ ବ୍ରାଉଜ୍",
+    "browseSchemesCta": "ଯୋଜନା ଦେଖନ୍ତୁ"
   },
   "graminScore": {
     "title": "ଗ୍ରାମୀଣ କ୍ରେଡିଟ୍ ପ୍ରସ୍ତୁତି ସ୍କୋର୍",

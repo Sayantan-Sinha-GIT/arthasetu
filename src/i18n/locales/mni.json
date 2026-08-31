@@ -133,7 +133,9 @@
     "existingLoans": "হৌজিক লৈরিবা লোন লৈদ্রা?",
     "annualTurnover": "চহিগী তর্নওভার (₹, লৈরমদ্রা)",
     "annualTurnoverPlaceholder": "মদম: ৩০০০০০",
-    "employeeCountHint": "ইশাগী য়াওনা"
+    "employeeCountHint": "ইশাগী য়াওনা",
+    "ageRange": "চহীগী চাং",
+    "selectAge": "চহী খনবা"
   },
   "dashboard": {
     "welcome": "সুগাই খুরুমজরি,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "মতিক চুবীবা লোইশিনখ্রে",
     "allSet": "প্রোফাইলগী মতিক পুম্নমক শেমখ্রে! থৌরাং অমসুং মরোল পুম্নমক মপুং ফানা শেমগৎলে।",
     "userTag": "শিজিন্নবা",
-    "appCalcTag": "এপ কেলক"
+    "appCalcTag": "এপ কেলক",
+    "aiReadyBadge": "অর্থসেতু AI শেম-শারে",
+    "askAIFullDesc": "অর্থসেতুগা ৱারী শানদুনা নহাক্কী ললোন-ইতিক্কী থৌরাং শেম্মু, স্কিমগী যোগ্যতাকং থিজিল্লু অমসুং শেল-থুমগী পাউতাক লৌ।",
+    "openAdvisorCta": "পাউতাকপীবা হাংদোকউ",
+    "advancedToolsHeading": "অৱাংবা থাক্কী / খুৎনা শীজিন্নবা খুৎলাইশিং",
+    "manualEntryBadge": "খুৎনা ইশিনবা",
+    "openFormCta": "ফোর্ম হাংদোকউ",
+    "manualBrowseBadge": "খুৎনা য়েংবা",
+    "browseSchemesCta": "স্কিমশিং য়েংউ"
   },
   "graminScore": {
     "title": "গ্রামিন ক্রেদিট ফীভম স্কোর",

@@ -133,7 +133,9 @@
     "existingLoans": "کیا کوئی مُٛے لون چھُ جٲری?",
     "annualTurnover": "سالانہٕ ٹَرنووَر (₹، اَگَر چھُ)",
     "annualTurnoverPlaceholder": "مِثال: 300000",
-    "employeeCountHint": "پانہٕ شٲمِل کٔرِتھ"
+    "employeeCountHint": "پانہٕ شٲمِل کٔرِتھ",
+    "ageRange": "عُمرٕچ حد",
+    "selectAge": "عُمر ژٲرِو"
   },
   "dashboard": {
     "welcome": "خۆش آمَد،",
@@ -167,7 +169,15 @@
     "detailsCompleted": "تَفصِیلات مُکَمَل",
     "allSet": "سٲری تفصِیلات چھِ جٲری! سکیمہٕ تہٕ مُشوَرٕ چھِ تەیار۔",
     "userTag": "یوزر",
-    "appCalcTag": "ایپ کَلس"
+    "appCalcTag": "ایپ کَلس",
+    "aiReadyBadge": "ارتھ سیتو AI تیار چھُ",
+    "askAIFullDesc": "ارتھ سیتو سٕتۍ کَتھ کٔرِتھ پَنُن کاروبٲری منصوٗبہٕ بَنٲوِو، سکیٖمن ہٕنٛز اہلیت جاٚنچِو تہٕ مٲلی مشوَرٕ حٲصِل کٔرِو۔",
+    "openAdvisorCta": "مشوَرٕکار کھولِو",
+    "advancedToolsHeading": "ایڈوانسڈ / دستہٕ ٹوٗلز",
+    "manualEntryBadge": "دستہٕ اندراج",
+    "openFormCta": "فارم کھولِو",
+    "manualBrowseBadge": "دستہٕ براؤز",
+    "browseSchemesCta": "سکیٖمہٕ وُچھِو"
   },
   "graminScore": {
     "title": "گرامیٖن کِرؠڈِٹ رِیٖڑینِس اَسکور",

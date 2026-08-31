@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Button from '@/components/ui/Button';
 import PlanResultView from '@/components/planner/PlanResultView';
@@ -61,7 +60,6 @@ export default function PlanDetailPage({ params }: PageProps) {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">Loading Financial Plan...</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -84,7 +82,6 @@ export default function PlanDetailPage({ params }: PageProps) {
             <Button size="md">← Back to Saved Plans</Button>
           </Link>
         </main>
-        <Footer />
       </>
     );
   }
@@ -113,7 +110,6 @@ export default function PlanDetailPage({ params }: PageProps) {
           onEdit={() => router.push('/planner')}
         />
       </main>
-      <Footer />
     </>
   );
 }

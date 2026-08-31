@@ -133,7 +133,9 @@
     "existingLoans": "काही चालू बँक कर्जे आहेत का?",
     "annualTurnover": "वार्षिक उलाढाल (₹, काही असल्यास)",
     "annualTurnoverPlaceholder": "उदा. ३०००००",
-    "employeeCountHint": "स्वतःचा समावेश करून"
+    "employeeCountHint": "स्वतःचा समावेश करून",
+    "ageRange": "वयोगट",
+    "selectAge": "वय निवडा"
   },
   "dashboard": {
     "welcome": "पुन्हा स्वागत आहे,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "तपशील पूर्ण झाले",
     "allSet": "सर्व प्रोफाइल तपशील सेट केले आहेत! योजना आणि सल्ले पूर्णपणे अनुरूप आहेत.",
     "userTag": "वापरकर्ता",
-    "appCalcTag": "अॅप गणना"
+    "appCalcTag": "अॅप गणना",
+    "aiReadyBadge": "अर्थसेतू AI सज्ज आहे",
+    "askAIFullDesc": "अर्थसेतूशी बोलून तुमचा व्यवसाय आराखडा तयार करा, योजनांची पात्रता तपासा आणि आर्थिक सल्ला मिळवा.",
+    "openAdvisorCta": "सल्लागार उघडा",
+    "advancedToolsHeading": "प्रगत / मॅन्युअल साधने",
+    "manualEntryBadge": "मॅन्युअल नोंद",
+    "openFormCta": "फॉर्म उघडा",
+    "manualBrowseBadge": "मॅन्युअल ब्राउझ",
+    "browseSchemesCta": "योजना शोधा"
   },
   "graminScore": {
     "title": "ग्रामीण क्रेडीट रेडिनेस स्कोर",

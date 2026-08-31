@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import ChatInterface from '@/components/advisor/ChatInterface';
@@ -53,7 +52,6 @@ export default function AdvisorPage() {
           <LoadingSpinner size="lg" />
           <p className="text-sm text-muted mt-3 animate-pulse">{t.common.loading}</p>
         </main>
-        <Footer />
       </>
     );
   }
@@ -89,7 +87,6 @@ export default function AdvisorPage() {
           userId={user?.uid || ''}
         />
       </main>
-      <Footer />
     </>
   );
 }

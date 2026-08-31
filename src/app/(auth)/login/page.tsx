@@ -9,7 +9,6 @@ import { auth } from '@/lib/firebase';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 
 function LoginFormContent() {
   const [email, setEmail] = useState('');
@@ -204,7 +203,6 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

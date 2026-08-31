@@ -133,7 +133,9 @@
     "existingLoans": "શું કોઈ અસ્તિત્વ ધરાવતી સક્રિય બેંક લોન છે?",
     "annualTurnover": "વાર્ષિક ટર્નઓવર (₹, જો કોઈ હોય તો)",
     "annualTurnoverPlaceholder": "દા.ત. 300000",
-    "employeeCountHint": "તમારી જાતને શામેલ કરીને"
+    "employeeCountHint": "તમારી જાતને શામેલ કરીને",
+    "ageRange": "ઉંમર શ્રેણી",
+    "selectAge": "ઉંમર પસંદ કરો"
   },
   "dashboard": {
     "welcome": "ફરી સ્વાગત છે,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "વિગતો પૂર્ણ થઈ",
     "allSet": "બધી પ્રોફાઇલ વિગતો સેટ છે! યોજનાઓ અને સલાહ સંપૂર્ણપણે અનુરૂપ છે.",
     "userTag": "વપરાશકર્તા",
-    "appCalcTag": "એપ ગણતરી"
+    "appCalcTag": "એપ ગણતરી",
+    "aiReadyBadge": "અર્થસેતુ AI તૈયાર છે",
+    "askAIFullDesc": "અર્થસેતુ સાથે વાત કરીને તમારો બિઝનેસ પ્લાન બનાવો, સરકારી યોજનાઓની પાત્રતા તપાસો અને નાણાકીય સલાહ મેળવો.",
+    "openAdvisorCta": "સલાહકાર ખોલો",
+    "advancedToolsHeading": "અદ્યતન / મેન્યુઅલ સાધનો",
+    "manualEntryBadge": "મેન્યુઅલ એન્ટ્રી",
+    "openFormCta": "ફોર્મ ખોલો",
+    "manualBrowseBadge": "મેન્યુઅલ બ્રાઉઝ",
+    "browseSchemesCta": "યોજનાઓ જુઓ"
   },
   "graminScore": {
     "title": "ગ્રામીણ ક્રેડિટ સજ્જતા સ્કોર",

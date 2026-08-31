@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import AdminGuard from '@/components/admin/AdminGuard';
 import SchemeEditorForm from '@/components/admin/SchemeEditorForm';
 
@@ -35,7 +34,6 @@ export default async function AdminNewSchemePage({
 
         <SchemeEditorForm isNew />
       </main>
-      <Footer />
     </AdminGuard>
   );
 }

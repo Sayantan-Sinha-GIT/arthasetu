@@ -133,7 +133,9 @@
     "existingLoans": "कोणतींय अस्तित्वांत आशिल्लीं बँक कर्जा आसात?",
     "annualTurnover": "वर्सुक उलाढाल (₹, जर आसा)",
     "annualTurnoverPlaceholder": "उदा. ३०००००",
-    "employeeCountHint": "तुमकां धरून"
+    "employeeCountHint": "तुमकां धरून",
+    "ageRange": "पिरायेची श्रेणी",
+    "selectAge": "पिरfilter विंचात"
   },
   "dashboard": {
     "welcome": "परत स्वागत,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "माहिती पूर्ण जाल्या",
     "allSet": "सगळी माहिती सेट आसा! येवजणी आनी सल्ले पूर्णपणे जुळोवपांत आयल्यात.",
     "userTag": "वापरपी",
-    "appCalcTag": "ॲप गणणा"
+    "appCalcTag": "ॲप गणणा",
+    "aiReadyBadge": "अर्थसेतू AI तयार आसा",
+    "askAIFullDesc": "अर्थसेतू कडेन उलोवन तुमची वेवसाय येवजण तयार करात, येवजणांची पात्रताय तपासात आनी वित्तीय सल्लो मेळयात.",
+    "openAdvisorCta": "सल्लागार उक्तो करात",
+    "advancedToolsHeading": "प्रगत / मॅन्युअल साधनां",
+    "manualEntryBadge": "मॅन्युअल नोंदणी",
+    "openFormCta": "फॉर्म उक्तो करात",
+    "manualBrowseBadge": "मॅन्युअल ब्रावझ",
+    "browseSchemesCta": "येवजण्यो पळयात"
   },
   "graminScore": {
     "title": "ग्रामीण क्रेडिट सज्जता गुण",

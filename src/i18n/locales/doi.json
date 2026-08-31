@@ -133,7 +133,9 @@
     "existingLoans": "क्या कोई बैंक कर्जा चलदा पिए ऐ?",
     "annualTurnover": "सालाना कारोबार (₹, जेकर ऐ)",
     "annualTurnoverPlaceholder": "जैसे- 300000",
-    "employeeCountHint": "अपने की शामल करदे होई"
+    "employeeCountHint": "अपने की शामल करदे होई",
+    "ageRange": "उमर सीमा",
+    "selectAge": "उमर चुनो"
   },
   "dashboard": {
     "welcome": "मुड़ियै स्वागत ऐ,",
@@ -167,7 +169,15 @@
     "detailsCompleted": "ब्योरा पूरा होइया",
     "allSet": "प्रोफाइल दा सारा ब्योरा दर्ज ऐ! योजनाएं ते सलाह पूरी चाल्ली तुंदे अनुकूल न।",
     "userTag": "उपयोगकर्ता",
-    "appCalcTag": "ऐप गणना"
+    "appCalcTag": "ऐप गणना",
+    "aiReadyBadge": "अर्थसेतु एआई तैयार ऐ",
+    "askAIFullDesc": "अर्थसेतु कन्नै गल्लबात करियै अपनी कारोबार योजना बनाओ, योजना पात्रता जांचो ते माली सलाह हासल करो।",
+    "openAdvisorCta": "सलाहकार खोल्लो",
+    "advancedToolsHeading": "उन्नत / मैन्युअल साधन",
+    "manualEntryBadge": "मैन्युअल इंदराज",
+    "openFormCta": "फार्म खोल्लो",
+    "manualBrowseBadge": "मैन्युअल खोज",
+    "browseSchemesCta": "योजनावां दिक्खो"
   },
   "graminScore": {
     "title": "ग्रामीण क्रेडिट तैयारी स्कोर",
