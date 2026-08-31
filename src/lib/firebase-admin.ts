@@ -2,15 +2,22 @@
 // Used in API routes and server actions for:
 // - Verifying ID tokens
 // - Setting custom claims (admin role)
-// - Server-side Firestore operations when needed
+// - Server-side Firestore operations
 //
 // NEVER import this file from client components.
 
 import { initializeApp, getApps, cert, type ServiceAccount } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import type { Auth } from 'firebase-admin/auth';
+import type { Firestore } from 'firebase-admin/firestore';
 import * as dotenv from 'dotenv';
 import { resolve } from 'path';
+import {
+  verifyIdTokenRest,
+  deleteUserRest,
+  getUserRest,
+  getUserByEmailRest,
+  setCustomUserClaimsRest,
+} from './firebase-admin-rest';
 
 if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   dotenv.config({ path: resolve(process.cwd(), '.env.local') });
@@ -58,15 +65,95 @@ function ensureInitialized() {
       });
       initialized = true;
     } catch (err) {
-      console.warn('Firebase Admin initialization skipped or deferred:', err);
+      console.warn('Firebase Admin initialization notice:', err);
     }
   } else {
     initialized = true;
   }
 }
 
-export const adminAuth = new Proxy({} as ReturnType<typeof getAuth>, {
-  get(_, prop) {
+/**
+ * Universal Admin Auth interface.
+ * Attempts native Firebase Admin SDK, seamlessly falling back to REST implementation
+ * to guarantee resilience across serverless/bundler environments.
+ */
+export const adminAuth = new Proxy({} as Auth, {
+  get(_, prop: string) {
+    // 1. Intercept high-traffic serverless auth methods with reliable REST fallbacks
+    if (prop === 'verifyIdToken') {
+      return async (idToken: string) => {
+        try {
+          ensureInitialized();
+          const { getAuth: resolveAuth } = require('firebase-admin/auth');
+          return await resolveAuth().verifyIdToken(idToken);
+        } catch {
+          return await verifyIdTokenRest(idToken);
+        }
+      };
+    }
+
+    if (prop === 'deleteUser') {
+      return async (uid: string) => {
+        try {
+          ensureInitialized();
+          const { getAuth: resolveAuth } = require('firebase-admin/auth');
+          return await resolveAuth().deleteUser(uid);
+        } catch {
+          const success = await deleteUserRest(uid);
+          if (!success) throw new Error(`Failed to delete user ${uid} via REST fallback`);
+        }
+      };
+    }
+
+    if (prop === 'getUser') {
+      return async (uid: string) => {
+        try {
+          ensureInitialized();
+          const { getAuth: resolveAuth } = require('firebase-admin/auth');
+          return await resolveAuth().getUser(uid);
+        } catch {
+          const user = await getUserRest(uid);
+          if (!user) {
+            const err: any = new Error(`No user record found for ${uid}`);
+            err.code = 'auth/user-not-found';
+            throw err;
+          }
+          return user;
+        }
+      };
+    }
+
+    if (prop === 'getUserByEmail') {
+      return async (email: string) => {
+        try {
+          ensureInitialized();
+          const { getAuth: resolveAuth } = require('firebase-admin/auth');
+          return await resolveAuth().getUserByEmail(email);
+        } catch {
+          const user = await getUserByEmailRest(email);
+          if (!user) {
+            const err: any = new Error(`No user record found for email ${email}`);
+            err.code = 'auth/user-not-found';
+            throw err;
+          }
+          return user;
+        }
+      };
+    }
+
+    if (prop === 'setCustomUserClaims') {
+      return async (uid: string, customClaims: Record<string, any>) => {
+        try {
+          ensureInitialized();
+          const { getAuth: resolveAuth } = require('firebase-admin/auth');
+          return await resolveAuth().setCustomUserClaims(uid, customClaims);
+        } catch {
+          return await setCustomUserClaimsRest(uid, customClaims);
+        }
+      };
+    }
+
+    // Default dynamic delegation to firebase-admin/auth
     ensureInitialized();
     const { getAuth: resolveAuth } = require('firebase-admin/auth');
     const authInstance = resolveAuth();
@@ -75,8 +162,8 @@ export const adminAuth = new Proxy({} as ReturnType<typeof getAuth>, {
   },
 });
 
-export const adminDb = new Proxy({} as ReturnType<typeof getFirestore>, {
-  get(_, prop) {
+export const adminDb = new Proxy({} as Firestore, {
+  get(_, prop: string) {
     ensureInitialized();
     const { getFirestore: resolveDb } = require('firebase-admin/firestore');
     const dbInstance = resolveDb();

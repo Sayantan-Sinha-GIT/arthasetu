@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth } from '@/lib/firebase-admin';
+import { verifyIdTokenRest } from '@/lib/firebase-admin-rest';
 
 // Verify ID token and return user claims (including admin status)
 export async function POST(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const decodedToken = await verifyIdTokenRest(idToken);
 
     return NextResponse.json({
       success: true,
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    console.error('Session verification error:', error);
+    console.error('Session verification error:', error instanceof Error ? error.message : 'Invalid token');
     return NextResponse.json(
       { success: false, error: 'Invalid or expired token' },
       { status: 401 }
