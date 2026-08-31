@@ -37,9 +37,10 @@ export async function POST(req: NextRequest) {
     const systemPrompt = buildSchemeParsingPrompt(circularText, currentScheme);
 
     const rawResponse = await generateContent(
-      GEMINI_MODELS.FLASH,
+      GEMINI_MODELS.FLASH_LITE,
       systemPrompt,
-      'Parse the government circular and output JSON matching the required schema.'
+      'Parse the government circular and output JSON matching the required schema.',
+      { temperature: 0.1, maxOutputTokens: 2048 }
     );
 
     // Clean JSON response (strip markdown fences if any)

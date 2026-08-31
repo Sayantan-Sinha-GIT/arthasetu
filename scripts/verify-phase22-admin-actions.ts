@@ -235,8 +235,14 @@ async function verifyPhase22AdminActions() {
       }),
       signal: AbortSignal.timeout(120000),
     });
-    const draftJson = await draftRes.json();
-    assert('AI Scheme Draft API (/api/admin/schemes/draft) accepts admin Bearer token (HTTP 200)', draftRes.status === 200 && draftJson.success === true);
+    const draftText = await draftRes.text();
+    let draftJson: any = {};
+    try {
+      draftJson = JSON.parse(draftText);
+    } catch {
+      draftJson = { error: draftText };
+    }
+    assert('AI Scheme Draft API (/api/admin/schemes/draft) accepts admin Bearer token (HTTP 200)', draftRes.status === 200 && draftJson.success === true, `Status: ${draftRes.status}`);
 
     // ══════════════════════════════════════════════════════════════
     // SUB-TEST C: Non-Admin Security Bounds on Admin API Routes
