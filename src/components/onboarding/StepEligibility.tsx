@@ -98,7 +98,7 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
           onValueChange={(val) => onChange({ employeeCount: val })}
           placeholder={t.onboarding.employeeCountPlaceholder}
           min={0}
-          hint="Including yourself and family members"
+          hint={t.onboarding.employeeCountHint || 'Including yourself'}
         />
 
         <NumberInput

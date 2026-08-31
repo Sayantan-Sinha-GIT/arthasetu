@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
+import { validateAddressConsistency, isValidPincode } from '@/lib/constants/pincodes';
 import type { ApiResponse } from '@/types';
 
 export const maxDuration = 60;
@@ -9,6 +10,7 @@ export interface ValidationRequestBody {
   businessCategory?: string;
   state?: string;
   district?: string;
+  pinCode?: string;
   availableCapital?: number;
   desiredFunding?: number;
   monthlyIncome?: number;
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<V
       businessCategory = '',
       state = '',
       district = '',
+      pinCode = '',
       availableCapital = 0,
       desiredFunding = 0,
       monthlyIncome = 0,
@@ -40,6 +43,20 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<V
 
     const errors: Record<string, string> = {};
     const warnings: string[] = [];
+
+    // Deterministic PIN Code & Location Validation
+    if (pinCode.trim()) {
+      if (!/^[1-9][0-9]{5}$/.test(pinCode.trim())) {
+        errors.pinCode = 'PIN code must be 6 digits and cannot start with 0';
+      } else if (!isValidPincode(pinCode.trim())) {
+        errors.pinCode = 'Invalid or unresolvable Indian PIN code';
+      } else if (state.trim()) {
+        const consistency = validateAddressConsistency(pinCode.trim(), state.trim(), district.trim());
+        if (!consistency.valid) {
+          errors.pinCode = consistency.reason || 'PIN code does not match selected state';
+        }
+      }
+    }
 
     // Deterministic Financial Sanity Check (Item 9)
     const monthlyNetProfit = monthlyIncome - monthlyExpenses;

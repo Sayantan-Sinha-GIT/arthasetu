@@ -146,6 +146,7 @@ const en = {
     selectGender: 'Select gender',
     employeeCount: 'Number of Employees',
     employeeCountPlaceholder: 'e.g. 2',
+    employeeCountHint: 'Including yourself',
     existingLoans: 'Any existing active bank loans?',
     annualTurnover: 'Annual Turnover (₹, if any)',
     annualTurnoverPlaceholder: 'e.g. 300000',

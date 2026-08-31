@@ -24,47 +24,79 @@ export default function PlannerWizard({
 
   const isExistingProfile = initialProfile?.businessStatus === 'existing';
   const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Form State initialized with profile defaults
+  const initialLocation = initialProfile?.locality
+    ? `${initialProfile.locality}${initialProfile?.district ? `, ${initialProfile.district}` : ''}${initialProfile?.state ? `, ${initialProfile.state}` : ''}`
+    : initialProfile?.district && initialProfile?.state
+    ? `${initialProfile.district}, ${initialProfile.state}`
+    : initialProfile?.state || '';
+
+  // Form State initialized purely from profile (NO hardcoded fake demo numbers)
   const [inputs, setInputs] = useState<PlanInputs>({
     planType: isExistingProfile ? 'existing_expansion' : 'startup',
-    businessType: initialProfile?.businessType || 'Broiler Poultry Farm',
-    businessScale: isExistingProfile ? 'Existing Unit + 50% Expansion' : '500 birds per batch',
-    location: initialProfile?.locality
-      ? `${initialProfile.locality}, ${initialProfile?.state || ''}`
-      : initialProfile?.state || 'Kamrup, Assam',
+    businessType: initialProfile?.businessType || '',
+    businessScale: '',
+    location: initialLocation,
     
-    // Existing business defaults
-    currentMonthlyRevenue: initialProfile?.monthlyIncome || 35000,
-    currentMonthlyExpenses: initialProfile?.monthlyExpenses || 20000,
-    expansionGoal: 'Expand capacity with new automated feeding & larger shed',
-    expansionEquipmentCost: 40000,
-    expansionWorkingCapital: 20000,
-    projectedRevenueIncreasePercent: 40,
+    // Existing business defaults from real profile
+    currentMonthlyRevenue: initialProfile?.monthlyIncome || 0,
+    currentMonthlyExpenses: initialProfile?.monthlyExpenses || 0,
+    expansionGoal: '',
+    expansionEquipmentCost: 0,
+    expansionWorkingCapital: 0,
+    projectedRevenueIncreasePercent: 0,
 
     // Startup defaults
-    equipmentCost: 25000,
-    setupCost: 35000,
-    initialInventory: 15000,
-    workingCapitalReserve: 15000,
+    equipmentCost: 0,
+    setupCost: 0,
+    initialInventory: 0,
+    workingCapitalReserve: 0,
 
-    unitPrice: 160,
-    unitsSoldPerMonth: 450,
-    otherMonthlyRevenue: 2000,
+    unitPrice: 0,
+    unitsSoldPerMonth: 0,
+    otherMonthlyRevenue: 0,
 
-    monthlyRawMaterials: 35000,
-    monthlyRentUtilities: 3000,
-    monthlyLabor: 5000,
-    monthlyTransportPackaging: 2500,
-    monthlyMaintenanceOther: 1500,
+    monthlyRawMaterials: 0,
+    monthlyRentUtilities: 0,
+    monthlyLabor: 0,
+    monthlyTransportPackaging: 0,
+    monthlyMaintenanceOther: 0,
 
-    availableSavings: initialProfile?.availableCapital || 30000,
+    availableSavings: initialProfile?.availableCapital || 0,
     loanInterestRatePercent: 9.5,
     loanTenureMonths: 36,
   });
 
   const updateField = <K extends keyof PlanInputs>(field: K, value: PlanInputs[K]) => {
     setInputs((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const validateStep1 = () => {
+    const errs: Record<string, string> = {};
+    if (!inputs.businessType?.trim()) {
+      errs.businessType = 'Please enter your business type or trade (e.g. Poultry, Tailoring, Dairy)';
+    }
+    if (!inputs.location?.trim()) {
+      errs.location = 'Please enter your operating location (e.g. Village/Town, District, State)';
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleGenerate = () => {
+    if (!validateStep1()) {
+      setStep(1);
+      return;
+    }
+    onGeneratePlan(inputs);
   };
 
   const isExisting = inputs.planType === 'existing_expansion';
@@ -174,6 +206,7 @@ export default function PlannerWizard({
                 value={inputs.businessType}
                 onChange={(e) => updateField('businessType', e.target.value)}
                 placeholder="e.g. Broiler Poultry Farm, Tailoring Shop, Dairy Unit"
+                error={errors.businessType}
                 required
               />
 
@@ -182,7 +215,6 @@ export default function PlannerWizard({
                 value={inputs.businessScale}
                 onChange={(e) => updateField('businessScale', e.target.value)}
                 placeholder="e.g. 500 birds per batch, 8 Sewing machines, 5 Dairy cows"
-                required
               />
 
               <Input
@@ -190,12 +222,19 @@ export default function PlannerWizard({
                 value={inputs.location}
                 onChange={(e) => updateField('location', e.target.value)}
                 placeholder="e.g. Hajo, Kamrup, Assam"
+                error={errors.location}
                 required
               />
             </div>
 
             <div className="flex justify-end pt-4 border-t border-border-subtle">
-              <Button type="button" size="md" onClick={() => setStep(2)}>
+              <Button
+                type="button"
+                size="md"
+                onClick={() => {
+                  if (validateStep1()) setStep(2);
+                }}
+              >
                 Next: {isExisting ? 'Current Cash Flow' : 'Startup Investment'} →
               </Button>
             </div>
@@ -665,7 +704,7 @@ export default function PlannerWizard({
               <Button
                 type="button"
                 size="lg"
-                onClick={() => onGeneratePlan(inputs)}
+                onClick={handleGenerate}
                 isLoading={isLoading}
                 className="px-8 shadow-lg font-bold"
               >

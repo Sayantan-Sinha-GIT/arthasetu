@@ -17,6 +17,7 @@ import StepFinancialInfo from '@/components/onboarding/StepFinancialInfo';
 import StepEligibility from '@/components/onboarding/StepEligibility';
 import { getUserProfile, createUserProfile } from '@/lib/firestore/users';
 import { getDistrictsByState } from '@/lib/constants/districts';
+import { validateAddressConsistency, isValidPincode } from '@/lib/constants/pincodes';
 import type { UserProfile } from '@/types';
 
 export default function OnboardingPage() {
@@ -142,8 +143,17 @@ export default function OnboardingPage() {
       if (!formData.state) errs.state = 'Please select your state';
       if (!formData.district?.trim()) errs.district = 'Please enter your district';
       if (!formData.locality?.trim()) errs.locality = 'Please enter your village / town';
-      if (formData.pinCode?.trim() && !/^[1-9][0-9]{5}$/.test(formData.pinCode.trim())) {
+      if (!formData.pinCode?.trim()) {
+        errs.pinCode = 'Please enter your 6-digit postal PIN code';
+      } else if (!/^[1-9][0-9]{5}$/.test(formData.pinCode.trim())) {
         errs.pinCode = 'PIN code must be 6 digits and cannot start with 0';
+      } else if (!isValidPincode(formData.pinCode.trim())) {
+        errs.pinCode = 'Invalid or unresolvable PIN code';
+      } else if (formData.state && formData.district) {
+        const consistency = validateAddressConsistency(formData.pinCode.trim(), formData.state, formData.district);
+        if (!consistency.valid) {
+          errs.pinCode = consistency.reason || 'PIN code does not match state/district';
+        }
       }
     } else if (step === 1) {
       if (!formData.businessStatus) errs.businessStatus = 'Please select business status';

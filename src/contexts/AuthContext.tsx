@@ -37,10 +37,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasAdminClaim, setHasAdminClaim] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const tokenResult = await firebaseUser.getIdTokenResult();
+          setHasAdminClaim(!!tokenResult.claims.admin);
+        } catch {
+          setHasAdminClaim(false);
+        }
+      } else {
+        setHasAdminClaim(false);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -78,8 +89,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await sendEmailVerification(currentUser);
   };
 
-  // Derive isAdmin from email comparison — no custom claims needed
-  const isAdmin = !!user && !!ADMIN_EMAIL && user.email?.toLowerCase().trim() === ADMIN_EMAIL;
+  // Derive isAdmin from custom claim OR email match
+  const isEmailAdmin = !!user && !!ADMIN_EMAIL && user.email?.toLowerCase().trim() === ADMIN_EMAIL;
+  const isAdmin = hasAdminClaim || isEmailAdmin;
 
   return (
     <AuthContext.Provider

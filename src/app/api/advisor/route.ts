@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateContentStream, GEMINI_MODELS } from '@/lib/gemini';
+import {
+  generateContentStream,
+  GEMINI_MODELS,
+  classifyAdvisorQuery,
+  getAdvisorOffTopicRedirect,
+} from '@/lib/gemini';
 import { buildAdvisorSystemPrompt } from '@/lib/prompts/advisor';
 import type { ChatMessage, UserProfile } from '@/types';
 
@@ -26,6 +31,25 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Message is required' },
         { status: 400 }
       );
+    }
+
+    // Fast scope classification before running main streaming generation
+    const topicClassification = await classifyAdvisorQuery(message);
+    if (topicClassification === 'OFF_TOPIC') {
+      const redirectMessage = getAdvisorOffTopicRedirect(language);
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(redirectMessage));
+          controller.close();
+        },
+      });
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+        },
+      });
     }
 
     const systemInstruction = buildAdvisorSystemPrompt(userProfile, language);

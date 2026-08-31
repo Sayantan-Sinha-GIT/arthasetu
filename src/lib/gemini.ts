@@ -129,6 +129,75 @@ export async function* generateContentStream(
   }
 }
 
+// ─── Shared Advisor Scope Definition ───
+export const ADVISOR_SCOPE_RULES = `
+ALLOWED TOPICS:
+1. Micro, small, and rural enterprise business planning, setup, operations, expansion, and strategy in India.
+2. Indian government financial assistance schemes, credit initiatives, and subsidies (e.g. PMEGP, MUDRA Shishu/Kishore/Tarun, PM Vishwakarma, NLM, AHIDF, state enterprise missions).
+3. Product pricing, supplier sourcing, operating expenses, cash flow management, equipment purchases, and revenue calculations.
+4. Business registration, documentation literacy, bank loan applications, and collateral-free loan requirements.
+5. Polite greetings, introductory small talk, and expressions of gratitude (e.g., "Hello", "Namaste", "Kem cho", "Good morning", "Thank you").
+
+OFF-TOPIC DISALLOWED TOPICS:
+1. General programming, writing code, debugging, or computer science homework (e.g., "write python code for a linked list", "build a React app", "sql queries").
+2. Academic homework, essays, science/history exam solutions unrelated to running their Indian micro-enterprise.
+3. Entertainment, celebrity trivia, gaming, sports scores, movie plots, recipes unrelated to food business, creative fiction.
+4. Roleplaying as an unrelated fictional character or general-purpose personal assistant.
+`;
+
+/**
+ * Fast query classifier for AI Advisor using Gemini Flash-Lite.
+ * Returns 'ON_TOPIC' or 'OFF_TOPIC'.
+ */
+export async function classifyAdvisorQuery(
+  userMessage: string
+): Promise<'ON_TOPIC' | 'OFF_TOPIC'> {
+  const trimmed = userMessage.trim();
+  if (!trimmed) return 'ON_TOPIC';
+
+  const systemInstruction = `You are a strict binary scope classifier for ArthaSetu, a dedicated Indian rural micro-enterprise and business loan advisor.
+Determine whether the user query is ON_TOPIC or OFF_TOPIC based on the following scope:
+${ADVISOR_SCOPE_RULES}
+
+Classification Rules:
+- If the user asks about starting a business, raising poultry, tailoring, dairy, grocery, tea stall, handicrafts, government schemes, loans, profit, pricing, marketing, suppliers, or gives a polite greeting/thanks -> output strictly "ON_TOPIC".
+- If the user asks for programming code, algorithms (e.g., linked list, binary tree), homework, essays, general trivia, movies, sports, or non-business topics -> output strictly "OFF_TOPIC".
+- Output ONLY the single word "ON_TOPIC" or "OFF_TOPIC" with no markdown, punctuation, or explanation.`;
+
+  try {
+    const classification = await generateContent(
+      GEMINI_MODELS.FLASH_LITE,
+      systemInstruction,
+      `User query: "${trimmed}"`,
+      { temperature: 0.0, maxOutputTokens: 10, disableFallback: true }
+    );
+    const cleaned = classification.trim().toUpperCase();
+    if (cleaned.includes('OFF_TOPIC')) {
+      return 'OFF_TOPIC';
+    }
+    return 'ON_TOPIC';
+  } catch (err) {
+    console.warn('Advisor scope classification fallback to ON_TOPIC:', err);
+    return 'ON_TOPIC'; // Fail open on transient error
+  }
+}
+
+/**
+ * Returns a concise, warm, localized off-topic redirect message.
+ */
+export function getAdvisorOffTopicRedirect(language = 'en'): string {
+  switch (language) {
+    case 'hi':
+      return 'नमस्ते! मैं **अर्थसेतु (ArthaSetu)** हूँ — आपका समर्पित ग्रामीण व्यवसाय व सरकारी योजना सलाहकार।\n\nमैं सामान्य कोडिंग, होमवर्क या गैर-व्यावसायिक प्रश्नों में सहायता नहीं कर सकता। कृपया अपने व्यवसाय (जैसे पोल्ट्री, डेयरी, सिलाई, दुकान), सरकारी योजनाओं (PMEGP, MUDRA) या वित्तीय योजना से संबंधित प्रश्न पूछें!';
+    case 'bn':
+      return 'নমস্কার! আমি **অর্থসেতু (ArthaSetu)** — আপনার নিবেদিত গ্রামীণ ব্যবসা ও সরকারি প্রকল্প উপদেষ্টা।\n\nআমি সাধারণ কোডিং, হোমওয়ার্ক বা ব্যবসায়-বহির্ভূত বিষয়ে সহায়তা করতে পারি না। অনুগ্রহ করে আপনার ব্যবসা, সরকারি প্রকল্প (PMEGP, MUDRA) বা আর্থিক পরিকল্পনা সংক্রান্ত প্রশ্ন জিজ্ঞাসা করুন!';
+    case 'as':
+      return 'নমস্কাৰ! মই **অৰ্থসেতু (ArthaSetu)** — আপোনাৰ গ্ৰামীণ ব্যৱসায় আৰু চৰকাৰী আঁচনিৰ উপদেষ্টা।\n\nঅনুগ্ৰহ কৰি আপোনাৰ ব্যৱসায়, চৰকাৰী অনুদান (PMEGP, MUDRA) বা আৰ্থিক পৰিকল্পনা সম্পৰ্কে প্ৰশ্ন সোধক!';
+    default:
+      return "Hello! I am **ArthaSetu (अर्थसेतु)** — your dedicated rural business, financial planning, and government scheme advisor.\n\nI can only assist with business planning, enterprise setup, market strategy, and government loan/subsidy schemes (like PMEGP, MUDRA, and NLM). I cannot help with general coding, homework, or unrelated topics.\n\nHow can I help you plan or grow your business today?";
+  }
+}
+
 // ─── Exponential Backoff on 429 / 503 (rate limit / service availability) ───
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;

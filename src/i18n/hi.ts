@@ -138,6 +138,7 @@ const hi: Translations = {
     selectGender: 'लिंग चुनें',
     employeeCount: 'कर्मचारियों की संख्या',
     employeeCountPlaceholder: 'उदा. 2',
+    employeeCountHint: 'स्वयं को शामिल करते हुए',
     existingLoans: 'क्या कोई सक्रिय बैंक ऋण है?',
     annualTurnover: 'वार्षिक कारोबार (₹, यदि कोई हो)',
     annualTurnoverPlaceholder: 'उदा. 300000',

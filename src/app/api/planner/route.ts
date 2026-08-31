@@ -27,6 +27,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!inputs.businessType?.trim() || !inputs.location?.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Business type and operating location are required to generate a business plan.' },
+        { status: 400 }
+      );
+    }
+
     const systemPrompt = buildPlannerPrompt(inputs, calculatedValues, userProfile, language);
     const userQuery = 'Please analyze these exact business figures and generate the structured JSON narrative.';
 

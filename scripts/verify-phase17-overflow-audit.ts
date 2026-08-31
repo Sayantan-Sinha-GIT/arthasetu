@@ -107,8 +107,8 @@ export async function runOverflowAudit(baseUrl = 'http://localhost:3000', prefix
         if (rect.width === 0 && rect.height === 0) continue;
 
         if (rect.right > innerWidth + 0.5 || rect.left < -0.5 || elScrollWidth > innerWidth + 0.5) {
-          const classNameStr = typeof el.className === 'string' 
-            ? el.className 
+          const classNameStr = typeof el.className === 'string'
+            ? el.className
             : (el.className && typeof (el.className as any).baseVal === 'string' ? (el.className as any).baseVal : '');
 
           culprits.push({

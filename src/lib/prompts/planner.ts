@@ -43,8 +43,10 @@ ${profileContext}
 - मासिक ब्रेक-ईवन यूनिट्स: ${calculated.breakEvenUnitsPerMonth} यूनिट्स/महीना
 
 ---
+---
 ### 🎯 आपका कार्य:
 आपको केवल **गुणात्मक वित्तीय विश्लेषण (Qualitative Narrative)** प्रदान करना है। कोई नया गणित न जोड़ें।
+विशेष नियम: यदि व्यवसाय का प्रकार (businessType) अस्पष्ट या निरर्थक है, तो executiveSummary में विनम्रतापूर्वक स्पष्टीकरण मांगें और 2-3 उदाहरण दें, साथ ही सामान्य सूक्ष्म-उद्यम अनुमान प्रदान करें।
 सख्त JSON प्रारूप में उत्तर दें:
 
 \`\`\`json
@@ -98,6 +100,7 @@ ${profileContext}
 ---
 ### 🎯 Your Task:
 Provide the qualitative narrative, critical business assumptions, risk analysis, and immediate execution steps.
+SPECIAL INSTRUCTION: If the businessType is ambiguous, vague, or unrecognizable, politely ask the entrepreneur for clarification in the executiveSummary (e.g. "Could you clarify if you produce dairy, poultry, tailoring, or retail goods?") while providing conservative baseline micro-enterprise guidance.
 Respond strictly in JSON format as follows:
 
 \`\`\`json

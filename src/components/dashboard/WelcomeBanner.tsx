@@ -19,9 +19,14 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
   const locality = profile?.locality;
   const district = profile?.district;
 
-  const monthlyIncome = profile?.monthlyIncome || 0;
-  const monthlyExpenses = profile?.monthlyExpenses || 0;
-  const hasCashFlowData = monthlyIncome > 0 || monthlyExpenses > 0;
+  const isCapitalSet = typeof profile?.availableCapital === 'number';
+  const isFundingSet = typeof profile?.desiredFunding === 'number';
+  const isExpensesSet = typeof profile?.monthlyExpenses === 'number';
+  const isIncomeSet = typeof profile?.monthlyIncome === 'number';
+
+  const monthlyIncome = isIncomeSet ? profile.monthlyIncome! : 0;
+  const monthlyExpenses = isExpensesSet ? profile.monthlyExpenses! : 0;
+  const hasCashFlowData = isIncomeSet || isExpensesSet;
   const netCashFlow = monthlyIncome - monthlyExpenses;
 
   let locationText = '';
@@ -96,9 +101,19 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   {t.dashboard.userTag}
                 </span>
               </div>
-              <p className="text-sm sm:text-base font-bold text-white truncate">
-                ₹{(profile?.availableCapital || 0).toLocaleString('en-IN')}
-              </p>
+              {isCapitalSet ? (
+                <p className="text-sm sm:text-base font-bold text-white truncate">
+                  ₹{profile!.availableCapital!.toLocaleString('en-IN')}
+                </p>
+              ) : (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
+                >
+                  <span>Not set</span>
+                  <span className="text-[10px]">→</span>
+                </Link>
+              )}
             </div>
 
             {/* Desired Funding */}
@@ -109,9 +124,19 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   {t.dashboard.userTag}
                 </span>
               </div>
-              <p className="text-sm sm:text-base font-bold text-saffron-300 truncate">
-                ₹{(profile?.desiredFunding || 0).toLocaleString('en-IN')}
-              </p>
+              {isFundingSet ? (
+                <p className="text-sm sm:text-base font-bold text-saffron-300 truncate">
+                  ₹{profile!.desiredFunding!.toLocaleString('en-IN')}
+                </p>
+              ) : (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 text-xs text-saffron-400/80 hover:text-saffron-300 underline font-medium pt-1"
+                >
+                  <span>Not set</span>
+                  <span className="text-[10px]">→</span>
+                </Link>
+              )}
             </div>
 
             {/* Monthly Expenses */}
@@ -122,9 +147,19 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   {t.dashboard.userTag}
                 </span>
               </div>
-              <p className="text-sm sm:text-base font-bold text-slate-200 truncate">
-                ₹{monthlyExpenses.toLocaleString('en-IN')}
-              </p>
+              {isExpensesSet ? (
+                <p className="text-sm sm:text-base font-bold text-slate-200 truncate">
+                  ₹{profile!.monthlyExpenses!.toLocaleString('en-IN')}
+                </p>
+              ) : (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
+                >
+                  <span>Not set</span>
+                  <span className="text-[10px]">→</span>
+                </Link>
+              )}
             </div>
 
             {/* Net Cash Flow (App Calculated) */}
@@ -135,9 +170,19 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
                   {t.dashboard.appCalcTag}
                 </span>
               </div>
-              <p className={`text-sm sm:text-base font-bold truncate ${netCashFlow >= 0 ? 'text-emerald-300' : 'text-rose-400'}`}>
-                {netCashFlow >= 0 ? '+' : ''}₹{netCashFlow.toLocaleString('en-IN')}/mo
-              </p>
+              {hasCashFlowData ? (
+                <p className={`text-sm sm:text-base font-bold truncate ${netCashFlow >= 0 ? 'text-emerald-300' : 'text-rose-400'}`}>
+                  {netCashFlow >= 0 ? '+' : ''}₹{netCashFlow.toLocaleString('en-IN')}/mo
+                </p>
+              ) : (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
+                >
+                  <span>Not set</span>
+                  <span className="text-[10px]">→</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

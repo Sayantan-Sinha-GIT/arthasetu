@@ -27,32 +27,36 @@ export default function AdminLoginForm() {
 
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
+      const tokenResult = await credential.user.getIdTokenResult();
+      const hasAdminClaim = !!tokenResult.claims.admin;
       const loggedInEmail = credential.user.email?.toLowerCase().trim();
       const expectedEmail = ADMIN_EMAIL.toLowerCase().trim();
 
-      if (!expectedEmail || loggedInEmail !== expectedEmail) {
-        // Immediately sign out — they are not the admin
+      const isAuthorized = (expectedEmail && loggedInEmail === expectedEmail) || hasAdminClaim;
+
+      if (!isAuthorized) {
+        // Sign out immediately — credentials valid in Firebase, but not an admin
         await signOut(auth);
-        setError('Access Denied: Email does not match configured admin credentials.');
+        setError('Access Denied: Account authenticated successfully, but this email is not authorized as a system administrator.');
         setLoading(false);
         return;
       }
 
-      // Credentials match — redirect to secure admin dashboard
+      // Credentials match & authorized — redirect to secure admin dashboard
       router.push(`/${ADMIN_ROUTE_KEY}/admin`);
     } catch (err: any) {
       const code = err?.code || '';
       const msg = err?.message || '';
 
       if (code === 'auth/user-not-found' || msg.includes('user-not-found')) {
-        setError(t.auth.adminNotRegistered || 'Admin account not yet registered — sign up with the admin email at /signup first.');
+        setError('Firebase Auth Error: No user account found with this email address.');
       } else if (
         code === 'auth/invalid-credential' ||
         code === 'auth/wrong-password' ||
         msg.includes('invalid-credential') ||
         msg.includes('wrong-password')
       ) {
-        setError(t.auth.adminInvalidCredentials || 'No matching admin account, or incorrect password — if you haven\'t signed up yet, do so at /signup first.');
+        setError('Firebase Auth Error: Incorrect password or invalid credentials.');
       } else if (code === 'auth/too-many-requests') {
         setError(t.auth.tooManyRequests || 'Too many failed login attempts. Please wait a moment and try again.');
       } else {
@@ -139,14 +143,11 @@ export default function AdminLoginForm() {
             href="/"
             className="hover:text-foreground transition-colors inline-flex items-center gap-1"
           >
-            {t.admin.backHome}
+            ← {t.admin.backHome}
           </Link>
-          <Link
-            href="/signup"
-            className="text-primary hover:underline font-semibold"
-          >
-            {t.admin.registerLink}
-          </Link>
+          <span className="text-muted text-[11px]">
+            🔒 ArthaSetu System Admin Portal
+          </span>
         </div>
       </div>
     </main>

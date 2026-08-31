@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { auth } from '@/lib/firebase';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Navbar from '@/components/layout/Navbar';
@@ -29,7 +30,19 @@ function LoginFormContent() {
       await login(email, password);
       const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').trim().toLowerCase();
 
-      if (email.trim().toLowerCase() === adminEmail) {
+      let hasAdminClaim = false;
+      if (auth.currentUser) {
+        try {
+          const tokenRes = await auth.currentUser.getIdTokenResult();
+          hasAdminClaim = !!tokenRes.claims.admin;
+        } catch {
+          // Ignore token result fetch error
+        }
+      }
+
+      const isUserAdmin = (adminEmail && email.trim().toLowerCase() === adminEmail) || hasAdminClaim;
+
+      if (isUserAdmin) {
         // Terminate any session created on the public login page
         await logout();
         setError(t.auth.adminDetectedMessage || 'Administrative account detected. Please use the dedicated secure admin login portal to sign in.');
@@ -38,6 +51,7 @@ function LoginFormContent() {
 
       router.push('/dashboard');
     } catch (err: unknown) {
+      console.error('Login error:', err);
       const msg = err instanceof Error ? err.message : 'Login failed';
       if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential')) {
         setError(t.errors.invalidInput || 'Invalid email or password. Please try again.');

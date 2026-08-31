@@ -25,6 +25,7 @@ import {
   GENDERS,
 } from '@/lib/firestore/users';
 import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
+import { lookupPincode, fetchPincodeInfo, validateAddressConsistency, isValidPincode, type PincodeInfo } from '@/lib/constants/pincodes';
 import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
 import type { UserProfile, LoanDetail } from '@/types';
 
@@ -59,6 +60,9 @@ export default function ProfilePage() {
   });
 
   const [legacyDistrict, setLegacyDistrict] = useState<string>('');
+  const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
+  const [useCustomLocality, setUseCustomLocality] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -94,6 +98,15 @@ export default function ProfilePage() {
             }
           }
           setLegacyDistrict(legacyVal);
+
+          if (profile.pinCode && /^[1-9][0-9]{5}$/.test(profile.pinCode)) {
+            const direct = lookupPincode(profile.pinCode);
+            if (direct) setResolvedInfo(direct);
+            fetchPincodeInfo(profile.pinCode).then((info) => {
+              if (info) setResolvedInfo(info);
+            });
+          }
+
           setFormData((prev) => ({
             ...prev,
             ...profile,
@@ -113,8 +126,31 @@ export default function ProfilePage() {
     }
   }, [user, authLoading, router]);
 
-  const handlePinChange = (pin: string) => {
+  const handlePinChange = async (pin: string) => {
     const clean = pin.replace(/[^0-9]/g, '').slice(0, 6);
+    setLegacyDistrict('');
+
+    if (clean.length === 6 && /^[1-9][0-9]{5}$/.test(clean)) {
+      setIsResolving(true);
+      const info = await fetchPincodeInfo(clean);
+      setIsResolving(false);
+
+      if (info) {
+        setResolvedInfo(info);
+        const autoLocality = info.areas.length > 0 ? info.areas[0] : (formData.locality || '');
+        setFormData((prev) => ({
+          ...prev,
+          pinCode: clean,
+          state: info.state,
+          district: info.district,
+          locality: autoLocality,
+        }));
+        return;
+      }
+    } else {
+      setResolvedInfo(null);
+    }
+
     setFormData((prev) => ({ ...prev, pinCode: clean }));
   };
 
@@ -175,6 +211,25 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    if (!formData.pinCode || !/^[1-9][0-9]{5}$/.test(formData.pinCode)) {
+      setErrorMessage('Please enter a valid 6-digit Indian PIN code.');
+      return;
+    }
+
+    if (!isValidPincode(formData.pinCode)) {
+      setErrorMessage('Invalid or unresolvable Indian postal PIN code.');
+      return;
+    }
+
+    if (formData.state && formData.district) {
+      const consistency = validateAddressConsistency(formData.pinCode, formData.state, formData.district);
+      if (!consistency.valid) {
+        setErrorMessage(consistency.reason || 'PIN code does not match state/district.');
+        return;
+      }
+    }
+
     if (pinError) {
       setErrorMessage(pinError);
       return;
@@ -266,6 +321,15 @@ export default function ProfilePage() {
     setFormData((prev) => ({ ...prev, district: newDistrict }));
   };
 
+  const isAddressLocked = !!resolvedInfo && !!formData.pinCode && /^[1-9][0-9]{5}$/.test(formData.pinCode);
+
+  const areaOptions = resolvedInfo?.areas && resolvedInfo.areas.length > 0
+    ? [
+        ...resolvedInfo.areas.map((a) => ({ value: a, label: a })),
+        { value: '__custom__', label: '✏️ Other / Custom Area' },
+      ]
+    : [];
+
   return (
     <>
       <Navbar />
@@ -310,25 +374,84 @@ export default function ProfilePage() {
                     <Input label={t.auth.name} value={formData.name || ''} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} required />
                     <Input label={t.auth.email} value={user?.email || ''} disabled hint="Account email linked with Firebase Auth" />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Select label={t.onboarding.state} value={formData.state || ''} onChange={(e) => handleProfileStateChange(e.target.value)} options={stateOptions} required />
-                    <Select
-                      label={t.onboarding.district}
-                      value={formData.district || ''}
-                      onChange={(e) => handleDistrictChange(e.target.value)}
-                      options={districtOptions}
-                      disabled={!formData.state}
-                      required
-                      hint={
-                        legacyDistrict
-                          ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
-                          : undefined
-                      }
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label={t.onboarding.locality} value={formData.locality || ''} onChange={(e) => setFormData((prev) => ({ ...prev, locality: e.target.value }))} required />
-                    <Input label={t.onboarding.pinCode} value={formData.pinCode || ''} onChange={(e) => handlePinChange(e.target.value)} placeholder={t.onboarding.pinCodePlaceholder} error={pinError} maxLength={6} />
+
+                  {/* PIN-First Address Sub-Card */}
+                  <div className="bg-surface-elevated/40 border border-border/70 rounded-2xl p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
+                        <span>📍</span> Address & Postal Location
+                      </span>
+                      {isResolving && (
+                        <span className="text-xs text-primary animate-pulse flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" /> Resolving...
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input
+                        label={`📮 ${t.onboarding.pinCode}`}
+                        value={formData.pinCode || ''}
+                        onChange={(e) => handlePinChange(e.target.value)}
+                        placeholder={t.onboarding.pinCodePlaceholder}
+                        error={pinError}
+                        maxLength={6}
+                        required
+                        hint={
+                          isAddressLocked
+                            ? `✅ Auto-resolved: ${resolvedInfo.district}, ${resolvedInfo.state}`
+                            : 'Enter 6-digit PIN code to lock and auto-fill your State & District.'
+                        }
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Select
+                        label={`${t.onboarding.state} ${isAddressLocked ? '🔒' : ''}`}
+                        value={formData.state || ''}
+                        onChange={(e) => handleProfileStateChange(e.target.value)}
+                        options={stateOptions}
+                        disabled={isAddressLocked}
+                        required
+                      />
+                      <Select
+                        label={`${t.onboarding.district} ${isAddressLocked ? '🔒' : ''}`}
+                        value={formData.district || ''}
+                        onChange={(e) => handleDistrictChange(e.target.value)}
+                        options={districtOptions}
+                        disabled={isAddressLocked || !formData.state}
+                        required
+                        hint={
+                          legacyDistrict
+                            ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <Input
+                        label={t.onboarding.locality}
+                        type="text"
+                        list="profile-area-suggestions"
+                        value={formData.locality || ''}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, locality: e.target.value }))}
+                        placeholder={t.onboarding.localityPlaceholder}
+                        required
+                        hint={
+                          resolvedInfo?.areas && resolvedInfo.areas.length > 0
+                            ? `Suggested PIN areas: ${resolvedInfo.areas.slice(0, 3).join(', ')}`
+                            : undefined
+                        }
+                      />
+                      {resolvedInfo?.areas && resolvedInfo.areas.length > 0 && (
+                        <datalist id="profile-area-suggestions">
+                          {resolvedInfo.areas.map((a, idx) => (
+                            <option key={idx} value={a} />
+                          ))}
+                        </datalist>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

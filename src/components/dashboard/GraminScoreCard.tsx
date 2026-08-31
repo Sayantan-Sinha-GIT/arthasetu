@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { calculateGraminScore, GRAMIN_DISCLAIMER } from '@/lib/gramin-score';
 import Button from '@/components/ui/Button';
@@ -157,9 +158,12 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
           </div>
 
           {scoreResult.isPartialData && (
-            <p className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-500/10 px-2 py-1 rounded-lg">
-              ℹ️ {t.graminScore.partialDataNotice}
-            </p>
+            <div className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-500/10 p-2 rounded-xl space-y-1">
+              <p>ℹ️ {t.graminScore.partialDataNotice || 'Self-reported metrics estimate. Complete your financial profile for higher accuracy.'}</p>
+              <Link href="/profile" className="inline-block text-primary hover:underline font-semibold">
+                Complete Financial Profile →
+              </Link>
+            </div>
           )}
         </div>
 

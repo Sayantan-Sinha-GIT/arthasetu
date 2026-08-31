@@ -58,6 +58,7 @@ ${profileContext}
 ---
 ### 🎯 आपका कार्य:
 इस योजना को उद्यमी के लिए बिल्कुल सरल, व्यावहारिक हिंदी में समझाएं। 
+यदि उद्यमी का व्यवसाय अस्पष्ट या अनिर्दिष्ट है, तो सामान्य सूक्ष्म-उद्यम के अनुसार समझाएं और अपनी विशिष्ट गतिविधि (जैसे सिलाई, मुर्गी पालन, किराना) अपडेट करने की सलाह दें।
 निम्न 4 बिंदुओं पर स्पष्ट जानकारी दें:
 1. **यह योजना आपके लिए क्यों उपयोगी है?** (उद्यमी के व्यवसाय और स्थान के संदर्भ में)
 2. **आपको कितना आर्थिक लाभ (सब्सिडी / लोन) मिलेगा?** (सरल उदाहरण सहित)
@@ -87,6 +88,7 @@ ${profileContext}
 ---
 ### 🎯 Your Task:
 Explain this scheme to the entrepreneur in plain, warm, and highly actionable language without bureaucratic jargon.
+If the entrepreneur's business type is unstated or ambiguous, explain the scheme's general micro-enterprise benefits and include a friendly note inviting them to specify their exact trade (e.g. poultry, tailoring, dairy, grocery) in their profile for tailored calculations.
 Provide:
 1. **Why this scheme specifically fits your business** (tailored to their location and enterprise)
 2. **Exact Financial Breakdown** (illustrate the subsidy calculation with a realistic project cost)

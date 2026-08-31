@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Input, { Select } from '@/components/ui/Input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ALL_INDIAN_REGIONS } from '@/lib/firestore/users';
 import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
+import { lookupPincode, fetchPincodeInfo, type PincodeInfo } from '@/lib/constants/pincodes';
 import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { UserProfile } from '@/types';
 
@@ -23,6 +25,22 @@ export default function StepBasicInfo({
   onClearLegacyDistrict,
 }: StepBasicInfoProps) {
   const { t, setLanguage, language } = useLanguage();
+  const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
+  const [useCustomLocality, setUseCustomLocality] = useState(false);
+
+  // Sync initial PIN code resolution on mount or data load
+  useEffect(() => {
+    if (data.pinCode && /^[1-9][0-9]{5}$/.test(data.pinCode)) {
+      const direct = lookupPincode(data.pinCode);
+      if (direct) {
+        setResolvedInfo(direct);
+      }
+      fetchPincodeInfo(data.pinCode).then((info) => {
+        if (info) setResolvedInfo(info);
+      });
+    }
+  }, [data.pinCode]);
 
   const stateOptions = [
     { value: '', label: t.onboarding.selectState },
@@ -37,6 +55,33 @@ export default function StepBasicInfo({
     value: l.code,
     label: `${l.nativeName} (${l.name})${l.isMachineTranslated ? ' — AI' : ''}`,
   }));
+
+  const handlePinChange = async (pin: string) => {
+    const clean = pin.replace(/[^0-9]/g, '').slice(0, 6);
+    if (onClearLegacyDistrict) onClearLegacyDistrict();
+
+    if (clean.length === 6 && /^[1-9][0-9]{5}$/.test(clean)) {
+      setIsResolving(true);
+      const info = await fetchPincodeInfo(clean);
+      setIsResolving(false);
+
+      if (info) {
+        setResolvedInfo(info);
+        const autoLocality = info.areas.length > 0 ? info.areas[0] : (data.locality || '');
+        onChange({
+          pinCode: clean,
+          state: info.state,
+          district: info.district,
+          locality: autoLocality,
+        });
+        return;
+      }
+    } else {
+      setResolvedInfo(null);
+    }
+
+    onChange({ pinCode: clean });
+  };
 
   const handleStateChange = (newState: string) => {
     const validDistricts = getDistrictsByState(newState);
@@ -58,11 +103,12 @@ export default function StepBasicInfo({
     setLanguage(code);
   };
 
-  const handlePinChange = (pin: string) => {
-    // Only accept numeric digits up to 6
-    const clean = pin.replace(/[^0-9]/g, '').slice(0, 6);
-    onChange({ pinCode: clean });
-  };
+  const areaOptions = resolvedInfo?.areas && resolvedInfo.areas.length > 0
+    ? [
+        ...resolvedInfo.areas.map((a) => ({ value: a, label: a })),
+        { value: '__custom__', label: '✏️ Other / Custom Area' },
+      ]
+    : [];
 
   const pinError =
     errors.pinCode ||
@@ -70,8 +116,10 @@ export default function StepBasicInfo({
       ? 'PIN code must be 6 digits and cannot start with 0'
       : undefined);
 
+  const isAddressLocked = !!resolvedInfo && !!data.pinCode && /^[1-9][0-9]{5}$/.test(data.pinCode);
+
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       <Input
         label={t.auth.name}
         type="text"
@@ -93,52 +141,94 @@ export default function StepBasicInfo({
         />
       </div>
 
-      {/* State & District */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Select
-          label={t.onboarding.state}
-          value={data.state || ''}
-          onChange={(e) => handleStateChange(e.target.value)}
-          options={stateOptions}
-          error={errors.state}
-          required
-        />
-        <Select
-          label={t.onboarding.district}
-          value={data.district || ''}
-          onChange={(e) => handleDistrictChange(e.target.value)}
-          options={districtOptions}
-          disabled={!data.state}
-          required
-          error={errors.district}
-          hint={
-            legacyDistrict
-              ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
-              : undefined
-          }
-        />
-      </div>
+      {/* PIN-First Address Box */}
+      <div className="bg-surface-elevated/40 border border-border/70 rounded-2xl p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📍</span>
+            <span className="text-sm font-bold text-foreground">Address & Location Details</span>
+          </div>
+          {isResolving && (
+            <span className="text-xs text-primary animate-pulse flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-primary animate-ping" /> Resolving PIN...
+            </span>
+          )}
+        </div>
 
-      {/* Locality & PIN Code */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input
-          label={t.onboarding.locality}
-          type="text"
-          value={data.locality || ''}
-          onChange={(e) => onChange({ locality: e.target.value })}
-          placeholder={t.onboarding.localityPlaceholder}
-          required
-          error={errors.locality}
-        />
-        <Input
-          label={t.onboarding.pinCode}
-          type="text"
-          value={data.pinCode || ''}
-          onChange={(e) => handlePinChange(e.target.value)}
-          placeholder={t.onboarding.pinCodePlaceholder}
-          error={pinError}
-          maxLength={6}
-        />
+        {/* PIN Code Input */}
+        <div>
+          <Input
+            label={t.onboarding.pinCode}
+            type="text"
+            value={data.pinCode || ''}
+            onChange={(e) => handlePinChange(e.target.value)}
+            placeholder={t.onboarding.pinCodePlaceholder}
+            error={pinError}
+            maxLength={6}
+            required
+            hint={
+              isAddressLocked
+                ? `🔒 Auto-resolved & Locked: ${resolvedInfo.district}, ${resolvedInfo.state}`
+                : 'Enter your 6-digit postal PIN code to automatically resolve and lock your State & District.'
+            }
+          />
+        </div>
+
+        {/* State & District (Auto-locked when PIN matches) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Select
+            label={t.onboarding.state}
+            value={data.state || ''}
+            onChange={(e) => handleStateChange(e.target.value)}
+            options={stateOptions}
+            error={errors.state}
+            disabled={isAddressLocked}
+            required
+            hint={isAddressLocked ? '🔒 Locked to PIN postal circle' : undefined}
+          />
+          <Select
+            label={t.onboarding.district}
+            value={data.district || ''}
+            onChange={(e) => handleDistrictChange(e.target.value)}
+            options={districtOptions}
+            disabled={isAddressLocked || !data.state}
+            required
+            error={errors.district}
+            hint={
+              legacyDistrict
+                ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
+                : isAddressLocked
+                ? '🔒 Locked to PIN postal circle'
+                : undefined
+            }
+          />
+        </div>
+
+        {/* Locality Input with PIN-Area Datalist Suggestions */}
+        <div>
+          <Input
+            label={t.onboarding.locality}
+            type="text"
+            list="onboarding-area-suggestions"
+            value={data.locality || ''}
+            onChange={(e) => onChange({ locality: e.target.value })}
+            placeholder={t.onboarding.localityPlaceholder}
+            required
+            error={errors.locality}
+            hint={
+              resolvedInfo?.areas && resolvedInfo.areas.length > 0
+                ? `Suggested PIN areas: ${resolvedInfo.areas.slice(0, 3).join(', ')}`
+                : undefined
+            }
+          />
+          {resolvedInfo?.areas && resolvedInfo.areas.length > 0 && (
+            <datalist id="onboarding-area-suggestions">
+              {resolvedInfo.areas.map((a, idx) => (
+                <option key={idx} value={a} />
+              ))}
+            </datalist>
+          )}
+        </div>
       </div>
     </div>
   );

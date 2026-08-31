@@ -34,6 +34,7 @@ async function verifyTask1Onboarding() {
     const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await context.newPage();
+    page.on('console', (msg) => console.log(`   [Browser Console] ${msg.type()}: ${msg.text()}`));
 
     // Login
     console.log('3️⃣ Logging in at http://localhost:3000/login...');
@@ -88,7 +89,8 @@ async function verifyTask1Onboarding() {
     await localityInput.fill('Test Village');
 
     const pinInput = page.getByLabel(/PIN Code/i);
-    await pinInput.fill('767437');
+    await pinInput.fill('493773');
+    await page.waitForTimeout(600);
 
     console.log('   Submitting Step 1 ("Next →")...');
     await nextButton.click();

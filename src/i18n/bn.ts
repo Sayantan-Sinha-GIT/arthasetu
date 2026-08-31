@@ -138,6 +138,7 @@ const bn: Translations = {
     selectGender: 'লিঙ্গ নির্বাচন করুন',
     employeeCount: 'কর্মচারীর সংখ্যা',
     employeeCountPlaceholder: 'যেমন: ২',
+    employeeCountHint: 'নিজেকে অন্তর্ভুক্ত করে',
     existingLoans: 'কোনো সক্রিয় ব্যাংক ঋণ আছে কি?',
     annualTurnover: 'বার্ষিক টার্নওভার (₹, যদি থাকে)',
     annualTurnoverPlaceholder: 'যেমন: ৩,০০,০০০',
