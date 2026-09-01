@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import enData from '../src/i18n/en';
 
 function flattenObject(obj: any, prefix = ''): string[] {
   let keys: string[] = [];
@@ -15,8 +16,6 @@ function flattenObject(obj: any, prefix = ''): string[] {
 }
 
 const localesDir = path.join(__dirname, '../src/i18n/locales');
-const enPath = path.join(localesDir, 'en.json');
-const enData = JSON.parse(fs.readFileSync(enPath, 'utf-8'));
 const enKeys = new Set(flattenObject(enData));
 
 console.log(`Base English keys count: ${enKeys.size}`);

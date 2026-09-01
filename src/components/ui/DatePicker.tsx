@@ -175,7 +175,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        className={`w-full text-left px-3.5 py-2.5 rounded-xl border bg-white dark:bg-[#0D1B2A] text-slate-900 dark:text-slate-100 font-medium transition-all shadow-sm flex items-center justify-between ${
+        className={`w-full text-left px-3.5 py-2.5 rounded-xl border bg-white dark:bg-surface text-slate-900 dark:text-slate-100 font-medium transition-all shadow-sm flex items-center justify-between ${
           error
             ? 'border-red-500 focus:ring-2 focus:ring-red-500/20'
             : isOpen
@@ -196,7 +196,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         <div
           role="dialog"
           aria-label="Date of Birth Picker"
-          className="absolute z-50 top-full left-0 mt-2 w-full min-w-[290px] sm:min-w-[320px] max-w-[340px] bg-white dark:bg-[#0D1B2A] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-50 top-full left-0 mt-2 w-full min-w-[290px] sm:min-w-[320px] max-w-[340px] bg-white dark:bg-surface rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-150"
         >
           {/* Header Controls (Month & Year Dropdowns + Navigation Arrows) */}
           <div className="flex items-center justify-between gap-1 mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">

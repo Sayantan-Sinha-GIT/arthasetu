@@ -87,25 +87,28 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
   const scorePercentage = Math.round(((scoreResult.score - 300) / 600) * 100);
 
   return (
-    <Card padding="lg" className="space-y-6 border-navy-700/60 shadow-lg">
+    <Card padding="lg" className="space-y-8 glass border-border/40 shadow-2xl rounded-3xl relative overflow-hidden">
+      {/* Background flair */}
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none" />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-border/40 pb-6 relative z-10">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">📊</span>
-            <h3 className="text-lg font-bold text-foreground">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📊</span>
+            <h3 className="text-2xl font-display font-bold text-foreground tracking-tight uppercase">
               {t.graminScore.title}
             </h3>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300 font-bold border border-blue-500/20">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 font-bold border border-blue-500/20 uppercase tracking-widest">
               {t.graminScore.selfReportedBadge}
             </span>
           </div>
-          <p className="text-xs text-muted mt-1">
+          <p className="text-sm text-muted-foreground mt-2 font-serif">
             {t.graminScore.subtitle}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <TextToSpeechButton
             text={`Your Gramin Credit Readiness Score is ${scoreResult.score} out of 900. Classification is ${scoreResult.band}. ${scoreResult.breakdown.cashFlowHealth.rationale}. ${scoreResult.breakdown.capitalAdequacy.rationale}.`}
             size="sm"
@@ -117,6 +120,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
             variant="outline"
             size="sm"
             onClick={() => setIsEditing(!isEditing)}
+            className="uppercase tracking-widest text-xs font-bold"
           >
             {isEditing ? t.graminScore.closeCalculator : t.graminScore.updateMetrics}
           </Button>
@@ -124,20 +128,20 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
       </div>
 
       {/* Main Score Visual Meter */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative z-10">
         {/* Score Radial / Box (5 cols) */}
-        <div className="md:col-span-5 flex flex-col items-center justify-center p-6 rounded-3xl bg-surface border border-border space-y-3 text-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted">
+        <div className="md:col-span-5 flex flex-col items-center justify-center p-8 rounded-3xl bg-surface/50 backdrop-blur-md border border-border/50 space-y-4 text-center shadow-inner">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
             {t.graminScore.currentScore}
           </span>
-          <div className="flex items-baseline gap-1">
-            <span className="text-5xl font-black text-foreground">
+          <div className="flex items-baseline gap-2">
+            <span className="text-6xl md:text-7xl font-display font-black text-foreground tracking-tighter">
               <CountUp start={300} end={scoreResult.score} duration={900} />
             </span>
-            <span className="text-sm font-semibold text-muted">/ 900</span>
+            <span className="text-lg font-bold text-muted-foreground">/ 900</span>
           </div>
 
-          <Badge variant={scoreResult.bandColor === 'success' ? 'success' : scoreResult.bandColor === 'info' ? 'info' : 'warning'} size="md">
+          <Badge variant={scoreResult.bandColor === 'success' ? 'success' : scoreResult.bandColor === 'info' ? 'info' : 'warning'} size="md" className="uppercase tracking-widest text-[10px]">
             {scoreResult.band}
           </Badge>
 

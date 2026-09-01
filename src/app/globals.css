@@ -6,18 +6,18 @@
 
 :root {
   /* ─── Semantic Tokens (WCAG AA Compliant: 4.5:1+ normal, 3:1+ large) ─── */
-  --color-background: #FFFFFF;
-  --color-foreground: #091326;
-  --color-surface: #F8FAFC;
+  --color-background: #FDF5E3; /* Neo Mirai sun-drenched beige */
+  --color-foreground: #2A1A0F; /* Deep sepia/charcoal */
+  --color-surface: #F7EAD0;
   --color-surface-elevated: #FFFFFF;
-  --color-border: #CBD5E1;
-  --color-border-subtle: #E2E8F0;
-  --color-muted: #334155;
-  --color-muted-foreground: #475569;
+  --color-border: #E8DCC4;
+  --color-border-subtle: #F3EBD9;
+  --color-muted: #8E7A68;
+  --color-muted-foreground: #AFA090;
 
-  --color-primary: #D97706;
+  --color-primary: #FF7700; /* Blazing orange */
   --color-primary-foreground: #FFFFFF;
-  --color-primary-hover: #B45309;
+  --color-primary-hover: #E56B00;
 
   --color-secondary: #1E3A6E;
   --color-secondary-foreground: #FFFFFF;
@@ -42,19 +42,19 @@
   --color-shadow-glow: 0 0 20px rgb(217 119 6 / 0.15);
 }
 
-/* ─── Dark Mode Overrides (WCAG AA Compliant) ─── */
+/* ─── Dark Mode Overrides ─── */
 .dark {
-  --color-background: #080F20;
-  --color-foreground: #F8FAFC;
-  --color-surface: #0D1B38;
-  --color-surface-elevated: #152A52;
-  --color-border: #2D4875;
-  --color-border-subtle: #1E3A6E;
-  --color-muted: #CBD5E1;
-  --color-muted-foreground: #94A3B8;
-  --color-primary: #F59E0B;
-  --color-primary-foreground: #080F20;
-  --color-primary-hover: #FBBF24;
+  --color-background: #0B0806; /* Deep obsidian with warm undertones */
+  --color-foreground: #FDF5E3;
+  --color-surface: #15100B;
+  --color-surface-elevated: #201811;
+  --color-border: #3A291D;
+  --color-border-subtle: #251B13;
+  --color-muted: #8E7A68;
+  --color-muted-foreground: #CBB9A8;
+  --color-primary: #FF8800; /* Glowing ember */
+  --color-primary-foreground: #0B0806;
+  --color-primary-hover: #FFA23A;
   --color-secondary: #3B82F6;
   --color-secondary-foreground: #FFFFFF;
   --color-secondary-hover: #60A5FA;
@@ -131,7 +131,9 @@
   --color-info-light: var(--color-info-light);
 
   /* ─── Typography ─── */
-  --font-sans: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+  --font-display: var(--font-space), 'Space Grotesk', system-ui, sans-serif;
+  --font-sans: var(--font-inter), 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* ─── Spacing ─── */

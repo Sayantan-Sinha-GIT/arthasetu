@@ -333,13 +333,21 @@ export default function ProfilePage() {
       <Navbar />
       <main className="relative overflow-hidden flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
         <AmbientBackground variant="subtle" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground">{t.profile.title}</h1>
-            <p className="text-muted text-xs sm:text-sm">{t.profile.subtitle}</p>
+        <AmbientBackground variant="subtle" />
+        {/* Header */}
+        <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 bg-[#0B0806] border border-[#3A291D] shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 z-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent mix-blend-screen pointer-events-none" />
+          <div className="relative z-10 space-y-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-white flex items-center gap-4 tracking-tighter uppercase leading-[0.9]">
+              <span className="text-5xl sm:text-6xl text-primary drop-shadow-[0_0_15px_rgba(255,119,0,0.4)]">⚙️</span>
+              <span>{t.profile.title}</span>
+            </h1>
+            <p className="text-sm sm:text-base text-white/70 font-serif max-w-xl">
+              {t.profile.subtitle}
+            </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <Button type="submit" form="profile-form" isLoading={saving} size="md" className="px-6 shadow-sm font-bold">
+          <div className="relative z-10 flex items-center gap-3 shrink-0 self-start sm:self-center">
+            <Button type="submit" form="profile-form" isLoading={saving} size="lg" className="px-8 shadow-xl font-bold uppercase tracking-widest text-xs">
               {t.profile.saveChanges}
             </Button>
           </div>

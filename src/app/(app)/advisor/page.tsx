@@ -59,22 +59,22 @@ export default function AdvisorPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 space-y-4 animate-fade-in">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 space-y-8">
         {/* Header */}
-        <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-surface-elevated/60 border border-border flex items-center justify-between">
-          <AmbientBackground variant="subtle" />
-          <div className="relative z-10">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-              <span>🎙️</span>
+        <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-[#0B0806] border border-[#3A291D] shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent mix-blend-screen pointer-events-none" />
+          <div className="relative z-10 space-y-2">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-black text-white flex items-center gap-4 tracking-tighter uppercase">
+              <span className="text-4xl sm:text-5xl">🎙️</span>
               <span>{t.advisor.title}</span>
             </h1>
-            <p className="text-xs sm:text-sm text-muted">
+            <p className="text-sm sm:text-base text-white/70 font-serif">
               {t.advisor.subtitle}
             </p>
           </div>
 
           {profile?.state && (
-            <div className="relative z-10 hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-surface/90 border border-border text-muted">
+            <div className="relative z-10 self-start sm:self-center flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white/5 border border-white/10 text-white/80 uppercase tracking-widest backdrop-blur-md">
               <span>📍</span>
               <span>{profile.district ? `${profile.district}, ${profile.state}` : profile.state}</span>
             </div>

@@ -23,7 +23,16 @@ export function createAdvisorSession(savePlanFn = savePlan) {
       if (name === 'calculateFinancials') {
         const calculated = calculateFinancialPlan(args);
         lastCalculatedPlan = { inputs: args as PlanInputs, calculatedValues: calculated };
-        return calculated;
+        
+        let plausibilityWarning = undefined;
+        if (calculated.monthlyGrossRevenue > calculated.totalInitialCost * 20) {
+          plausibilityWarning = "Monthly revenue is over 20x the total initial project cost, which is highly unrealistic for a micro-enterprise. Please ask the user to double-check their revenue, price, or sales volume.";
+        }
+        
+        return {
+          ...calculated,
+          ...(plausibilityWarning ? { plausibilityWarning } : {})
+        };
       }
       if (name === 'matchSchemes') {
         const matches = matchSchemesForProfile(SEED_SCHEMES, userProfile || null);

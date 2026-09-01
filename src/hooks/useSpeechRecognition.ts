@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { LANGUAGE_BCP47_MAP } from './useSpeechSynthesis';
 
 // Declare Web Speech API interface for TypeScript
 interface IWindow extends Window {
@@ -102,7 +103,9 @@ export function useSpeechRecognition({
       recognition.continuous = false; // Stop after a complete thought
       recognition.interimResults = true; // Show live words while speaking
       recognition.maxAlternatives = 1;
-      const targetLang = (typeof lang === 'string' && lang.trim().length > 0) ? lang.trim() : (defaultLanguage || 'hi-IN');
+      const rawLang = (typeof lang === 'string' && lang.trim().length > 0) ? lang.trim() : (defaultLanguage || 'hi-IN');
+      const shortCode = rawLang.split('-')[0];
+      const targetLang = LANGUAGE_BCP47_MAP[shortCode] || rawLang;
       recognition.lang = targetLang;
 
       recognition.onstart = () => {

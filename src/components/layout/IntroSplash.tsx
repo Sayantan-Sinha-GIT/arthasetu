@@ -67,7 +67,7 @@ export default function IntroSplash() {
     <div
       aria-hidden="true"
       className={`
-        fixed inset-0 z-50 flex items-center justify-center bg-[#080F20]
+        fixed inset-0 z-50 flex items-center justify-center bg-background
         pointer-events-none transition-opacity duration-300
         ${isFadingOut ? 'opacity-0' : 'opacity-100'}
       `}

@@ -321,11 +321,11 @@ export default function PlanResultView({
               <span className="font-bold text-foreground">₹{(inputs.setupCost || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Initial Stock</span>
+              <span className="text-muted">{t?.planner?.initialStock || 'Initial Stock'}</span>
               <span className="font-bold text-foreground">₹{(inputs.initialInventory || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Working Capital</span>
+              <span className="text-muted">{t?.planner?.workingCapital || 'Working Capital'}</span>
               <span className="font-bold text-foreground">₹{(inputs.workingCapitalReserve || inputs.expansionWorkingCapital || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-bold border-t border-border">
@@ -348,7 +348,7 @@ export default function PlanResultView({
               <span className="font-bold text-success">+ ₹{calculated.monthlyGrossRevenue.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Raw Materials</span>
+              <span className="text-muted">{t?.planner?.rawMaterials || 'Raw Materials'}</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyRawMaterials.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
@@ -356,7 +356,7 @@ export default function PlanResultView({
               <span className="font-bold text-danger">- ₹{inputs.monthlyRentUtilities.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Labor Wages</span>
+              <span className="text-muted">{t?.planner?.laborWages || 'Labor Wages'}</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyLabor.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-bold border-t border-border">

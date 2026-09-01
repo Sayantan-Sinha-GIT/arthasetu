@@ -22,7 +22,7 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
     <TiltWrapper maxTilt={8} className="h-full">
       <Card
         padding="lg"
-        className="relative overflow-hidden flex flex-col justify-between space-y-4 hover:border-primary/50 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group h-full"
+        className="relative overflow-hidden flex flex-col justify-between space-y-4 glass border-border/40 hover:border-primary/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group h-full rounded-3xl"
       >
       {/* Category Accent Indicator Top Bar */}
       <div

@@ -135,15 +135,15 @@ export default function PlannerPage() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
         {/* Top Page Header */}
         {!activePlan && (
-          <div className="relative overflow-hidden rounded-2xl p-6 bg-surface-elevated/70 border border-border">
-            <AmbientBackground variant="subtle" />
-            <div className="relative z-10">
-              <h1 className="text-2xl sm:text-3xl font-black text-foreground flex items-center gap-2">
-                <span>📊</span>
-                <span>Financial Structuring & Planning Engine</span>
+          <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 bg-[#0B0806] border border-[#3A291D] shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent mix-blend-screen pointer-events-none" />
+            <div className="relative z-10 space-y-4">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-white flex items-center gap-4 tracking-tighter uppercase leading-[0.9]">
+                <span className="text-5xl sm:text-6xl text-primary drop-shadow-[0_0_15px_rgba(255,119,0,0.4)]">📊</span>
+                <span>Financial Structuring<br/>& Planning Engine</span>
               </h1>
-              <p className="text-xs sm:text-sm text-muted mt-1">
-                Deterministic financial arithmetic combined with AI-powered market assumptions and bankability analysis
+              <p className="text-sm sm:text-base text-white/70 font-serif max-w-2xl">
+                Deterministic financial arithmetic combined with AI-powered market assumptions and bankability analysis.
               </p>
             </div>
           </div>

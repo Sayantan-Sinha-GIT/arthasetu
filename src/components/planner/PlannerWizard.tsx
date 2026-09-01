@@ -175,7 +175,7 @@ export default function PlannerWizard({
                 `}
               >
                 <div className="text-xl mb-1">🌱</div>
-                <h4 className="text-sm font-bold text-foreground">New Startup Plan</h4>
+                <h4 className="text-sm font-bold text-foreground">{t?.planner?.newStartupPlan || 'New Startup Plan'}</h4>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
                   Starting a new venture from scratch with initial machinery, shed, and initial stock.
                 </p>
@@ -193,7 +193,7 @@ export default function PlannerWizard({
                 `}
               >
                 <div className="text-xl mb-1">🚀</div>
-                <h4 className="text-sm font-bold text-foreground">Existing Business Expansion</h4>
+                <h4 className="text-sm font-bold text-foreground">{t?.planner?.existingExpansion || 'Existing Business Expansion'}</h4>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
                   Start from current monthly revenue & expenses to calculate growth capital needs.
                 </p>
@@ -663,7 +663,7 @@ export default function PlannerWizard({
                   <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1.5 animate-slide-up">
                     <div className="flex items-center gap-2 font-bold">
                       <span>⚠️</span>
-                      <span>Financial Feasibility Notice</span>
+                      <span>{t?.planner?.feasibilityNotice || 'Financial Feasibility Notice'}</span>
                     </div>
                     <p className="leading-relaxed">
                       Your required external funding of ₹{liveCalculated.fundingGap.toLocaleString('en-IN')} exceeds 12x your estimated monthly net profit (₹{liveCalculated.monthlyNetProfit.toLocaleString('en-IN')}/mo). We recommend applying for capital subsidies (such as PMEGP 25-35% subsidy or MUDRA) or phased expansion to ensure comfortable repayment.
@@ -679,19 +679,19 @@ export default function PlannerWizard({
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
-                  <span className="text-muted block">Total Cost</span>
+                  <span className="text-muted block">{t?.planner?.totalCost || 'Total Cost'}</span>
                   <span className="font-bold text-foreground text-sm">₹{liveCalculated.totalInitialCost.toLocaleString('en-IN')}</span>
                 </div>
                 <div>
-                  <span className="text-muted block">Funding Gap</span>
+                  <span className="text-muted block">{t?.planner?.fundingGap_alt || 'Funding Gap'}</span>
                   <span className="font-bold text-saffron-600 text-sm">₹{liveCalculated.fundingGap.toLocaleString('en-IN')}</span>
                 </div>
                 <div>
-                  <span className="text-muted block">Monthly Loan EMI</span>
+                  <span className="text-muted block">{t?.planner?.monthlyLoanEmi || 'Monthly Loan EMI'}</span>
                   <span className="font-bold text-foreground text-sm">₹{liveCalculated.monthlyLoanEmi.toLocaleString('en-IN')}/mo</span>
                 </div>
                 <div>
-                  <span className="text-muted block">Projected Net Profit</span>
+                  <span className="text-muted block">{t?.planner?.projectedNetProfit || 'Projected Net Profit'}</span>
                   <span className="font-bold text-success text-sm">₹{liveCalculated.monthlyNetProfit.toLocaleString('en-IN')}/mo</span>
                 </div>
               </div>

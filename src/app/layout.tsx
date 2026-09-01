@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_Devanagari } from "next/font/google";
+import { Space_Grotesk, Inter, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import IntroSplash from "@/components/layout/IntroSplash";
-import PageBackgroundVideo from "@/components/ui/PageBackgroundVideo";
+import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+  display: "swap",
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,15 +44,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${notoDevanagari.variable} h-full`}
+      className={`${spaceGrotesk.variable} ${inter.variable} ${notoDevanagari.variable} h-full`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans antialiased">
-        <Providers>
-          <IntroSplash />
-          <PageBackgroundVideo />
-          {children}
-        </Providers>
+        <SmoothScrollProvider>
+          <Providers>
+            <IntroSplash />
+            {children}
+          </Providers>
+        </SmoothScrollProvider>
       </body>
     </html>
   );

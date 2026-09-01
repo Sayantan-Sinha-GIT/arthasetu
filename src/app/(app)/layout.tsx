@@ -29,6 +29,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300 pt-20">
+      {children}
+    </div>
+  );
 }
-

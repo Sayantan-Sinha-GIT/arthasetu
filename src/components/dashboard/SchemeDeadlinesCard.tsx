@@ -98,27 +98,30 @@ export default function SchemeDeadlinesCard() {
   };
 
   return (
-    <Card padding="md" className="space-y-6">
+    <Card padding="lg" className="space-y-8 glass border-border/40 shadow-2xl rounded-3xl relative overflow-hidden">
+      {/* Background flair */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-6 relative z-10">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">⏳</span>
-            <h3 className="text-base font-bold text-foreground">
-              Government Scheme Application Cycles &amp; Deadlines
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⏳</span>
+            <h3 className="text-xl font-display font-bold text-foreground tracking-tight uppercase">
+              Government Scheme Application Cycles
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-saffron-500/10 text-saffron-700 dark:text-saffron-300 border border-saffron-500/20">
+            <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 uppercase tracking-widest">
               Example Cycles
             </span>
           </div>
-          <p className="text-xs text-muted mt-0.5">
+          <p className="text-sm text-muted-foreground mt-2 font-serif">
             Overview of central and state scheme subsidy cycles to plan your application timeline
           </p>
         </div>
 
         <Link
           href="/schemes"
-          className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1 self-start sm:self-auto"
+          className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1 self-start sm:self-auto uppercase tracking-widest"
         >
           <span>View All Schemes</span>
           <span>→</span>
@@ -126,13 +129,13 @@ export default function SchemeDeadlinesCard() {
       </div>
 
       {/* Indicative Disclaimer Banner */}
-      <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed flex items-start gap-2.5">
+      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed flex items-start gap-3 relative z-10">
         <span className="text-base shrink-0">ℹ️</span>
         <div>
-          <p className="font-bold text-[11px] uppercase tracking-wider">
+          <p className="font-bold text-xs uppercase tracking-[0.15em]">
             Illustrative Example Cycle — Dates Are Indicative, Not Live-Tracked
           </p>
-          <p className="mt-0.5 text-xs opacity-90">
+          <p className="mt-1 text-sm opacity-90 font-serif">
             Confirm the actual current deadline on each scheme’s official portal before applying.
           </p>
         </div>

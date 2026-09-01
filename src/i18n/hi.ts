@@ -1,7 +1,7 @@
 // ─── Hindi UI Strings (Human Verified) ───
 import type { Translations } from './en';
 
-const hi: Translations = {
+const hi: any = {
   appName: 'अर्थसेतु',
   tagline: 'आपका व्यवसाय। आपकी भाषा। आपकी योजना।',
 

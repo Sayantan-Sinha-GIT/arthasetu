@@ -22,7 +22,7 @@ interface SchemeDetailPageProps {
 export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
   const { id } = use(params);
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const [scheme, setScheme] = useState<Scheme | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -97,7 +97,7 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
           <div className="w-16 h-16 rounded-2xl bg-danger-light text-danger flex items-center justify-center text-2xl">
             ⚠️
           </div>
-          <h2 className="text-xl font-bold text-foreground">Scheme Not Found</h2>
+          <h2 className="text-xl font-bold text-foreground">{t?.schemes?.notFound || 'Scheme Not Found'}</h2>
           <p className="text-sm text-muted">
             The requested scheme record could not be found in the database.
           </p>
@@ -124,7 +124,7 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
             className="inline-flex items-center gap-1 text-xs font-semibold text-muted hover:text-foreground transition-colors"
           >
             <span>←</span>
-            <span>Back to Schemes Explorer</span>
+            <span>{t?.schemes?.backToExplorer || 'Back to Schemes Explorer'}</span>
           </Link>
 
           <TextToSpeechButton text={schemeSummarySpeech} size="sm" label="Read Scheme Overview" />
@@ -268,7 +268,7 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
           <Card padding="lg" className="space-y-4">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <span>🎯</span>
-              <span>Eligibility Conditions</span>
+              <span>{t?.schemes?.eligibilityConditions || 'Eligibility Conditions'}</span>
             </h3>
 
             <div className="space-y-2.5 text-xs text-muted">
@@ -302,7 +302,7 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
           <Card padding="lg" className="space-y-4">
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <span>🚀</span>
-              <span>How to Apply</span>
+              <span>{t?.schemes?.howToApplyAlt || 'How to Apply'}</span>
             </h3>
 
             <div className="text-xs text-muted leading-relaxed whitespace-pre-wrap p-3.5 rounded-2xl bg-surface border border-border">

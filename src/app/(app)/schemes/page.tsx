@@ -110,26 +110,29 @@ export default function SchemesPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
+      <main className="relative overflow-hidden flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-12 space-y-10">
         <AmbientBackground variant="subtle" />
         {/* Header */}
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground flex items-center gap-2">
-              <span>🏛️</span>
-              <span>Government Schemes & Subsidies</span>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-foreground flex items-center gap-4 tracking-tighter uppercase leading-[0.9]">
+              <span className="text-5xl sm:text-6xl text-primary drop-shadow-[0_0_15px_rgba(255,119,0,0.4)]">🏛️</span>
+              <span>Government<br/>Schemes & Subsidies</span>
             </h1>
-            <p className="text-xs sm:text-sm text-muted mt-1">
-              Verified Central and State government financial assistance programs with deterministic eligibility matching
+            <p className="text-sm sm:text-base text-muted-foreground font-serif max-w-2xl">
+              Verified Central and State government financial assistance programs with deterministic eligibility matching.
             </p>
           </div>
 
           {profile && (
-            <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-surface border border-border text-muted">
-              <span>👤 Profile:</span>
-              <span className="text-foreground">{profile.businessType || 'Enterprise'}</span>
-              <span>•</span>
-              <span className="text-foreground">{profile.state || 'India'}</span>
+            <div className="flex flex-col gap-1 items-start sm:items-end self-start sm:self-center">
+              <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">Targeting Profile</span>
+              <div className="flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl bg-surface/50 border border-border/50 text-foreground uppercase tracking-widest backdrop-blur-md shadow-inner">
+                <span className="text-primary">👤</span>
+                <span>{profile.businessType || 'Enterprise'}</span>
+                <span className="text-border">•</span>
+                <span>{profile.state || 'India'}</span>
+              </div>
             </div>
           )}
         </div>

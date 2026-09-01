@@ -284,12 +284,12 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   };
 
   return (
-    <div className="flex flex-col h-[78vh] sm:h-[82vh] bg-surface-elevated rounded-3xl border border-border overflow-hidden shadow-xl">
+    <div className="flex flex-col h-[78vh] sm:h-[82vh] glass rounded-3xl border border-border/40 overflow-hidden shadow-2xl relative z-10">
       {/* Top Status & Controls Bar */}
-      <div className="px-4 py-2 bg-surface border-b border-border flex items-center justify-between gap-3 text-xs text-muted relative">
+      <div className="px-4 py-3 bg-surface/50 backdrop-blur-md border-b border-border/40 flex items-center justify-between gap-3 text-[10px] text-muted-foreground uppercase tracking-widest relative z-20">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-success" />
-          <span className="font-semibold text-foreground">Gemini Flash Active</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-bold text-foreground">Gemini Flash Active</span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -417,7 +417,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       )}
 
       {/* Input Form Bar */}
-      <div className="p-3 sm:p-4 bg-surface border-t border-border">
+      <div className="p-3 sm:p-5 bg-surface/80 backdrop-blur-md border-t border-border/40 relative z-20">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -426,7 +426,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
           className="flex items-end gap-2 sm:gap-3"
         >
           {/* Text Area */}
-          <div className="flex-1 relative rounded-2xl bg-surface-elevated border border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 transition-all">
+          <div className="flex-1 relative rounded-2xl bg-surface-elevated border border-border/50 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-inner">
             <textarea
               ref={textareaRef}
               value={inputValue}
@@ -445,7 +445,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
                   : t.advisor.placeholder
               }
               rows={1}
-              className="w-full resize-none bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none max-h-32 min-h-[46px] overflow-y-auto"
+              className="w-full resize-none bg-transparent px-5 py-4 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none max-h-32 min-h-[52px] overflow-y-auto font-serif"
               disabled={isStreaming}
             />
           </div>

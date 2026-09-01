@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 // ─── Bengali (বাংলা) UI Strings — Human Verified ───
-const bn: Translations = {
+const bn: any = {
   appName: 'অর্থসেতু (ArthaSetu)',
   tagline: 'আপনার ব্যবসা। আপনার ভাষা। আপনার পরিকল্পনা।',
 

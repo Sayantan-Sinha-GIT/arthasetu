@@ -4,363 +4,200 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useInView } from '@/hooks/useInView';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import Button from '@/components/ui/Button';
-import AmbientBackground from '@/components/ui/AmbientBackground';
-import BackgroundVideo from '@/components/ui/BackgroundVideo';
-import TiltWrapper from '@/components/ui/TiltWrapper';
 import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 
 export default function LandingPage() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { quality } = useNetworkQuality();
-  const { ref: featuresRef, inView: featuresInView } = useInView<HTMLElement>({ threshold: 0.1 });
-  const { ref: ctaRef, inView: ctaInView } = useInView<HTMLElement>({ threshold: 0.15 });
+  
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Nodenza-style parallax values
+  const yHero = useTransform(scrollYProgress, [0, 1], [0, 300]);
+  const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   return (
-    <>
+    <div ref={containerRef} className="relative bg-background overflow-hidden selection:bg-primary/20 selection:text-primary">
       <Navbar />
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden">
-          {/* Optional Background Video with graceful onError fallback */}
-          <BackgroundVideo src="/videos/hero-background.mp4" className="opacity-20 -z-20" />
+      
+      <main className="relative z-10">
+        {/* Cinematic Hero */}
+        <section className="relative min-h-screen flex items-center pt-24 overflow-hidden bg-background">
+          <div className="absolute inset-0 z-0">
+            {/* The live-fold Golden image */}
+            <motion.div style={{ y: yHero, opacity: opacityHero }} className="w-full h-full relative">
+              <Image 
+                src="/images/arthasetu_hero_cinematic.jpg" 
+                alt="ArthaSetu Neo Mirai Hero" 
+                fill 
+                priority 
+                className="object-cover object-[70%_30%] mix-blend-luminosity opacity-80" 
+                sizes="100vw" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-background" />
+            </motion.div>
+          </div>
 
-          {/* Ambient Background Atmosphere */}
-          <AmbientBackground variant="hero" grain />
-
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-            <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-              {/* Text Column */}
-              <div className="text-center lg:text-left animate-slide-up min-w-0">
-                {/* Badge - High Contrast */}
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-saffron-100 dark:bg-saffron-950/80 border border-saffron-300 dark:border-saffron-700 mb-6 shadow-sm">
-                  <div className="w-2 h-2 rounded-full bg-saffron-600 dark:bg-saffron-400 animate-pulse" />
-                  <span className="text-xs font-bold text-saffron-900 dark:text-saffron-300">
-                    {t.landing.badge}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.12] break-words">
-                  <span className="text-amber-600 dark:text-saffron-300 font-extrabold">{t.appName}</span>
-                  <br />
-                  <span className="text-foreground">{t.tagline}</span>
-                </h1>
-
-                {/* Subtitle - High Contrast Slate 700 / Slate 200 */}
-                <p className="mt-6 text-lg sm:text-xl text-slate-700 dark:text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal break-words">
-                  {t.landing.subtitle}
-                </p>
-
-                {/* CTAs */}
-                <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                  {user ? (
-                    <Link href="/dashboard">
-                      <Button size="lg" className="text-base px-8 font-bold shadow-md">
-                        {t.landing.ctaDashboard} →
-                      </Button>
-                    </Link>
-                  ) : (
-                    <>
-                      <Link href="/signup">
-                        <Button size="lg" className="text-base px-8 font-bold shadow-md shadow-saffron-500/20">
-                          {t.landing.ctaSignup}
-                        </Button>
-                      </Link>
-                      <Link href="/login">
-                        <Button variant="outline" size="lg" className="text-base px-8 font-semibold">
-                          {t.landing.ctaLogin}
-                        </Button>
-                      </Link>
-                    </>
-                  )}
-                </div>
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-3xl"
+            >
+              <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[140px] font-display font-black text-foreground tracking-tighter leading-[0.85] uppercase">
+                Artha<br/>Setu
+              </h1>
+              
+              <div className="mt-8 sm:mt-12 flex items-center gap-6">
+                <div className="w-16 h-[2px] bg-primary" />
+                <span className="text-sm font-bold text-primary tracking-[0.3em] uppercase">India 2026</span>
               </div>
 
-              {/* Photo Column */}
-              <div className="relative mt-8 lg:mt-0 min-w-0">
-                <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-full min-h-[300px] lg:min-h-[460px] bg-surface-elevated">
-                  {quality !== 'minimal' ? (
-                    <>
-                      <Image
-                        src="/images/artisan-weaving.webp"
-                        alt="Indian artisan weaving traditional Ikat patterned fabric on a handloom"
-                        fill
-                        priority
-                        className={`object-cover ${quality === 'full' ? 'animate-kenburns' : ''}`}
-                        sizes="(min-width: 1024px) 50vw, 100vw"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
-                    </>
-                  ) : (
-                    <div className="w-full h-full min-h-[300px] flex items-center justify-center p-8 text-center bg-gradient-to-br from-saffron-500/10 to-navy-500/10">
-                      <div className="space-y-2">
-                        <span className="text-4xl">🇮🇳</span>
-                        <h2 className="text-xl font-bold text-foreground">{t.appName}</h2>
-                        <p className="text-xs text-muted max-w-xs">{t.landing.subtitle}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <p className="mt-8 text-xl sm:text-2xl text-foreground max-w-xl leading-relaxed font-serif">
+                {t.landing.subtitle}
+              </p>
 
-                {/* Floating Stat Card Over Hero Photo */}
-                <div
-                  className="absolute -bottom-4 left-3 sm:bottom-6 sm:left-6 bg-surface-elevated/95 backdrop-blur-md border border-border rounded-2xl px-5 py-4 shadow-xl animate-slide-up z-10"
-                  style={{ animationDelay: '400ms' }}
-                >
-                  <div className="text-2xl font-black text-primary">22</div>
-                  <div className="text-xs font-semibold text-muted mt-0.5">Indian languages supported</div>
-                </div>
+              <div className="mt-12 flex items-center gap-6">
+                {user ? (
+                  <Link href="/dashboard" className="px-8 py-4 bg-primary text-primary-foreground font-bold text-sm tracking-wider uppercase hover:bg-primary-hover transition-colors rounded-none">
+                    {t.landing.ctaDashboard}
+                  </Link>
+                ) : (
+                  <Link href="/signup" className="px-8 py-4 bg-primary text-primary-foreground font-bold text-sm tracking-wider uppercase hover:bg-primary-hover transition-colors rounded-none">
+                    {t.landing.ctaSignup}
+                  </Link>
+                )}
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* Infinite Marquee Ticker Strip - Only rendered on full network quality */}
-        {quality === 'full' && (
-          <div className="border-y border-border-subtle bg-surface/50 py-4 overflow-hidden whitespace-nowrap">
-            <div className="inline-flex marquee-track">
-              {[...Array(2)].map((_, dup) => (
-                <div key={dup} className="inline-flex">
-                  {['AI-Powered Advisor', '22 Indian Languages', 'Government Scheme Matching', 'Instant Eligibility Check', 'Built for Rural India'].map((label) => (
-                    <span key={label} className="inline-flex items-center gap-3 px-8 text-sm font-semibold text-muted">
-                      {label} <span className="text-primary">/</span>
-                    </span>
-                  ))}
+        {/* Editorial Feature Sections */}
+        <section className="relative z-20 bg-background py-32 sm:py-48 text-foreground">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-48 sm:space-y-72">
+             
+             {/* 01: Voice Interface */}
+             <div className="relative flex flex-col md:flex-row items-center gap-16 md:gap-32">
+                <div className="flex-1 relative z-10">
+                   <motion.div 
+                     initial={{ opacity: 0, x: -50 }}
+                     whileInView={{ opacity: 1, x: 0 }}
+                     viewport={{ once: true, margin: "-100px" }}
+                     transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                   >
+                     <div className="text-[10rem] md:text-[18rem] font-display font-black text-border-subtle/40 select-none leading-none absolute -top-24 md:-top-32 -left-10 z-0">01</div>
+                     <div className="relative z-10">
+                       <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold text-foreground tracking-tighter leading-[0.9] mb-8 uppercase">
+                         {t.landing.featureVoiceTitle}
+                       </h2>
+                       <p className="text-muted-foreground text-xl md:text-2xl leading-relaxed mb-10 font-serif">
+                         {t.landing.featureVoiceDesc}
+                       </p>
+                     </div>
+                   </motion.div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* Features Section */}
-        <section ref={featuresRef} className="py-16 sm:py-24 bg-surface/50 border-b border-border-subtle overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className={`text-center mb-12 sm:mb-16 transition-all duration-700 ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                {t.landing.featuresTitle}
-              </h2>
-              <p className="mt-3 text-muted max-w-xl mx-auto text-base">
-                {t.landing.featuresSubtitle}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-                    </svg>
-                  ),
-                  title: t.landing.featureVoiceTitle,
-                  desc: t.landing.featureVoiceDesc,
-                },
-                {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-                    </svg>
-                  ),
-                  title: t.landing.featurePlannerTitle,
-                  desc: t.landing.featurePlannerDesc,
-                },
-                {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                    </svg>
-                  ),
-                  title: t.landing.featureSchemesTitle,
-                  desc: t.landing.featureSchemesDesc,
-                },
-                {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
-                    </svg>
-                  ),
-                  title: t.landing.statsLanguages,
-                  desc: 'All 22 Official Scheduled Indian Languages + English fully supported across UI, voice, and financial advice.',
-                },
-                {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-                    </svg>
-                  ),
-                  title: t.nav.savedPlans,
-                  desc: t.landing.featureSavedPlansDesc,
-                },
-                {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  ),
-                  title: t.landing.featureGovernanceTitle,
-                  desc: t.landing.featureGovernanceDesc,
-                },
-              ].map((feature, i) => (
-                <TiltWrapper key={i} maxTilt={11}>
-                  <div
-                    className={`
-                      group bg-surface-elevated border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-500
-                      ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
-                    `}
-                    style={{
-                      transitionDelay: featuresInView ? `${i * 80}ms` : '0ms',
-                      transitionTimingFunction: 'var(--ease-smooth)',
-                    }}
+                <div className="flex-1 relative z-10 w-full">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="aspect-[4/5] relative overflow-hidden"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-saffron-400/20 to-navy-500/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 shadow-sm">
-                      {feature.icon}
-                    </div>
-                    <h3 className="mt-4 text-base sm:text-lg font-bold text-foreground tracking-tight">
-                      {feature.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted leading-relaxed">
-                      {feature.desc}
-                    </p>
-                  </div>
-                </TiltWrapper>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Full-Bleed Parallax Photo Band - Only rendered on full network quality */}
-        {quality === 'full' && (
-          <section
-            className="parallax-band relative h-[45vh] flex items-center justify-center text-center"
-            style={{ backgroundImage: "linear-gradient(180deg, rgba(8,15,32,0.4), rgba(8,15,32,0.75)), url('/images/pottery-artisan.webp')" }}
-          >
-            <span className="font-mono text-xs sm:text-sm tracking-widest uppercase text-white border border-white/30 px-5 py-2.5 rounded-full backdrop-blur-sm bg-black/20">
-              Built for India&apos;s Real Economy
-            </span>
-          </section>
-        )}
-
-        {/* Authentic Grassroots Enterprise Showcase */}
-        <section className="relative py-16 sm:py-20 border-b border-border-subtle bg-surface/30 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-10 sm:mb-14">
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                Grassroots Micro-Enterprises
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-1">
-                Empowering Rural Enterprises Across India
-              </h2>
-              <p className="mt-2 text-muted max-w-xl mx-auto text-sm sm:text-base">
-                From village handloom weavers to kirana retail shopkeepers, terracotta potters, and women self-help group artisans.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  src: '/images/artisan-weaving.webp',
-                  title: 'Handloom & Textiles',
-                  subtitle: 'Rural weavers & traditional textile craft',
-                  alt: 'Indian artisan weaving traditional Ikat patterned fabric on a handloom',
-                  icon: '🧵',
-                },
-                {
-                  src: '/images/small-shopkeeper.webp',
-                  title: 'Kirana & Retail',
-                  subtitle: 'Village grocery stores & local merchants',
-                  alt: 'Indian local grocery and kirana shopkeeper at a neighborhood general store counter',
-                  icon: '🏪',
-                },
-                {
-                  src: '/images/pottery-artisan.webp',
-                  title: 'Pottery & Craft',
-                  subtitle: 'Terracotta artisans & clay craft workshops',
-                  alt: 'Hands of an artisan shaping an earthen terracotta pot on a spinning pottery wheel',
-                  icon: '🏺',
-                },
-                {
-                  src: '/images/women-entrepreneur.webp',
-                  title: 'Women Entrepreneurs',
-                  subtitle: 'Community micro-enterprises & local trade',
-                  alt: 'Smiling Indian woman micro-entrepreneur in traditional red printed attire',
-                  icon: '💼',
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="group relative overflow-hidden rounded-2xl bg-surface-elevated border border-border shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 flex flex-col min-w-0"
-                >
-                  <div className="relative aspect-4/3 w-full overflow-hidden bg-surface flex items-center justify-center">
-                    {quality !== 'minimal' ? (
-                      <Image
-                        src={item.src}
-                        alt={item.alt}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className={`object-cover ${quality === 'full' ? 'group-hover:scale-105 transition-transform duration-500' : ''}`}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-primary/5 to-primary/10">
-                        <span className="text-3xl mb-1">{item.icon}</span>
-                        <span className="text-xs font-semibold text-foreground">{item.title}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col justify-between min-w-0">
-                    <div>
-                      <h3 className="font-bold text-base text-foreground tracking-tight group-hover:text-primary transition-colors break-words">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-muted mt-1 leading-relaxed break-words">
-                        {item.subtitle}
-                      </p>
-                    </div>
-                  </div>
+                    <Image src="/images/women-entrepreneur.webp" alt="Women entrepreneurs" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-700" sizes="(min-width: 768px) 50vw, 100vw" />
+                  </motion.div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
+             </div>
 
-        {/* CTA Section */}
-        <section ref={ctaRef} className="relative py-16 sm:py-24 overflow-hidden">
-          <div
-            className={`max-w-3xl mx-auto px-4 sm:px-6 text-center transition-all duration-700 ${
-              ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-            style={{ transitionTimingFunction: 'var(--ease-smooth)' }}
-          >
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              {t.tagline}
-            </h2>
-            <p className="mt-4 text-muted text-base sm:text-lg max-w-xl mx-auto">
-              {t.landing.subtitle}
-            </p>
-            <div className="mt-8">
-              {user ? (
-                <Link href="/dashboard">
-                  <Button size="lg" className="text-base px-10 font-bold shadow-md">
-                    {t.landing.ctaDashboard} →
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/signup">
-                  <Button size="lg" className="text-base px-10 font-bold shadow-md shadow-saffron-500/20">
-                    {t.auth.signupButton} →
-                  </Button>
-                </Link>
-              )}
-            </div>
+             {/* 02: Language */}
+             <div className="relative flex flex-col md:flex-row-reverse items-center gap-16 md:gap-32">
+                <div className="flex-1 relative z-10 md:pl-16">
+                   <motion.div 
+                     initial={{ opacity: 0, x: 50 }}
+                     whileInView={{ opacity: 1, x: 0 }}
+                     viewport={{ once: true, margin: "-100px" }}
+                     transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                   >
+                     <div className="text-[10rem] md:text-[18rem] font-display font-black text-border-subtle/40 select-none leading-none absolute -top-24 md:-top-32 -right-10 z-0">02</div>
+                     <div className="relative z-10">
+                       <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold text-foreground tracking-tighter leading-[0.9] mb-8 uppercase">
+                         Native<br/>Tongues
+                       </h2>
+                       <p className="text-muted-foreground text-xl md:text-2xl leading-relaxed mb-10 font-serif">
+                         We break the English barrier. Access financial planning, scheme matching, and business growth tools in the language you speak every day.
+                       </p>
+                       <Link href="/schemes" className="text-primary hover:text-primary-hover font-bold inline-flex items-center gap-2 group tracking-[0.2em] uppercase text-sm">
+                         View Schemes <span className="group-hover:translate-x-2 transition-transform">→</span>
+                       </Link>
+                     </div>
+                   </motion.div>
+                </div>
+
+                <div className="flex-1 relative z-10 w-full">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="aspect-[4/5] relative overflow-hidden"
+                  >
+                    <Image src="/images/small-shopkeeper.webp" alt="Small shopkeeper" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-700" sizes="(min-width: 768px) 50vw, 100vw" />
+                  </motion.div>
+                </div>
+             </div>
+
+             {/* 03: Planner */}
+             <div className="relative flex flex-col md:flex-row items-center gap-16 md:gap-32">
+                <div className="flex-1 relative z-10">
+                   <motion.div 
+                     initial={{ opacity: 0, x: -50 }}
+                     whileInView={{ opacity: 1, x: 0 }}
+                     viewport={{ once: true, margin: "-100px" }}
+                     transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                   >
+                     <div className="text-[10rem] md:text-[18rem] font-display font-black text-border-subtle/40 select-none leading-none absolute -top-24 md:-top-32 -left-10 z-0">03</div>
+                     <div className="relative z-10">
+                       <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold text-foreground tracking-tighter leading-[0.9] mb-8 uppercase">
+                         {t.landing.featurePlannerTitle}
+                       </h2>
+                       <p className="text-muted-foreground text-xl md:text-2xl leading-relaxed mb-10 font-serif">
+                         {t.landing.featurePlannerDesc}
+                       </p>
+                       <Link href="/planner" className="text-primary hover:text-primary-hover font-bold inline-flex items-center gap-2 group tracking-[0.2em] uppercase text-sm">
+                         Try Planner <span className="group-hover:translate-x-2 transition-transform">→</span>
+                       </Link>
+                     </div>
+                   </motion.div>
+                </div>
+
+                <div className="flex-1 relative z-10 w-full">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="aspect-[4/5] relative overflow-hidden"
+                  >
+                    <Image src="/images/pottery-artisan.webp" alt="Pottery artisan" fill className="object-cover grayscale hover:grayscale-0 transition-all duration-700" sizes="(min-width: 768px) 50vw, 100vw" />
+                  </motion.div>
+                </div>
+             </div>
           </div>
         </section>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

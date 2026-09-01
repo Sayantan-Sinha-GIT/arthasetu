@@ -50,8 +50,8 @@ export default function Navbar() {
     : '/';
 
   return (
-    <nav className="sticky top-0 z-40 w-full glass border-b border-border/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300 ${pathname === '/' ? 'bg-gradient-to-b from-black/60 to-transparent pointer-events-none' : 'glass border-b border-border/40 shadow-sm'}`}>
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 ${pathname === '/' ? 'pointer-events-auto' : ''}`}>
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href={logoHref} className="flex items-center gap-2 shrink-0 group transition-transform hover:scale-[1.02] active:scale-[0.98]">

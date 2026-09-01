@@ -46,44 +46,45 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
       : '';
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy-800 via-navy-900 to-navy-950 text-white p-4 sm:p-8 border border-navy-700 shadow-xl">
-      {/* Ambient background atmosphere */}
-      <AmbientBackground variant="card" />
+    <div className="relative overflow-hidden rounded-3xl bg-[#0B0806] text-[#FDF5E3] p-6 sm:p-10 border border-[#3A291D] shadow-2xl transition-all duration-500">
+      {/* Ambient background atmosphere - forced dark */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none translate-x-1/3 -translate-y-1/3" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#1E3A6E]/30 rounded-full blur-[80px] mix-blend-screen pointer-events-none -translate-x-1/4 translate-y-1/4" />
 
-      <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
-        <div className="space-y-4 flex-1 min-w-0">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-8">
+        <div className="space-y-6 flex-1 min-w-0">
           {/* Greeting */}
-          <div className="flex items-center gap-2">
-            <span className="text-2xl sm:text-3xl">🙏</span>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">
-              {t.dashboard.welcome}{' '}
-              <span className="text-saffron-300 font-extrabold">{userName || t.dashboard.guest}</span>
+          <div className="flex items-center gap-3">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-black tracking-tighter break-words uppercase text-white leading-[0.9]">
+              {t.dashboard.welcome}
+              <br/>
+              <span className="text-primary">{userName || t.dashboard.guest}</span>
             </h1>
           </div>
 
           {/* One-line business summary */}
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             {statusBadge && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-saffron-400/20 text-saffron-300 border border-saffron-400/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-saffron-400" />
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-primary/20 text-primary border border-primary/30 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 {statusBadge}
               </span>
             )}
 
             {businessType ? (
-              <span className="text-sm font-medium text-slate-200 break-words">
+              <span className="text-sm font-bold text-white/80 break-words uppercase tracking-wider">
                 {businessType}
               </span>
             ) : (
-              <span className="text-sm text-slate-300 italic">
+              <span className="text-sm text-white/40 italic">
                 {t.dashboard.noBusinessSpecified}
               </span>
             )}
 
-            <span className="text-slate-400 text-sm">•</span>
+            <span className="text-white/20 text-sm">•</span>
 
-            <span className="text-xs sm:text-sm text-slate-300 flex items-center gap-1 break-words">
-              <svg className="w-3.5 h-3.5 text-saffron-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <span className="text-xs sm:text-sm text-white/60 flex items-center gap-1.5 break-words font-medium">
+              <svg className="w-4 h-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -92,23 +93,23 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
           </div>
 
           {/* Financial & Cash Flow Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6">
             {/* Capital */}
-            <div className="bg-navy-950/70 p-2.5 sm:p-3 rounded-2xl border border-navy-700/80 space-y-1 min-w-0">
+            <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 space-y-3 min-w-0 hover:bg-white/10 transition-colors">
               <div className="flex items-center justify-between gap-1">
-                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">{t.dashboard.availableCapital}</span>
-                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono shrink-0">
+                <span className="text-[10px] sm:text-xs text-white/50 font-bold tracking-[0.2em] uppercase truncate">{t.dashboard.availableCapital}</span>
+                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white/70 font-mono shrink-0">
                   {t.dashboard.userTag}
                 </span>
               </div>
               {isCapitalSet ? (
-                <p className="text-sm sm:text-base font-bold text-white truncate">
+                <p className="text-lg sm:text-xl font-bold text-white truncate">
                   ₹{profile!.availableCapital!.toLocaleString('en-IN')}
                 </p>
               ) : (
                 <Link
                   href="/profile"
-                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
+                  className="inline-flex items-center gap-1 text-xs text-white/30 hover:text-primary underline font-bold pt-1 uppercase tracking-wider"
                 >
                   <span>N/A</span>
                   <span className="text-[10px]">→</span>
@@ -117,21 +118,21 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
             </div>
 
             {/* Desired Funding */}
-            <div className="bg-navy-950/70 p-2.5 sm:p-3 rounded-2xl border border-navy-700/80 space-y-1 min-w-0">
+            <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 space-y-3 min-w-0 hover:bg-white/10 transition-colors">
               <div className="flex items-center justify-between gap-1">
-                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">{t.dashboard.desiredFunding}</span>
-                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono shrink-0">
+                <span className="text-[10px] sm:text-xs text-white/50 font-bold tracking-[0.2em] uppercase truncate">{t.dashboard.desiredFunding}</span>
+                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white/70 font-mono shrink-0">
                   {t.dashboard.userTag}
                 </span>
               </div>
               {isFundingSet ? (
-                <p className="text-sm sm:text-base font-bold text-saffron-300 truncate">
+                <p className="text-lg sm:text-xl font-bold text-primary truncate">
                   ₹{profile!.desiredFunding!.toLocaleString('en-IN')}
                 </p>
               ) : (
                 <Link
                   href="/profile"
-                  className="inline-flex items-center gap-1 text-xs text-saffron-400/80 hover:text-saffron-300 underline font-medium pt-1"
+                  className="inline-flex items-center gap-1 text-xs text-primary/50 hover:text-primary underline font-bold pt-1 uppercase tracking-wider"
                 >
                   <span>N/A</span>
                   <span className="text-[10px]">→</span>
@@ -140,21 +141,21 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
             </div>
 
             {/* Monthly Expenses */}
-            <div className="bg-navy-950/70 p-2.5 sm:p-3 rounded-2xl border border-navy-700/80 space-y-1 min-w-0">
+            <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 space-y-3 min-w-0 hover:bg-white/10 transition-colors">
               <div className="flex items-center justify-between gap-1">
-                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">{t.dashboard.monthlyExpenses}</span>
-                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono shrink-0">
+                <span className="text-[10px] sm:text-xs text-white/50 font-bold tracking-[0.2em] uppercase truncate">{t.dashboard.monthlyExpenses}</span>
+                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white/70 font-mono shrink-0">
                   {t.dashboard.userTag}
                 </span>
               </div>
               {isExpensesSet ? (
-                <p className="text-sm sm:text-base font-bold text-slate-200 truncate">
+                <p className="text-lg sm:text-xl font-bold text-white truncate">
                   ₹{profile!.monthlyExpenses!.toLocaleString('en-IN')}
                 </p>
               ) : (
                 <Link
                   href="/profile"
-                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
+                  className="inline-flex items-center gap-1 text-xs text-white/30 hover:text-primary underline font-bold pt-1 uppercase tracking-wider"
                 >
                   <span>N/A</span>
                   <span className="text-[10px]">→</span>
@@ -163,21 +164,21 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
             </div>
 
             {/* Net Cash Flow (App Calculated) */}
-            <div className="bg-navy-950/70 p-2.5 sm:p-3 rounded-2xl border border-navy-700/80 space-y-1 min-w-0">
+            <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 space-y-3 min-w-0 hover:bg-white/10 transition-colors">
               <div className="flex items-center justify-between gap-1">
-                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">{t.dashboard.netCashFlow}</span>
-                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono shrink-0">
+                <span className="text-[10px] sm:text-xs text-white/50 font-bold tracking-[0.2em] uppercase truncate">{t.dashboard.netCashFlow}</span>
+                <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
                   {t.dashboard.appCalcTag}
                 </span>
               </div>
               {hasCashFlowData ? (
-                <p className={`text-sm sm:text-base font-bold truncate ${netCashFlow >= 0 ? 'text-emerald-300' : 'text-rose-400'}`}>
+                <p className={`text-lg sm:text-xl font-bold truncate ${netCashFlow >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {netCashFlow >= 0 ? '+' : ''}₹{netCashFlow.toLocaleString('en-IN')}/mo
                 </p>
               ) : (
                 <Link
                   href="/profile"
-                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white underline font-medium pt-1"
+                  className="inline-flex items-center gap-1 text-xs text-white/30 hover:text-primary underline font-bold pt-1 uppercase tracking-wider"
                 >
                   <span>N/A</span>
                   <span className="text-[10px]">→</span>
@@ -188,12 +189,12 @@ export default function WelcomeBanner({ profile, userName }: WelcomeBannerProps)
         </div>
 
         {/* Quick Edit Profile CTA */}
-        <div className="shrink-0 flex items-center gap-3">
+        <div className="shrink-0 pt-4 md:pt-0">
           <Link
             href="/profile"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 backdrop-blur-md transition-all shadow-sm active:scale-95"
+            className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-white/5 hover:bg-white/15 text-white text-xs font-bold border border-white/10 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
           >
-            <svg className="w-4 h-4 text-saffron-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
             <span>{t.common.edit} {t.nav.profile}</span>
