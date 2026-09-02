@@ -233,10 +233,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
           msg.id === assistantPlaceholderId
             ? {
                 ...msg,
-                content:
-                  isHindi
-                    ? 'क्षमा करें, AI सहायता अस्थायी रूप से अनुपलब्ध है। कृपया कुछ देर बाद पुनः प्रयास करें।'
-                    : 'AI assistance is temporarily unavailable. Please try again shortly.',
+                content: t.advisor.errorMessage,
               }
             : msg
         )

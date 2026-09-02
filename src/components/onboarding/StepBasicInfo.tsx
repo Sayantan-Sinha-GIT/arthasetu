@@ -106,7 +106,7 @@ export default function StepBasicInfo({
   const areaOptions = resolvedInfo?.areas && resolvedInfo.areas.length > 0
     ? [
         ...resolvedInfo.areas.map((a) => ({ value: a, label: a })),
-        { value: '__custom__', label: '✏️ Other / Custom Area' },
+        { value: '__custom__', label: `✏️ ${t.common.edit || 'Other / Custom Area'}` },
       ]
     : [];
 
@@ -232,13 +232,13 @@ export default function StepBasicInfo({
 
         {/* Road Name / House No (Optional Text) */}
         <Input
-          label="Road Name / House No. (Optional)"
+          label={t.onboarding.roadName}
           type="text"
           value={data.roadName || ''}
           onChange={(e) => onChange({ roadName: e.target.value })}
-          placeholder="e.g. MG Road, Plot No. 12"
+          placeholder={t.onboarding.roadNamePlaceholder}
           error={errors.roadName}
-          hint="You can manually enter the road name or house number here."
+          hint={t.onboarding.roadNameHint}
         />
       </div>
     </div>

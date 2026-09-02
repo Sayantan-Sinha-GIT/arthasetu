@@ -117,6 +117,9 @@ const en = {
     districtPlaceholder: 'e.g. Kamrup / Varanasi',
     locality: 'Village / Town',
     localityPlaceholder: 'e.g. Guwahati / Sarnath',
+    roadName: 'Road Name / House No. (Optional)',
+    roadNamePlaceholder: 'e.g. MG Road, Plot No. 12',
+    roadNameHint: 'You can manually enter the road name or house number here.',
     pinCode: 'PIN Code (Required)',
     pinCodePlaceholder: 'e.g. 781001',
     // Business
@@ -504,6 +507,10 @@ const en = {
     search: 'Search',
     noResults: 'No results found',
     rupee: '₹',
+    dataSaver: 'Data Saver',
+    dataSaverDesc: 'Data Saver reduces images and animations to save mobile data',
+    on: 'ON',
+    off: 'OFF',
   },
 
   // Errors

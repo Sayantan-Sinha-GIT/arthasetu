@@ -1,7 +1,9 @@
 'use client';
 import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function DataSaverToggle() {
+  const { t } = useLanguage();
   const { quality, manualOverride, setManualOverride } = useNetworkQuality();
   const isOn = manualOverride || quality === 'minimal';
 
@@ -10,11 +12,11 @@ export function DataSaverToggle() {
       type="button"
       onClick={() => setManualOverride(!isOn)}
       aria-pressed={isOn}
-      title="Data Saver reduces images and animations to save mobile data"
+      title={t.common.dataSaverDesc}
       className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-elevated cursor-pointer active:scale-95 shadow-xs"
     >
       <span aria-hidden>⚡</span>
-      <span className="hidden sm:inline">Data Saver:</span> {isOn ? 'ON' : 'OFF'}
+      <span className="hidden sm:inline">{t.common.dataSaver}:</span> {isOn ? t.common.on : t.common.off}
     </button>
   );
 }
