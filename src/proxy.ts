@@ -18,32 +18,54 @@ const authRoutes = ['/login', '/signup', '/forgot-password'];
 // Admin-only routes
 const adminRoutes = ['/admin'];
 
+const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
+const RATE_LIMIT_MAX_REQUESTS = 30; // max requests per window
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check for Firebase auth cookie/token
-  // Note: We use a lightweight check here. Full token verification happens server-side.
-  // The __session cookie approach is common with Firebase + Next.js
-  // For the MVP, we rely on client-side auth state and redirect handling
-  // This middleware mainly handles the admin route protection
+  // Rate limiting for API routes
+  if (pathname.startsWith('/api/')) {
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const now = Date.now();
+    const record = rateLimitMap.get(ip);
+    
+    if (record) {
+      if (now - record.timestamp > RATE_LIMIT_WINDOW_MS) {
+        rateLimitMap.set(ip, { count: 1, timestamp: now });
+      } else {
+        if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+          return new NextResponse(
+            JSON.stringify({ success: false, error: 'Too many requests. For your security, please wait a minute before trying again.' }),
+            { 
+              status: 429, 
+              headers: { 
+                'Content-Type': 'application/json',
+                'Retry-After': '60'
+              } 
+            }
+          );
+        }
+        record.count += 1;
+        rateLimitMap.set(ip, record);
+      }
+    } else {
+      rateLimitMap.set(ip, { count: 1, timestamp: now });
+    }
+  }
 
   // Admin routes: additional protection layer
   if (adminRoutes.some((route) => pathname.startsWith(route))) {
     // Admin access is primarily enforced client-side via AuthContext.isAdmin
-    // and server-side via API route token verification
-    // This middleware ensures the route exists but doesn't block —
-    // the actual admin layout component handles the redirect
   }
 
-  // Let all requests through — auth enforcement happens in:
-  // 1. Client-side: AuthContext checks in page components
-  // 2. Server-side: API routes verify tokens before processing
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Match all routes except static files, api routes, and Next.js internals
-    '/((?!_next/static|_next/image|favicon.ico|api).*)',
+    // Match all routes except static files, and Next.js internals
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
