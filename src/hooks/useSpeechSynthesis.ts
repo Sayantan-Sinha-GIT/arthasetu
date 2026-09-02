@@ -207,10 +207,14 @@ export function useSpeechSynthesis() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>(voiceCache);
 
   const pausedRef = useRef(false);
   const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const requestIdRef = useRef(0);
 
   // Feature detection and the shared voice subscription are both client-only,
   // so they stay in an effect (deferred to avoid a hydration mismatch,
@@ -237,14 +241,69 @@ export function useSpeechSynthesis() {
     }
   }, []);
 
+  /** Tears down whichever of the two engines is currently producing sound. */
   const stop = useCallback(() => {
-    if (!hasSpeech()) return;
     clearKeepAlive();
-    window.speechSynthesis.cancel();
+    requestIdRef.current += 1; // invalidates any in-flight server synthesis
+    if (hasSpeech()) window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      if (audioRef.current.src.startsWith('blob:')) URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
     pausedRef.current = false;
     setIsSpeaking(false);
     setIsPaused(false);
+    setIsLoading(false);
   }, [clearKeepAlive]);
+
+  /**
+   * Server-synthesised speech, for the (common) case where the device has no
+   * voice for the language. Returns false if the server could not produce
+   * audio, so the caller can surface that rather than fail silently.
+   */
+  const speakViaServer = useCallback(async (text: string, langCode: string): Promise<boolean> => {
+    const requestId = ++requestIdRef.current;
+    setIsLoading(true);
+    setFailed(false);
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleanTextForSpeech(text).slice(0, 1200), langCode }),
+      });
+      if (!res.ok) throw new Error('tts ' + res.status);
+
+      const blob = await res.blob();
+      // A newer request (or a stop()) superseded this one while it was in flight.
+      if (requestId !== requestIdRef.current) return true;
+
+      const audio = new Audio(URL.createObjectURL(blob));
+      audioRef.current = audio;
+      audio.onplay = () => {
+        setIsLoading(false);
+        setIsSpeaking(true);
+      };
+      const finish = () => {
+        setIsSpeaking(false);
+        setIsLoading(false);
+        if (audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
+        if (audioRef.current === audio) audioRef.current = null;
+      };
+      audio.onended = finish;
+      audio.onerror = finish;
+      await audio.play();
+      return true;
+    } catch (err) {
+      if (requestId === requestIdRef.current) {
+        console.warn('Server TTS unavailable:', err);
+        setIsLoading(false);
+        setIsSpeaking(false);
+        setFailed(true);
+      }
+      return false;
+    }
+  }, []);
 
   /**
    * True when this device can actually pronounce the given app language.
@@ -257,9 +316,10 @@ export function useSpeechSynthesis() {
 
   const speak = useCallback(
     (text: string, langCode = 'en'): boolean => {
+      // No Web Speech API at all (older browsers): the server can still serve.
       if (!hasSpeech()) {
-        console.warn('Speech synthesis not supported');
-        return false;
+        void speakViaServer(text, langCode);
+        return true;
       }
 
       window.speechSynthesis.cancel();
@@ -273,9 +333,14 @@ export function useSpeechSynthesis() {
       const available = live.length ? live : voices;
       const voice = findVoiceFor(langCode, available);
 
-      // No engine for this script. Speaking anyway is worse than not: the
-      // browser reports success and plays nothing.
-      if (!voice) return false;
+      // No local engine for this script. Rather than speak into the void —
+      // which is what the browser does, reporting success and playing
+      // nothing — hand the text to the server, which can synthesise any of
+      // the supported languages.
+      if (!voice) {
+        void speakViaServer(text, langCode);
+        return true;
+      }
 
       const chunks = chunkForSpeech(cleanText);
       pausedRef.current = false;
@@ -331,7 +396,7 @@ export function useSpeechSynthesis() {
 
       return true;
     },
-    [voices, clearKeepAlive]
+    [voices, clearKeepAlive, speakViaServer]
   );
 
   const pause = useCallback(() => {
@@ -355,6 +420,10 @@ export function useSpeechSynthesis() {
     isSupported,
     isSpeaking,
     isPaused,
+    /** True while the server is synthesising — the click has registered but no sound yet. */
+    isLoading,
+    /** True when neither engine could produce audio for the last attempt. */
+    failed,
     voices,
     speak,
     stop,
