@@ -314,31 +314,19 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
         {/* Settings Popup */}
         {settingsOpen && (
           <div className="absolute right-4 top-full mt-2 w-64 bg-surface border border-border rounded-xl shadow-xl z-10 p-3">
-             <div className="font-semibold mb-2 text-foreground">{t.advisor.chat.voiceLangTitle}</div>
+             <div className="font-semibold mb-2 text-foreground">{t.advisor.chat.autoRead}</div>
              <div className="text-xs text-muted-foreground mb-3">
-                {t.advisor.chat.voiceLangDesc}
+                Toggle automatic reading of advisor messages aloud. Voice input language is detected automatically.
              </div>
-             <select
-                value={speechLanguage}
-                onChange={(e) => handleSpeechLanguageChange(e.target.value)}
-                className="w-full bg-surface-elevated border border-border rounded-lg p-2 text-sm text-foreground focus:outline-none focus:border-primary"
-             >
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <option key={lang.code} value={lang.speechCode || lang.code}>
-                    {lang.nativeName} ({lang.name})
-                  </option>
-                ))}
-             </select>
-             
              {isTtsSupported && (
-              <label className="flex sm:hidden mt-4 items-center gap-2 cursor-pointer select-none text-foreground transition-colors">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-foreground transition-colors">
                 <input
                   type="checkbox"
                   checked={autoSpeakEnabled}
                   onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
                   className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
                 />
-                <span>{t.advisor.chat.autoRead}</span>
+                <span className="text-sm">{t.advisor.chat.autoRead}</span>
               </label>
             )}
           </div>

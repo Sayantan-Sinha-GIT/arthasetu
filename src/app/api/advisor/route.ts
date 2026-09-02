@@ -234,9 +234,9 @@ export async function POST(req: NextRequest) {
         } catch (streamError) {
           console.error('Error during Gemini stream:', streamError);
           const errorMsg =
-            streamError instanceof Error && streamError.message.includes('429')
-              ? '\n\n*(AI assistance is experiencing high traffic. Please try again shortly.)*'
-              : '\n\n*(An error occurred while generating the advice. Please try again.)*';
+            streamError instanceof Error && (streamError.message.includes('429') || streamError.message.toLowerCase().includes('quota') || streamError.message.toLowerCase().includes('exhausted'))
+              ? '\n\n*(ArthaSetu AI is experiencing high traffic or rate limits. Please wait a few seconds and try again.)*'
+              : '\n\n*(A network connection error occurred while reaching the AI servers. Please check your internet connection and try again.)*';
           controller.enqueue(encoder.encode(errorMsg));
           controller.close();
         }

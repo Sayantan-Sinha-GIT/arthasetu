@@ -123,7 +123,7 @@ export default function SchemesPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-12 space-y-10">
+      <main className="relative flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-12 space-y-10">
         <AmbientBackground variant="subtle" />
         {/* Header */}
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
