@@ -25,6 +25,7 @@ export default function SchemesPage() {
 
   const [activeTab, setActiveTab] = useState<'matched' | 'all'>('matched');
   const [searchQuery, setSearchQuery] = useState('');
+  const [matchedSearchQuery, setMatchedSearchQuery] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'central' | 'state'>('all');
 
@@ -61,8 +62,20 @@ export default function SchemesPage() {
   // Deterministic matches for the user's profile
   const matchedResults = useMemo(() => {
     if (!profile) return [];
-    return matchSchemesForProfile(schemes, profile);
-  }, [schemes, profile]);
+    const results = matchSchemesForProfile(schemes, profile);
+    if (!matchedSearchQuery.trim()) return results;
+    
+    const q = matchedSearchQuery.toLowerCase();
+    return results.filter(item => {
+      const s = item.scheme;
+      return (
+        s.name.toLowerCase().includes(q) ||
+        s.shortName.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        s.category?.toLowerCase().includes(q)
+      );
+    });
+  }, [schemes, profile, matchedSearchQuery]);
 
   // Filtered list for "All Schemes" directory
   const filteredSchemes = useMemo(() => {
@@ -186,6 +199,18 @@ export default function SchemesPage() {
                     🎯 Found <strong>{matchedResults.length} verified schemes</strong> matching your profile (
                     <strong>{profile.businessType || profile.businessCategory}</strong> in <strong>{profile.state}</strong>).
                     Ranked by relevance and local subsidy benefits.
+                  </div>
+
+                  {/* Matched Schemes Search Bar */}
+                  <div className="relative max-w-md">
+                    <input
+                      type="text"
+                      placeholder="Search within matched schemes..."
+                      value={matchedSearchQuery}
+                      onChange={(e) => setMatchedSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">🔍</span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
