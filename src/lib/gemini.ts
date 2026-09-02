@@ -85,7 +85,7 @@ export async function generateContent(
 export async function* generateContentStream(
   model: string,
   systemInstruction: string,
-  userMessage: string,
+  userMessage: string | any[],
   options?: {
     temperature?: number;
     maxOutputTokens?: number;
@@ -104,8 +104,12 @@ export async function* generateContentStream(
       },
     });
 
+    const request = typeof userMessage === 'string'
+      ? userMessage
+      : { contents: userMessage };
+
     return await retryWithBackoff(
-      () => genModel.generateContentStream(userMessage)
+      () => genModel.generateContentStream(request as any)
     );
   };
 

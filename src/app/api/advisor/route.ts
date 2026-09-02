@@ -219,12 +219,10 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const contentStream = generateAgentStream(
+          const contentStream = generateContentStream(
             GEMINI_MODELS.FLASH,
             systemInstruction,
             historyContext,
-            tools,
-            (name, args) => session.toolHandler(name, args, userProfile),
             { temperature: 0.7, maxOutputTokens: 2048 }
           );
 
