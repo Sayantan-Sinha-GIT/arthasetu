@@ -86,7 +86,8 @@
     "checkEmailTitle": "Email Thapse",
     "checkEmailSubtitle": "Ami {email} hatar password reset link patthaili.",
     "checkSpamNotice": "Mellili na? Spam folder thapse.",
-    "sendAgain": "Link Portun Patthai"
+    "sendAgain": "Link Portun Patthai",
+    "passwordHint": "उण्यांत उणें ६ अक्षरें"
   },
   "onboarding": {
     "title": "Tumcho Profile Tayar Kor",

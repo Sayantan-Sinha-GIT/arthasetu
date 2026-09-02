@@ -83,6 +83,7 @@ const en = {
     name: 'Full Name',
     email: 'Email Address',
     password: 'Password',
+    passwordHint: 'At least 6 characters',
     confirmPassword: 'Confirm Password',
     loginButton: 'Log In',
     signupButton: 'Create Account',

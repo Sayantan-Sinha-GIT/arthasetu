@@ -101,7 +101,8 @@
     "checkEmailTitle": "اِميل وُچھِو",
     "checkEmailSubtitle": "اِميل لِنک چھُ {email} پؠٹھ رَوان آمُت.",
     "checkSpamNotice": "اِميل نَو وُچھِو سپَم پؠٹھ.",
-    "sendAgain": "دۄبارٕ لِنک رَوان کَرِو"
+    "sendAgain": "دۄبارٕ لِنک رَوان کَرِو",
+    "passwordHint": "کم از کم 6 حروف"
   },
   "onboarding": {
     "title": "پنُن پروفائل بناوِو",

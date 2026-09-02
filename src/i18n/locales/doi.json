@@ -86,7 +86,8 @@
     "checkEmailTitle": "Apna Email Check Karo",
     "checkEmailSubtitle": "Assi {email} te ek password reset link bhejya hai.",
     "checkSpamNotice": "Prapt nahi hoya? Kripya apna spam ya junk folder check karo, ya duja link mangn ton pehla ek minute intezaar karo.",
-    "sendAgain": "Link Dubara Bhejo"
+    "sendAgain": "Link Dubara Bhejo",
+    "passwordHint": "घट्ट-घट्ट 6 अक्षर"
   },
   "onboarding": {
     "title": "Chalo Tuhunda Profile Set Kariye",

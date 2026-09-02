@@ -86,7 +86,8 @@
     "checkEmailTitle": "Check Your Email",
     "checkEmailSubtitle": "We sent a password reset link to {email}.",
     "checkSpamNotice": "Did not receive it? Please check your spam or junk folder, or wait a minute before requesting another link.",
-    "sendAgain": "Send Link Again"
+    "sendAgain": "Send Link Again",
+    "passwordHint": "Amsar 6 baikhon"
   },
   "onboarding": {
     "title": "Noni Profile-ko Setup Khalam",

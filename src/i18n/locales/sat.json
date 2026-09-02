@@ -101,7 +101,8 @@
     "checkEmailTitle": "Email Nel Me",
     "checkEmailSubtitle": "Password reset link {email} re pisti ena.",
     "checkSpamNotice": "Bani nam lena? Spam folder nel me, ba thora samay par kosis me.",
-    "sendAgain": "Link Pisti Ruray"
+    "sendAgain": "Link Pisti Ruray",
+    "passwordHint": "Armit re 6 ṭan akhra khọb kam hovuk ma"
   },
   "onboarding": {
     "title": "Apmapeya Profile Set Up Me",

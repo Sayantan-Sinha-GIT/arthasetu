@@ -86,7 +86,8 @@
     "checkEmailTitle": "Email Yengu",
     "checkEmailSubtitle": "{email} da password reset link amakhai thakhrabani.",
     "checkSpamNotice": "Phangdraba? Spam nattra junk folder yengu, nattra link amuk hangdringei matam khara ngai.",
-    "sendAgain": "Link Amuk Thaba"
+    "sendAgain": "Link Amuk Thaba",
+    "passwordHint": "Thekni 6 su haibata na yamdrabada leigadabani"
   },
   "onboarding": {
     "title": "Nanggi Profile Set up touba",
