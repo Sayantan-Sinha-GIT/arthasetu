@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
+import { getLanguageMeta } from '@/i18n/languages';
 import type { Scheme, UserProfile } from '@/types';
 
 export const maxDuration = 60;
@@ -24,7 +25,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isHindi = language === 'hi';
+    const langMeta = getLanguageMeta(language);
+    const languageInstruction =
+      language === 'en'
+        ? 'Respond in English.'
+        : `Respond ENTIRELY in ${langMeta.name} (${langMeta.nativeName}), using ${langMeta.nativeName}'s native script throughout — every heading and sentence. Do not respond in English. Keep ₹ figures, numerals, and proper nouns/acronyms (ArthaSetu, PMEGP, MUDRA, scheme names) as-is.`;
     const profileContext = userProfile
       ? `
 Entrepreneur Name: ${userProfile.name || 'Entrepreneur'}
@@ -34,38 +39,7 @@ Available Capital: ₹${(userProfile.availableCapital || 0).toLocaleString('en-I
 `
       : 'Rural micro-entrepreneur in India';
 
-    const systemPrompt = isHindi
-      ? `
-आप **अर्थसेतु (ArthaSetu)** के सरकारी योजना सलाहकार हैं।
-नीचे एक वास्तविक सरकारी योजना और ग्रामीण उद्यमी का विवरण दिया गया है।
-
----
-### 🏛️ सरकारी योजना विवरण:
-- योजना का नाम: ${scheme.name} (${scheme.shortName})
-- स्तर: ${scheme.governmentLevel === 'central' ? 'केंद्र सरकार (Central Government)' : `राज्य सरकार (${scheme.state})`}
-- विवरण: ${scheme.description}
-- सब्सिडी / लाभ: ${scheme.benefits.subsidyDetails || 'उपलब्ध नहीं'}
-- लोन विवरण: ${scheme.benefits.loanDetails || 'उपलब्ध नहीं'}
-- अधिकतम सब्सिडी: ${scheme.benefits.maxSubsidyPercent || 0}%
-- आवश्यक दस्तावेज: ${scheme.requiredDocuments.join(', ')}
-- आवेदन प्रक्रिया: ${scheme.applicationProcess}
-- आधिकारिक पोर्टल: ${scheme.officialUrl}
-
----
-### 👤 उद्यमी प्रोफाइल:
-${profileContext}
-
----
-### 🎯 आपका कार्य:
-इस योजना को उद्यमी के लिए बिल्कुल सरल, व्यावहारिक हिंदी में समझाएं। 
-यदि उद्यमी का व्यवसाय अस्पष्ट या अनिर्दिष्ट है, तो सामान्य सूक्ष्म-उद्यम के अनुसार समझाएं और अपनी विशिष्ट गतिविधि (जैसे सिलाई, मुर्गी पालन, किराना) अपडेट करने की सलाह दें।
-निम्न 4 बिंदुओं पर स्पष्ट जानकारी दें:
-1. **यह योजना आपके लिए क्यों उपयोगी है?** (उद्यमी के व्यवसाय और स्थान के संदर्भ में)
-2. **आपको कितना आर्थिक लाभ (सब्सिडी / लोन) मिलेगा?** (सरल उदाहरण सहित)
-3. **आवेदन के 3 आसान चरण** (कहाँ जाना है, कौन से पोर्टल पर फॉर्म भरना है)
-4. **बैंक जाने से पहले तैयार रखने वाले आवश्यक दस्तावेज**
-`
-      : `
+    const systemPrompt = `
 You are **ArthaSetu**, an expert rural micro-enterprise and government scheme advisor.
 Below is a verified government scheme and an entrepreneur's profile.
 
@@ -84,6 +58,10 @@ Below is a verified government scheme and an entrepreneur's profile.
 ---
 ### 👤 Entrepreneur Profile:
 ${profileContext}
+
+---
+### 🌐 Language:
+${languageInstruction}
 
 ---
 ### 🎯 Your Task:

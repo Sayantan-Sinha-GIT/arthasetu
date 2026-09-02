@@ -1,4 +1,5 @@
 import type { PlanInputs, CalculatedValues, UserProfile } from '@/types';
+import { getLanguageMeta } from '@/i18n/languages';
 
 export function buildPlannerPrompt(
   inputs: PlanInputs,
@@ -6,7 +7,13 @@ export function buildPlannerPrompt(
   userProfile: Partial<UserProfile> | null,
   language: string = 'en'
 ): string {
-  const isHindi = language === 'hi';
+  const langMeta = getLanguageMeta(language);
+  // e.g. "Tamil (தமிழ்)" — giving the model both the English and native name
+  // makes the instruction unambiguous regardless of which language it's for.
+  const languageInstruction =
+    language === 'en'
+      ? 'Respond in English.'
+      : `Respond ENTIRELY in ${langMeta.name} (${langMeta.nativeName}) — every string value in the JSON output (executiveSummary, keyAssumptions, riskAnalysis, actionableNextSteps) must be written in natural, plain-spoken ${langMeta.name}, using ${langMeta.nativeName}'s native script. Do NOT respond in English. JSON keys stay in English exactly as shown in the template; only the string VALUES are translated. Keep ₹ figures, numerals, and proper nouns/acronyms (ArthaSetu, PMEGP, MUDRA, DSCR) as-is.`;
 
   const profileContext = userProfile
     ? `
@@ -16,62 +23,6 @@ District: ${userProfile.district || 'Rural/Semi-urban'}
 Experience: ${userProfile.businessExperience || 'Beginner'}
 `
     : 'Entrepreneur in India';
-
-  if (isHindi) {
-    return `
-आप **अर्थसेतु (ArthaSetu)** के वरिष्ठ वित्तीय सलाहकार हैं।
-नीचे एक ग्रामीण/अर्ध-शहरी सूक्ष्म-उद्यमी के व्यवसाय की सही गणितीय गणना दी गई है (जो ऐप द्वारा सटीक रूप से निकाली गई है)।
-
----
-### 👤 उद्यमी प्रोफाइल:
-${profileContext}
-- व्यवसाय का प्रकार: ${inputs.businessType}
-- कार्यक्षेत्र / पैमाना: ${inputs.businessScale}
-- स्थान: ${inputs.location}
-
----
-### 📊 ऐप द्वारा गणना किए गए वित्तीय आंकड़े (इन आंकड़ों को बदलें नहीं):
-- कुल आवश्यक प्रारंभिक पूंजी (Total Initial Investment): ₹${calculated.totalInitialCost.toLocaleString('en-IN')}
-- उद्यमी की अपनी बचत (Available Savings): ₹${inputs.availableSavings.toLocaleString('en-IN')}
-- आवश्यक बैंक लोन / सब्सिडी (Funding Gap): ₹${calculated.fundingGap.toLocaleString('en-IN')}
-- अनुमानित मासिक लोन ईएमआई (Estimated Monthly EMI): ₹${calculated.monthlyLoanEmi.toLocaleString('en-IN')} (${inputs.loanInterestRatePercent}% ब्याज, ${inputs.loanTenureMonths} महीने)
-- मासिक कुल राजस्व (Monthly Gross Revenue): ₹${calculated.monthlyGrossRevenue.toLocaleString('en-IN')}
-- मासिक कुल खर्चे (Monthly Total Expenses): ₹${calculated.monthlyTotalExpenses.toLocaleString('en-IN')}
-- मासिक शुद्ध लाभ (Monthly Net Profit): ₹${calculated.monthlyNetProfit.toLocaleString('en-IN')}
-- शुद्ध लाभ मार्जिन (Profit Margin): ${calculated.profitMarginPercent}%
-- ब्रेक-ईवन अवधि (Break-even Payback): ${calculated.breakEvenMonths ? `${calculated.breakEvenMonths} महीने` : 'वर्तमान में घाटा'}
-- मासिक ब्रेक-ईवन यूनिट्स: ${calculated.breakEvenUnitsPerMonth} यूनिट्स/महीना
-
----
----
-### 🎯 आपका कार्य:
-आपको केवल **गुणात्मक वित्तीय विश्लेषण (Qualitative Narrative)** प्रदान करना है। कोई नया गणित न जोड़ें।
-विशेष नियम: यदि व्यवसाय का प्रकार (businessType) अस्पष्ट या निरर्थक है, तो executiveSummary में विनम्रतापूर्वक स्पष्टीकरण मांगें और 2-3 उदाहरण दें, साथ ही सामान्य सूक्ष्म-उद्यम अनुमान प्रदान करें।
-सख्त JSON प्रारूप में उत्तर दें:
-
-\`\`\`json
-{
-  "executiveSummary": "व्यवसाय की व्यवहार्यता, लाभप्रदता और स्थान के अनुसार क्षमता का 2-3 वाक्यों में स्पष्ट सारांश।",
-  "keyAssumptions": [
-    "कच्चे माल और बिक्री से जुड़ी पहली महत्वपूर्ण धारणा",
-    "कामकाजी पूंजी और ग्राहक मांग से जुड़ी दूसरी धारणा",
-    "बाजार मूल्य और मौसमी बदलाव से जुड़ी तीसरी धारणा"
-  ],
-  "riskAnalysis": [
-    "पहला बड़ा परिचालन या मौसमी जोखिम और उसका समाधान",
-    "दूसरा वित्तीय या नकदी प्रवाह जोखिम और उसका बचाव",
-    "तीसरा प्रतिस्पर्धा या स्थानीय जोखिम और सावधानी"
-  ],
-  "actionableNextSteps": [
-    "बैंक लोन / PMEGP या MUDRA आवेदन के लिए पहला कदम",
-    "सप्लायर और उपकरण खरीद के लिए दूसरा कदम",
-    "स्थानीय बिक्री केंद्र या खरीदार तय करने का तीसरा कदम",
-    "आवश्यक स्थानीय परमिट या रिकॉर्ड-कीपिंग शुरू करने का चौथा कदम"
-  ]
-}
-\`\`\`
-`;
-  }
 
   return `
 You are **ArthaSetu**, a seasoned rural business and micro-finance advisor in India.
@@ -98,10 +49,14 @@ ${profileContext}
 - Monthly Break-even Units: ${calculated.breakEvenUnitsPerMonth} units/month
 
 ---
+### 🌐 Language:
+${languageInstruction}
+
+---
 ### 🎯 Your Task:
 Provide the qualitative narrative, critical business assumptions, risk analysis, and immediate execution steps.
 SPECIAL INSTRUCTION: If the businessType is ambiguous, vague, or unrecognizable, politely ask the entrepreneur for clarification in the executiveSummary (e.g. "Could you clarify if you produce dairy, poultry, tailoring, or retail goods?") while providing conservative baseline micro-enterprise guidance.
-Respond strictly in JSON format as follows:
+Respond strictly in JSON format as follows (remember: string VALUES in ${langMeta.name}, JSON keys unchanged):
 
 \`\`\`json
 {
