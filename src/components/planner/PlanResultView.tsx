@@ -130,7 +130,7 @@ export default function PlanResultView({
             </span>
           </div>
           <p className="text-muted text-xs sm:text-sm mt-1">
-            📍 {inputs.location} • Generated for your enterprise scale
+            📍 {inputs.location} • {t.planner.result.generatedForScale}
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function PlanResultView({
             disabled={saving || !!savedId}
             className="text-xs"
           >
-            {savedId ? '✓ Saved' : `💾 ${t.planner.savePlan}`}
+            {savedId ? t.planner.result.savedState : `💾 ${t.planner.savePlan}`}
           </Button>
 
           <Button
@@ -161,7 +161,7 @@ export default function PlanResultView({
             isLoading={isExportingPdf}
             className="text-xs bg-saffron-600 hover:bg-saffron-500 text-white font-bold"
           >
-            📄 Export PDF
+            {t.planner.result.exportPdf}
           </Button>
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function PlanResultView({
           source="app-calculated"
         />
         <NumberBadge
-          label="Available Savings"
+          label={t.planner.result.availableSavings}
           value={inputs.availableSavings}
           source="user-provided"
         />
@@ -202,17 +202,17 @@ export default function PlanResultView({
                 {t.planner.breakEven}
               </h2>
               <p className="text-xs text-muted mt-0.5">
-                {calculated.breakEvenUnitsPerMonth ? `${calculated.breakEvenUnitsPerMonth.toLocaleString('en-IN')} units/month minimum production needed to cover fixed overheads.` : 'Estimated recovery timeframe'}
+                {calculated.breakEvenUnitsPerMonth ? t.planner.result.minProductionOverhead.replace('{{units}}', calculated.breakEvenUnitsPerMonth.toLocaleString('en-IN')) : t.planner.result.estimatedRecovery}
               </p>
             </div>
           </div>
 
           <div className="text-left sm:text-right">
             <span className="text-2xl font-black text-foreground">
-              {calculated.breakEvenMonths !== null ? `${calculated.breakEvenMonths} Months` : 'N/A'}
+              {calculated.breakEvenMonths !== null ? `${calculated.breakEvenMonths} ${t.planner.wizard.months}` : t.planner.wizard.na}
             </span>
             <span className="block text-[11px] text-muted font-medium">
-              Estimated Capital Recovery
+              {t.planner.result.capitalRecovery}
             </span>
           </div>
         </div>
@@ -313,19 +313,19 @@ export default function PlanResultView({
 
           <div className="space-y-2.5">
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Equipment & Machinery</span>
+              <span className="text-muted">{t.planner.result.equipmentMachinery}</span>
               <span className="font-bold text-foreground">₹{(inputs.equipmentCost || inputs.expansionEquipmentCost || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Setup & Shed</span>
+              <span className="text-muted">{t.planner.result.setupShed}</span>
               <span className="font-bold text-foreground">₹{(inputs.setupCost || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">{t?.planner?.initialStock || 'Initial Stock'}</span>
+              <span className="text-muted">{t.planner.result.initialStock}</span>
               <span className="font-bold text-foreground">₹{(inputs.initialInventory || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">{t?.planner?.workingCapital || 'Working Capital'}</span>
+              <span className="text-muted">{t.planner.result.workingCapital}</span>
               <span className="font-bold text-foreground">₹{(inputs.workingCapitalReserve || inputs.expansionWorkingCapital || 0).toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-bold border-t border-border">
@@ -348,15 +348,15 @@ export default function PlanResultView({
               <span className="font-bold text-success">+ ₹{calculated.monthlyGrossRevenue.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">{t?.planner?.rawMaterials || 'Raw Materials'}</span>
+              <span className="text-muted">{t.planner.result.rawMaterials}</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyRawMaterials.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">Rent & Utilities</span>
+              <span className="text-muted">{t.planner.result.rentUtilities}</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyRentUtilities.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-border-subtle text-xs">
-              <span className="text-muted">{t?.planner?.laborWages || 'Labor Wages'}</span>
+              <span className="text-muted">{t.planner.result.laborWages}</span>
               <span className="font-bold text-danger">- ₹{inputs.monthlyLabor.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-bold border-t border-border">
@@ -374,7 +374,7 @@ export default function PlanResultView({
             <div className="flex items-center gap-2">
               <span className="text-xl">🎯</span>
               <h2 className="text-base font-bold text-foreground">
-                Matched Government Subsidies & Schemes ({matchedSchemes.length})
+                {t.planner.result.matchedSchemesTitle.replace('{{count}}', matchedSchemes.length.toString())}
               </h2>
             </div>
             <Link href="/schemes" className="text-xs text-primary font-bold hover:underline">
@@ -396,10 +396,10 @@ export default function PlanResultView({
       <div className="p-6 rounded-3xl bg-surface-elevated border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-foreground">
-            Bridge your ₹{calculated.fundingGap.toLocaleString('en-IN')} {t.planner.fundingGap} with Subsidies
+            {t.planner.result.bridgeGapTitle.replace('{{gap}}', calculated.fundingGap.toLocaleString('en-IN'))}
           </h3>
           <p className="text-xs text-muted mt-0.5">
-            Discover Central and State subsidy schemes (PMEGP, MUDRA, NLM) matching your profile in {inputs.location}.
+            {t.planner.result.bridgeGapDesc.replace('{{location}}', inputs.location)}
           </p>
         </div>
         <Link href="/schemes" className="shrink-0">

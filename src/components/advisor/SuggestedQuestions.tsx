@@ -12,9 +12,9 @@ export default function SuggestedQuestions({ profile, onSelect }: SuggestedQuest
   const { t, language } = useLanguage();
   const isHindi = language === 'hi';
 
-  const business = profile?.businessType || 'business';
-  const location = profile?.locality || profile?.district || profile?.state || 'my village';
-  const capital = profile?.availableCapital ? `₹${profile.availableCapital.toLocaleString('en-IN')}` : 'my budget';
+  const business = profile?.businessType || (isHindi ? 'व्यवसाय' : 'business');
+  const location = profile?.locality || profile?.district || profile?.state || (isHindi ? 'मेरा गाँव' : 'my village');
+  const capital = profile?.availableCapital ? `₹${profile.availableCapital.toLocaleString('en-IN')}` : (isHindi ? 'मेरा बजट' : 'my budget');
 
   const defaultQuestionsEn = [
     `How should I allocate ${capital} to start a ${business} in ${location}?`,

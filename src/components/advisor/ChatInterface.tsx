@@ -119,17 +119,16 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       const business = userProfile?.businessType || '';
       const location = userProfile?.locality || userProfile?.district || userProfile?.state || '';
 
-      const greetingEn = userName
-        ? `Hello **${userName}**! I am **ArthaSetu**, your dedicated AI business advisor.${
-            business ? ` I see you are working on your **${business}**${location ? ` in **${location}**` : ''}.` : ''
-          }\n\nHow can I help you today? You can type or tap the microphone to speak.`
-        : `Namaste! I am **ArthaSetu**, your AI business advisor.\n\nAsk me anything about starting, funding, or growing your micro-enterprise. How can I assist your business today?`;
+      const locationPartEn = location ? t.advisor.chat.locationPart.replace('{{location}}', location) : '';
+      const businessContextEn = business ? t.advisor.chat.businessPart.replace('{{business}}', business).replace('{{locationPart}}', locationPartEn) : '';
+      const greetingNamedEn = t.advisor.chat.greetingNamed.replace('{{userName}}', userName).replace('{{businessContext}}', businessContextEn);
 
-      const greetingHi = userName
-        ? `नमस्ते **${userName}** जी! मैं **अर्थसेतु** हूँ, आपका AI व्यवसाय सलाहकार।${
-            business ? ` मैं देख रहा हूँ कि आप **${location ? `${location} में ` : ''}${business}** पर काम कर रहे हैं।` : ''
-          }\n\nआज मैं आपकी क्या सहायता कर सकता हूँ? आप लिखकर या माइक पर बोलकर कोई भी प्रश्न पूछ सकते हैं।`
-        : `नमस्ते! मैं **अर्थसेतु** हूँ, आपका व्यवसाय सलाहकार।\n\nअपने व्यवसाय को शुरू करने, लोन प्राप्त करने या बढ़ाने के बारे में कोई भी प्रश्न पूछें। आज मैं आपकी क्या मदद करूँ?`;
+      const locationPartHi = location ? t.advisor.chat.locationPart.replace('{{location}}', location) : '';
+      const businessContextHi = business ? t.advisor.chat.businessPart.replace('{{business}}', business).replace('{{locationPart}}', locationPartHi) : '';
+      const greetingNamedHi = t.advisor.chat.greetingNamed.replace('{{userName}}', userName).replace('{{businessContext}}', businessContextHi);
+
+      const greetingEn = userName ? greetingNamedEn : t.advisor.chat.greetingAnon;
+      const greetingHi = userName ? greetingNamedHi : t.advisor.chat.greetingAnon;
 
       setMessages([
         {
@@ -286,7 +285,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       <div className="px-4 py-3 bg-surface/50 backdrop-blur-md border-b border-border/40 flex items-center justify-between gap-3 text-[10px] text-muted-foreground uppercase tracking-widest relative z-20">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bold text-foreground">Gemini Flash Active</span>
+          <span className="font-bold text-foreground">{t.advisor.chat.geminiActive}</span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -299,7 +298,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
                 onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
                 className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
               />
-              <span>Auto-Read Answers</span>
+              <span>{t.advisor.chat.autoRead}</span>
             </label>
           )}
           
@@ -315,9 +314,9 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
         {/* Settings Popup */}
         {settingsOpen && (
           <div className="absolute right-4 top-full mt-2 w-64 bg-surface border border-border rounded-xl shadow-xl z-10 p-3">
-             <div className="font-semibold mb-2 text-foreground">Voice Input Language</div>
+             <div className="font-semibold mb-2 text-foreground">{t.advisor.chat.voiceLangTitle}</div>
              <div className="text-xs text-muted-foreground mb-3">
-                Change the language used when you click the microphone to speak.
+                {t.advisor.chat.voiceLangDesc}
              </div>
              <select
                 value={speechLanguage}
@@ -339,7 +338,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
                   onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
                   className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
                 />
-                <span>Auto-Read Answers</span>
+                <span>{t.advisor.chat.autoRead}</span>
               </label>
             )}
           </div>
@@ -357,7 +356,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       {/* Permission Denied Banner (Graceful text fallback) */}
       {isPermissionDenied && (
         <div className="bg-warning-light border-b border-warning text-amber-900 dark:text-amber-200 px-4 py-2.5 text-xs font-medium text-center animate-fade-in">
-          ⚠️ Microphone access is blocked in your browser. You can type your questions in the box below anytime.
+          {t.advisor.chat.micBlocked}
         </div>
       )}
 

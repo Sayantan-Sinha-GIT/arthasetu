@@ -82,10 +82,10 @@ export default function PlannerWizard({
   const validateStep1 = () => {
     const errs: Record<string, string> = {};
     if (!inputs.businessType?.trim()) {
-      errs.businessType = 'Please enter your business type or trade (e.g. Poultry, Tailoring, Dairy)';
+      errs.businessType = t.planner.wizard.errBusinessType;
     }
     if (!inputs.location?.trim()) {
-      errs.location = 'Please enter your operating location (e.g. Village/Town, District, State)';
+      errs.location = t.planner.wizard.errLocation;
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -154,10 +154,10 @@ export default function PlannerWizard({
             <div>
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <span>🏢</span>
-                <span>Step 1: Business Context & Planning Mode</span>
+                <span>{t.planner.wizard.step1Title}</span>
               </h2>
               <p className="text-xs text-muted mt-1">
-                Choose whether you are starting fresh or expanding an existing profitable business
+                {t.planner.wizard.step1Desc}
               </p>
             </div>
 
@@ -175,9 +175,9 @@ export default function PlannerWizard({
                 `}
               >
                 <div className="text-xl mb-1">🌱</div>
-                <h4 className="text-sm font-bold text-foreground">{t?.planner?.newStartupPlan || 'New Startup Plan'}</h4>
+                <h4 className="text-sm font-bold text-foreground">{t.planner.newStartupPlan}</h4>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
-                  Starting a new venture from scratch with initial machinery, shed, and initial stock.
+                  {t.planner.wizard.startupDesc}
                 </p>
               </button>
 
@@ -193,35 +193,35 @@ export default function PlannerWizard({
                 `}
               >
                 <div className="text-xl mb-1">🚀</div>
-                <h4 className="text-sm font-bold text-foreground">{t?.planner?.existingExpansion || 'Existing Business Expansion'}</h4>
+                <h4 className="text-sm font-bold text-foreground">{t.planner.existingExpansion}</h4>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
-                  Start from current monthly revenue & expenses to calculate growth capital needs.
+                  {t.planner.wizard.expansionDesc}
                 </p>
               </button>
             </div>
 
             <div className="space-y-4 pt-2">
               <Input
-                label="Business Type / Activity"
+                label={t.planner.wizard.businessTypeLabel}
                 value={inputs.businessType}
                 onChange={(e) => updateField('businessType', e.target.value)}
-                placeholder="e.g. Broiler Poultry Farm, Tailoring Shop, Dairy Unit"
+                placeholder={t.planner.wizard.businessTypePlaceholder}
                 error={errors.businessType}
                 required
               />
 
               <Input
-                label="Target Capacity / Operating Scale"
+                label={t.planner.wizard.businessScaleLabel}
                 value={inputs.businessScale}
                 onChange={(e) => updateField('businessScale', e.target.value)}
-                placeholder="e.g. 500 birds per batch, 8 Sewing machines, 5 Dairy cows"
+                placeholder={t.planner.wizard.businessScalePlaceholder}
               />
 
               <Input
-                label="Operating Location (Village / District / State)"
+                label={t.planner.wizard.locationLabel}
                 value={inputs.location}
                 onChange={(e) => updateField('location', e.target.value)}
-                placeholder="e.g. Hajo, Kamrup, Assam"
+                placeholder={t.planner.wizard.locationPlaceholder}
                 error={errors.location}
                 required
               />
@@ -235,7 +235,7 @@ export default function PlannerWizard({
                   if (validateStep1()) setStep(2);
                 }}
               >
-                Next: {isExisting ? 'Current Cash Flow' : 'Startup Investment'} →
+                {isExisting ? t.planner.wizard.nextCurrentCashFlow : t.planner.wizard.nextStartupInvestment}
               </Button>
             </div>
           </Card>
@@ -249,16 +249,16 @@ export default function PlannerWizard({
                 <div>
                   <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <span>💰</span>
-                    <span>Step 2: Current Operating Cash Flow</span>
+                    <span>{t.planner.wizard.step2CurrentCashFlowTitle}</span>
                   </h2>
                   <p className="text-xs text-muted mt-1">
-                    Enter your current monthly sales and recurring costs before expansion
+                    {t.planner.wizard.step2CurrentCashFlowDesc}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <NumberInput
-                    label="Current Monthly Revenue / Sales (₹)"
+                    label={t.planner.wizard.currentMonthlyRevenue}
                     value={inputs.currentMonthlyRevenue}
                     onValueChange={(val) => updateField('currentMonthlyRevenue', val)}
                     placeholder="e.g. 35000"
@@ -267,7 +267,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Current Monthly Expenses (₹)"
+                    label={t.planner.wizard.currentMonthlyExpenses}
                     value={inputs.currentMonthlyExpenses}
                     onValueChange={(val) => updateField('currentMonthlyExpenses', val)}
                     placeholder="e.g. 20000"
@@ -277,7 +277,7 @@ export default function PlannerWizard({
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-surface border border-border flex items-center justify-between text-xs">
-                  <span className="text-muted font-medium">Current Baseline Monthly Profit:</span>
+                  <span className="text-muted font-medium">{t.planner.wizard.currentBaselineProfit}</span>
                   <span className="font-bold text-foreground text-sm">
                     ₹{((inputs.currentMonthlyRevenue || 0) - (inputs.currentMonthlyExpenses || 0)).toLocaleString('en-IN')}/mo
                   </span>
@@ -288,16 +288,16 @@ export default function PlannerWizard({
                 <div>
                   <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <span>🏗️</span>
-                    <span>Step 2: Startup Capital & Initial Investment</span>
+                    <span>{t.planner.wizard.step2StartupTitle}</span>
                   </h2>
                   <p className="text-xs text-muted mt-1">
-                    Enter your one-time initial setup and equipment purchases
+                    {t.planner.wizard.step2StartupDesc}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <NumberInput
-                    label="Equipment & Machinery (₹)"
+                    label={t.planner.wizard.equipmentCost}
                     value={inputs.equipmentCost}
                     onValueChange={(val) => updateField('equipmentCost', val)}
                     placeholder="e.g. 25000"
@@ -306,7 +306,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Shed, Shop Setup & Civil Works (₹)"
+                    label={t.planner.wizard.setupCost}
                     value={inputs.setupCost}
                     onValueChange={(val) => updateField('setupCost', val)}
                     placeholder="e.g. 35000"
@@ -315,7 +315,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Initial Stock / First Batch Raw Material (₹)"
+                    label={t.planner.wizard.initialInventory}
                     value={inputs.initialInventory}
                     onValueChange={(val) => updateField('initialInventory', val)}
                     placeholder="e.g. 15000"
@@ -324,7 +324,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Working Capital Reserve Buffer (₹)"
+                    label={t.planner.wizard.workingCapitalReserve}
                     value={inputs.workingCapitalReserve}
                     onValueChange={(val) => updateField('workingCapitalReserve', val)}
                     placeholder="e.g. 15000"
@@ -337,10 +337,10 @@ export default function PlannerWizard({
 
             <div className="flex justify-between pt-4 border-t border-border-subtle">
               <Button type="button" variant="ghost" onClick={() => setStep(1)}>
-                ← Back
+                {t.planner.wizard.back}
               </Button>
               <Button type="button" onClick={() => setStep(3)}>
-                Next: {isExisting ? 'Expansion Capital' : 'Revenue Model'} →
+                {isExisting ? t.planner.wizard.nextExpansionCapital : t.planner.wizard.nextRevenueModel}
               </Button>
             </div>
           </Card>
@@ -354,24 +354,24 @@ export default function PlannerWizard({
                 <div>
                   <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <span>🏗️</span>
-                    <span>Step 3: Growth Capital & Expansion Assets Needed</span>
+                    <span>{t.planner.wizard.step3ExpansionTitle}</span>
                   </h2>
                   <p className="text-xs text-muted mt-1">
-                    What new assets or working capital do you need to expand operations?
+                    {t.planner.wizard.step3ExpansionDesc}
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <Input
-                    label="Expansion Goal / Purpose"
+                    label={t.planner.wizard.expansionGoal}
                     value={inputs.expansionGoal}
                     onChange={(e) => updateField('expansionGoal', e.target.value)}
-                    placeholder="e.g. Purchase automated packaging unit and expand shed"
+                    placeholder={t.planner.wizard.expansionGoalPlaceholder}
                   />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <NumberInput
-                      label="New Machinery / Asset Purchases (₹)"
+                      label={t.planner.wizard.newMachineryCost}
                       value={inputs.expansionEquipmentCost}
                       onValueChange={(val) => updateField('expansionEquipmentCost', val)}
                       placeholder="e.g. 40000"
@@ -380,7 +380,7 @@ export default function PlannerWizard({
                     />
 
                     <NumberInput
-                      label="Additional Working Capital / Stock (₹)"
+                      label={t.planner.wizard.additionalWorkingCapital}
                       value={inputs.expansionWorkingCapital}
                       onValueChange={(val) => updateField('expansionWorkingCapital', val)}
                       placeholder="e.g. 20000"
@@ -395,16 +395,16 @@ export default function PlannerWizard({
                 <div>
                   <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <span>📈</span>
-                    <span>Step 3: Unit Sales & Monthly Revenue Model</span>
+                    <span>{t.planner.wizard.step3RevenueTitle}</span>
                   </h2>
                   <p className="text-xs text-muted mt-1">
-                    Estimate monthly unit pricing and sales volume
+                    {t.planner.wizard.step3RevenueDesc}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <NumberInput
-                    label="Price per Finished Unit / Service (₹)"
+                    label={t.planner.wizard.unitPrice}
                     value={inputs.unitPrice}
                     onValueChange={(val) => updateField('unitPrice', val)}
                     placeholder="e.g. 160"
@@ -413,7 +413,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Estimated Units Sold per Month"
+                    label={t.planner.wizard.unitsSoldPerMonth}
                     value={inputs.unitsSoldPerMonth}
                     onValueChange={(val) => updateField('unitsSoldPerMonth', val)}
                     placeholder="e.g. 450"
@@ -422,7 +422,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Secondary / Byproduct Revenue (₹/month)"
+                    label={t.planner.wizard.otherMonthlyRevenue}
                     value={inputs.otherMonthlyRevenue}
                     onValueChange={(val) => updateField('otherMonthlyRevenue', val)}
                     placeholder="e.g. 2000"
@@ -434,10 +434,10 @@ export default function PlannerWizard({
 
             <div className="flex justify-between pt-4 border-t border-border-subtle">
               <Button type="button" variant="ghost" onClick={() => setStep(2)}>
-                ← Back
+                {t.planner.wizard.back}
               </Button>
               <Button type="button" onClick={() => setStep(4)}>
-                Next: {isExisting ? 'Projected Growth' : 'Operating Expenses'} →
+                {isExisting ? t.planner.wizard.nextProjectedGrowth : t.planner.wizard.nextOperatingExpenses}
               </Button>
             </div>
           </Card>
@@ -451,16 +451,16 @@ export default function PlannerWizard({
                 <div>
                   <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <span>📈</span>
-                    <span>Step 4: Projected Post-Expansion Growth</span>
+                    <span>{t.planner.wizard.step4GrowthTitle}</span>
                   </h2>
                   <p className="text-xs text-muted mt-1">
-                    Estimate your revenue surge and expanded operating capacity
+                    {t.planner.wizard.step4GrowthDesc}
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <NumberInput
-                    label="Expected Revenue Increase (% Growth)"
+                    label={t.planner.wizard.expectedRevenueIncrease}
                     value={inputs.projectedRevenueIncreasePercent}
                     onValueChange={(val) => updateField('projectedRevenueIncreasePercent', val)}
                     placeholder="e.g. 40"
@@ -471,11 +471,11 @@ export default function PlannerWizard({
 
                   <div className="p-4 rounded-2xl bg-surface border border-border space-y-2 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-muted">Projected Monthly Revenue:</span>
+                      <span className="text-muted">{t.planner.wizard.projectedMonthlyRevenue}</span>
                       <span className="font-bold text-foreground">₹{liveCalculated.monthlyGrossRevenue.toLocaleString('en-IN')}/mo</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted">Projected Operating Expenses:</span>
+                      <span className="text-muted">{t.planner.wizard.projectedOperatingExpenses}</span>
                       <span className="font-bold text-foreground">₹{liveCalculated.monthlyOperatingExpenses.toLocaleString('en-IN')}/mo</span>
                     </div>
                   </div>
@@ -486,16 +486,16 @@ export default function PlannerWizard({
                 <div>
                   <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <span>🧾</span>
-                    <span>Step 4: Monthly Operating Expenses (OPEX)</span>
+                    <span>{t.planner.wizard.step4ExpensesTitle}</span>
                   </h2>
                   <p className="text-xs text-muted mt-1">
-                    Recurring monthly costs needed to produce and distribute goods
+                    {t.planner.wizard.step4ExpensesDesc}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <NumberInput
-                    label="Raw Materials / Feed / Inputs (₹/month)"
+                    label={t.planner.wizard.rawMaterials}
                     value={inputs.monthlyRawMaterials}
                     onValueChange={(val) => updateField('monthlyRawMaterials', val)}
                     placeholder="e.g. 35000"
@@ -504,7 +504,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Rent & Utilities (Power, Water) (₹/month)"
+                    label={t.planner.wizard.rentUtilities}
                     value={inputs.monthlyRentUtilities}
                     onValueChange={(val) => updateField('monthlyRentUtilities', val)}
                     placeholder="e.g. 3000"
@@ -513,7 +513,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Direct Labor / Helpers (₹/month)"
+                    label={t.planner.wizard.labor}
                     value={inputs.monthlyLabor}
                     onValueChange={(val) => updateField('monthlyLabor', val)}
                     placeholder="e.g. 5000"
@@ -522,7 +522,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Transport, Logistics & Packaging (₹/month)"
+                    label={t.planner.wizard.transportPackaging}
                     value={inputs.monthlyTransportPackaging}
                     onValueChange={(val) => updateField('monthlyTransportPackaging', val)}
                     placeholder="e.g. 2500"
@@ -531,7 +531,7 @@ export default function PlannerWizard({
                   />
 
                   <NumberInput
-                    label="Maintenance, Marketing & Other (₹/month)"
+                    label={t.planner.wizard.maintenanceOther}
                     value={inputs.monthlyMaintenanceOther}
                     onValueChange={(val) => updateField('monthlyMaintenanceOther', val)}
                     placeholder="e.g. 1500"
@@ -544,10 +544,10 @@ export default function PlannerWizard({
 
             <div className="flex justify-between pt-4 border-t border-border-subtle">
               <Button type="button" variant="ghost" onClick={() => setStep(3)}>
-                ← Back
+                {t.planner.wizard.back}
               </Button>
               <Button type="button" onClick={() => setStep(5)}>
-                Next: Funding & Review →
+                {t.planner.wizard.nextFundingReview}
               </Button>
             </div>
           </Card>
@@ -559,10 +559,10 @@ export default function PlannerWizard({
             <div>
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <span>🏦</span>
-                <span>Step 5: Capital Plan, Loan Assumptions & Final Review</span>
+                <span>{t.planner.wizard.step5ReviewTitle}</span>
               </h2>
               <p className="text-xs text-muted mt-1">
-                Specify your own contribution and review financing recommendations
+                {t.planner.wizard.step5ReviewDesc}
               </p>
             </div>
 
@@ -570,12 +570,12 @@ export default function PlannerWizard({
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted font-medium">Total {isExisting ? 'Expansion' : 'Initial Setup'} Capital Required:</span>
+                  <span className="text-muted font-medium">{isExisting ? t.planner.wizard.totalExpansionCapital : t.planner.wizard.totalInitialCapital}</span>
                   <span className="font-bold text-foreground text-sm">₹{liveCalculated.totalInitialCost.toLocaleString('en-IN')}</span>
                 </div>
 
                 <NumberInput
-                  label="Your Available Own Capital / Savings (₹)"
+                  label={t.planner.wizard.ownCapital}
                   value={inputs.availableSavings}
                   onValueChange={(val) => updateField('availableSavings', val)}
                   placeholder="e.g. 30000"
@@ -584,7 +584,7 @@ export default function PlannerWizard({
                 />
 
                 <div className="flex justify-between items-center pt-2 border-t border-border-subtle text-xs">
-                  <span className="text-muted font-bold">Remaining Funding Gap to Bridge:</span>
+                  <span className="text-muted font-bold">{t.planner.wizard.fundingGapBridge}</span>
                   <span className={`font-black text-sm ${liveCalculated.fundingGap > 0 ? 'text-saffron-600' : 'text-success'}`}>
                     ₹{liveCalculated.fundingGap.toLocaleString('en-IN')}
                   </span>
@@ -596,7 +596,7 @@ export default function PlannerWizard({
                 <div className="space-y-4 p-4 rounded-2xl bg-surface-elevated border border-border">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-foreground">
-                      Do you plan to take a bank loan to finance this ₹{liveCalculated.fundingGap.toLocaleString('en-IN')} gap?
+                      {t.planner.wizard.planBankLoanPrompt.replace('{{gap}}', liveCalculated.fundingGap.toLocaleString('en-IN'))}
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
@@ -611,7 +611,7 @@ export default function PlannerWizard({
                             : 'border-border bg-surface text-muted'
                         }`}
                       >
-                        🏦 Yes, Explore Bank Loan
+                        {t.planner.wizard.yesBankLoan}
                       </button>
                       <button
                         type="button"
@@ -625,7 +625,7 @@ export default function PlannerWizard({
                             : 'border-border bg-surface text-muted'
                         }`}
                       >
-                        🏛️ No (Subsidies / Other)
+                        {t.planner.wizard.noSubsidies}
                       </button>
                     </div>
                   </div>
@@ -633,7 +633,7 @@ export default function PlannerWizard({
                   {inputs.loanInterestRatePercent > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                       <NumberInput
-                        label="Annual Loan Interest Rate (%)"
+                        label={t.planner.wizard.annualInterestRate}
                         value={inputs.loanInterestRatePercent}
                         onValueChange={(val) => updateField('loanInterestRatePercent', val)}
                         placeholder="e.g. 9.5"
@@ -643,7 +643,7 @@ export default function PlannerWizard({
                       />
 
                       <NumberInput
-                        label="Loan Tenure (Months)"
+                        label={t.planner.wizard.loanTenure}
                         value={inputs.loanTenureMonths}
                         onValueChange={(val) => updateField('loanTenureMonths', val)}
                         placeholder="e.g. 36"
@@ -663,10 +663,10 @@ export default function PlannerWizard({
                   <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1.5 animate-slide-up">
                     <div className="flex items-center gap-2 font-bold">
                       <span>⚠️</span>
-                      <span>{t?.planner?.feasibilityNotice || 'Financial Feasibility Notice'}</span>
+                      <span>{t.planner.feasibilityNotice}</span>
                     </div>
                     <p className="leading-relaxed">
-                      Your required external funding of ₹{liveCalculated.fundingGap.toLocaleString('en-IN')} exceeds 12x your estimated monthly net profit (₹{liveCalculated.monthlyNetProfit.toLocaleString('en-IN')}/mo). We recommend applying for capital subsidies (such as PMEGP 25-35% subsidy or MUDRA) or phased expansion to ensure comfortable repayment.
+                      {t.planner.wizard.feasibilityWarning.replace('{{gap}}', liveCalculated.fundingGap.toLocaleString('en-IN')).replace('{{profit}}', liveCalculated.monthlyNetProfit.toLocaleString('en-IN'))}
                     </p>
                   </div>
                 )}
@@ -675,23 +675,23 @@ export default function PlannerWizard({
             {/* Review Summary Box */}
             <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted">
-                Calculated Plan Summary (Deterministic Math)
+                {t.planner.wizard.calculatedSummary}
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
-                  <span className="text-muted block">{t?.planner?.totalCost || 'Total Cost'}</span>
+                  <span className="text-muted block">{t.planner.totalCost}</span>
                   <span className="font-bold text-foreground text-sm">₹{liveCalculated.totalInitialCost.toLocaleString('en-IN')}</span>
                 </div>
                 <div>
-                  <span className="text-muted block">{t?.planner?.fundingGap_alt || 'Funding Gap'}</span>
+                  <span className="text-muted block">{t.planner.fundingGap_alt}</span>
                   <span className="font-bold text-saffron-600 text-sm">₹{liveCalculated.fundingGap.toLocaleString('en-IN')}</span>
                 </div>
                 <div>
-                  <span className="text-muted block">{t?.planner?.monthlyLoanEmi || 'Monthly Loan EMI'}</span>
+                  <span className="text-muted block">{t.planner.monthlyLoanEmi}</span>
                   <span className="font-bold text-foreground text-sm">₹{liveCalculated.monthlyLoanEmi.toLocaleString('en-IN')}/mo</span>
                 </div>
                 <div>
-                  <span className="text-muted block">{t?.planner?.projectedNetProfit || 'Projected Net Profit'}</span>
+                  <span className="text-muted block">{t.planner.projectedNetProfit}</span>
                   <span className="font-bold text-success text-sm">₹{liveCalculated.monthlyNetProfit.toLocaleString('en-IN')}/mo</span>
                 </div>
               </div>
@@ -699,7 +699,7 @@ export default function PlannerWizard({
 
             <div className="flex justify-between items-center pt-4 border-t border-border-subtle">
               <Button type="button" variant="ghost" onClick={() => setStep(4)}>
-                ← Back
+                {t.planner.wizard.back}
               </Button>
               <Button
                 type="button"
@@ -708,7 +708,7 @@ export default function PlannerWizard({
                 isLoading={isLoading}
                 className="px-8 shadow-lg font-bold"
               >
-                Generate Complete Plan with AI Insights ✨
+                {t.planner.wizard.generatePlanBtn}
               </Button>
             </div>
           </Card>
@@ -721,48 +721,48 @@ export default function PlannerWizard({
           <div className="flex items-center justify-between border-b border-border pb-3">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
               <span>🧮</span>
-              <span>Live Plan Metrics</span>
+              <span>{t.planner.wizard.liveMetricsTitle}</span>
             </h3>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-              ⚙️ App Math
+              {t.planner.wizard.appMathBadge}
             </span>
           </div>
 
           <div className="space-y-3 text-xs">
             <div className="flex justify-between items-center">
-              <span className="text-muted">Total {isExisting ? 'Expansion' : 'Initial'} Capital:</span>
+              <span className="text-muted">{t.planner.wizard.totalCapitalLabel}</span>
               <span className="font-bold text-foreground">₹{liveCalculated.totalInitialCost.toLocaleString('en-IN')}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-muted">Own Capital:</span>
+              <span className="text-muted">{t.planner.wizard.ownCapitalLabel}</span>
               <span className="font-medium text-foreground">₹{(inputs.availableSavings || 0).toLocaleString('en-IN')}</span>
             </div>
 
             <div className="flex justify-between items-center pt-2 border-t border-border-subtle">
-              <span className="text-muted font-bold">Funding Gap (Loan):</span>
+              <span className="text-muted font-bold">{t.planner.wizard.fundingGapLabel}</span>
               <span className="font-bold text-saffron-600">₹{liveCalculated.fundingGap.toLocaleString('en-IN')}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-muted">Monthly EMI:</span>
+              <span className="text-muted">{t.planner.wizard.monthlyEmiLabel}</span>
               <span className="font-semibold text-foreground">₹{liveCalculated.monthlyLoanEmi.toLocaleString('en-IN')}/mo</span>
             </div>
 
             <div className="flex justify-between items-center pt-2 border-t border-border-subtle">
-              <span className="text-muted">Gross Monthly Revenue:</span>
+              <span className="text-muted">{t.planner.wizard.grossMonthlyRevenueLabel}</span>
               <span className="font-semibold text-foreground">₹{liveCalculated.monthlyGrossRevenue.toLocaleString('en-IN')}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-muted">Operating Expenses (OPEX):</span>
+              <span className="text-muted">{t.planner.wizard.opexLabel}</span>
               <span className="font-semibold text-foreground">₹{liveCalculated.monthlyOperatingExpenses.toLocaleString('en-IN')}</span>
             </div>
 
             <div className="p-3 rounded-xl bg-success-light dark:bg-success-light/20 border border-success/30 flex justify-between items-center">
               <div>
-                <span className="text-success font-bold block text-[11px]">Monthly Net Profit</span>
-                <span className="text-[10px] text-muted">Margin: {liveCalculated.profitMarginPercent}%</span>
+                <span className="text-success font-bold block text-[11px]">{t.planner.wizard.monthlyNetProfitLabel}</span>
+                <span className="text-[10px] text-muted">{t.planner.wizard.marginLabel.replace('{{percent}}', liveCalculated.profitMarginPercent.toString())}</span>
               </div>
               <span className="text-success font-black text-sm">
                 ₹{liveCalculated.monthlyNetProfit.toLocaleString('en-IN')}
@@ -770,9 +770,9 @@ export default function PlannerWizard({
             </div>
 
             <div className="flex justify-between items-center text-[11px] text-muted">
-              <span>Break-Even Payback Period:</span>
+              <span>{t.planner.wizard.breakEvenLabel}</span>
               <span className="font-bold text-foreground">
-                {liveCalculated.breakEvenMonths ? `${liveCalculated.breakEvenMonths} Months` : 'N/A'}
+                {liveCalculated.breakEvenMonths ? `${liveCalculated.breakEvenMonths} ${t.planner.wizard.months}` : t.planner.wizard.na}
               </span>
             </div>
           </div>

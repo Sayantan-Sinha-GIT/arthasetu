@@ -61,7 +61,7 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
       setActiveTranslationCode(langCode);
     } catch (err) {
       console.error(err);
-      alert('Failed to translate message.');
+      alert(t.advisor.bubble.failedTranslate);
     } finally {
       setIsTranslating(false);
     }
@@ -191,14 +191,14 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
           {message.isVoice && (
             <div className="flex items-center gap-1 text-[11px] font-semibold opacity-80 mb-2">
               <span>🎙️</span>
-              <span>Spoken voice message</span>
+              <span>{t.advisor.bubble.spokenVoice}</span>
             </div>
           )}
 
           {isTranslating && (
              <div className="flex items-center gap-2 mb-2">
                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-               <span className="text-xs text-muted-foreground font-medium">Translating...</span>
+               <span className="text-xs text-muted-foreground font-medium">{t.advisor.bubble.translating}</span>
              </div>
           )}
 
@@ -216,10 +216,10 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
                   type="button"
                   onClick={() => setShowTranslateOptions(!showTranslateOptions)}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors ${activeTranslationCode ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-surface text-muted hover:text-foreground'}`}
-                  title="Translate this message"
+                  title={t.advisor.bubble.translateTooltip}
                 >
                   <span>🌐</span>
-                  <span>{activeTranslationCode ? SUPPORTED_LANGUAGES.find(l => l.code === activeTranslationCode)?.name : 'Translate ▾'}</span>
+                  <span>{activeTranslationCode ? SUPPORTED_LANGUAGES.find(l => l.code === activeTranslationCode)?.name : t.advisor.bubble.translate}</span>
                 </button>
                 {showTranslateOptions && (
                   <div className="absolute top-full left-0 mt-1 w-48 max-h-60 overflow-y-auto bg-surface-elevated border border-border rounded-xl shadow-xl z-10 flex flex-col p-1">
@@ -228,7 +228,7 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
                         onClick={() => { setShowTranslateOptions(false); setActiveTranslationCode(null); }}
                         className="text-left px-3 py-2 text-xs hover:bg-surface rounded-lg w-full"
                       >
-                        Original
+                        {t.advisor.bubble.original}
                       </button>
                     {SUPPORTED_LANGUAGES.map((lang) => (
                       <button
@@ -256,19 +256,19 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
                       : 'hover:bg-surface text-muted hover:text-foreground'
                     }
                   `}
-                  title={isSpeaking ? 'Stop speech' : 'Listen to this advice'}
+                  title={isSpeaking ? t.advisor.bubble.stopSpeech : t.advisor.bubble.listenAdvice}
                 >
                   {isSpeaking ? (
                     <>
                       <span className="w-2 h-2 rounded-full bg-saffron-500 animate-pulse" />
-                      <span>Stop Listening</span>
+                      <span>{t.advisor.bubble.stopListening}</span>
                     </>
                   ) : (
                     <>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                       </svg>
-                      <span>Read Aloud</span>
+                      <span>{t.advisor.bubble.readAloud}</span>
                     </>
                   )}
                 </button>
@@ -279,19 +279,19 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
                 type="button"
                 onClick={() => handleCopy(displayContent)}
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-surface text-muted hover:text-foreground transition-colors"
-                title="Copy to clipboard"
+                title={t.advisor.bubble.copyClipboard}
               >
                 {copied ? (
                   <>
                     <span className="text-success">✓</span>
-                    <span className="text-success font-medium">Copied</span>
+                    <span className="text-success font-medium">{t.advisor.bubble.copied}</span>
                   </>
                 ) : (
                   <>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    <span>Copy</span>
+                    <span>{t.advisor.bubble.copy}</span>
                   </>
                 )}
               </button>

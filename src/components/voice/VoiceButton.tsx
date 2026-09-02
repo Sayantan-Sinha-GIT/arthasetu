@@ -9,11 +9,14 @@ interface VoiceButtonProps {
   className?: string;
 }
 
+import { useLanguage } from '@/contexts/LanguageContext';
+
 export default function VoiceButton({
   state,
   onClick,
   className = '',
 }: VoiceButtonProps) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center gap-1.5 shrink-0">
       {/* Main Multi-State Voice Mic Button */}
@@ -25,12 +28,12 @@ export default function VoiceButton({
         disabled={state === 'disconnected' || state === 'processing'}
         title={
           state === 'listening'
-            ? 'Listening... Tap to finish'
+            ? `${t.voice.listening} ${t.voice.stop}`
             : state === 'speaking'
-            ? 'ArthaSetu is speaking. Tap to stop'
+            ? `${t.voice.speaking} ${t.voice.stop}`
             : state === 'disconnected'
-            ? 'Voice recognition not supported in this browser'
-            : 'Tap to speak'
+            ? t.voice.notSupported
+            : t.voice.tapToSpeak
         }
         className={`
           relative p-3 rounded-2xl border transition-all duration-300 active:scale-95 shadow-sm

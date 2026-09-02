@@ -27,7 +27,6 @@ export default function StepBasicInfo({
   const { t, setLanguage, language } = useLanguage();
   const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
   const [isResolving, setIsResolving] = useState(false);
-  const [useCustomLocality, setUseCustomLocality] = useState(false);
 
   // Sync initial PIN code resolution on mount or data load
   useEffect(() => {
@@ -105,10 +104,10 @@ export default function StepBasicInfo({
 
   const areaOptions = resolvedInfo?.areas && resolvedInfo.areas.length > 0
     ? [
-        ...resolvedInfo.areas.map((a) => ({ value: a, label: a })),
-        { value: '__custom__', label: `✏️ ${t.common.edit || 'Other / Custom Area'}` },
+        { value: '', label: t.onboarding.locality + ' / Post Office' },
+        ...resolvedInfo.areas.map((a) => ({ value: a, label: a }))
       ]
-    : [];
+    : [{ value: '', label: 'Select a valid PIN code first' }];
 
   const pinError =
     errors.pinCode ||
@@ -182,53 +181,33 @@ export default function StepBasicInfo({
             onChange={(e) => handleStateChange(e.target.value)}
             options={stateOptions}
             error={errors.state}
-            disabled={isAddressLocked}
+            disabled={true}
             required
-            hint={isAddressLocked ? '🔒 Locked to PIN postal circle' : undefined}
+            hint="🔒 Auto-populated based on PIN Code"
           />
           <Select
             label={t.onboarding.district}
             value={data.district || ''}
             onChange={(e) => handleDistrictChange(e.target.value)}
             options={districtOptions}
-            disabled={isAddressLocked || !data.state}
+            disabled={true}
             required
             error={errors.district}
-            hint={
-              legacyDistrict
-                ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
-                : isAddressLocked
-                ? '🔒 Locked to PIN postal circle'
-                : undefined
-            }
+            hint="🔒 Auto-populated based on PIN Code"
           />
         </div>
 
         {/* Post Office / Area (Dropdown) */}
-        {resolvedInfo?.areas && resolvedInfo.areas.length > 0 ? (
-          <Select
-            label={t.onboarding.locality + ' / Post Office'}
-            value={data.locality || ''}
-            onChange={(e) => onChange({ locality: e.target.value })}
-            options={[
-              { value: '', label: 'Select Post Office / Area' },
-              ...resolvedInfo.areas.map(a => ({ value: a, label: a }))
-            ]}
-            required
-            error={errors.locality}
-            hint="Auto-populated based on PIN Code"
-          />
-        ) : (
-          <Input
-            label={t.onboarding.locality}
-            type="text"
-            value={data.locality || ''}
-            onChange={(e) => onChange({ locality: e.target.value })}
-            placeholder={t.onboarding.localityPlaceholder}
-            required
-            error={errors.locality}
-          />
-        )}
+        <Select
+          label={t.onboarding.locality + ' / Post Office'}
+          value={data.locality || ''}
+          onChange={(e) => onChange({ locality: e.target.value })}
+          options={areaOptions}
+          disabled={!isAddressLocked || !resolvedInfo?.areas?.length}
+          required
+          error={errors.locality}
+          hint={isAddressLocked ? "Select your specific Post Office branch" : "Requires valid PIN Code"}
+        />
 
         {/* Road Name / House No (Optional Text) */}
         <Input

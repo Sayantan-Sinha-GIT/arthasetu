@@ -291,16 +291,16 @@ const en = {
 
   // Advisor
   advisor: {
-    title: 'Ask ArthaSetu',
-    subtitle: 'Your AI business advisor — ask anything about your business',
-    placeholder: 'Type your question here...',
+    title: 'Your AI Business Advisor',
+    subtitle: 'Ask in your local language about business plans, loans, or subsidies',
+    placeholder: 'Ask about starting a business, finding loans, or expanding...',
     send: 'Send',
-    thinking: 'Thinking...',
+    thinking: 'ArthaSetu is thinking...',
     saveAdvice: 'Save as Advice',
-    advisorSaved: 'Advice saved!',
+    advisorSaved: 'Advice saved successfully!',
     suggestedQuestions: 'Try asking:',
     voiceHint: 'Click the mic to speak',
-    errorMessage: 'AI assistance is temporarily unavailable. Please try again shortly.',
+    errorMessage: 'I apologize, but I am having trouble connecting right now. Please try again in a moment.',
     adviceTitle: 'Advice Title',
     adviceTitlePlaceholder: 'e.g. Poultry Farm Setup & Capital Allocation',
     category: 'Category',
@@ -311,6 +311,32 @@ const en = {
     catSchemes: 'Government Scheme Info',
     catMarket: 'Marketing & Local Sourcing',
     catGeneral: 'General Advice',
+    chat: {
+      geminiActive: 'Gemini Flash Active',
+      autoRead: 'Auto-Read Answers',
+      voiceLangTitle: 'Voice Input Language',
+      voiceLangDesc: 'Change the language used when you click the microphone to speak.',
+      micBlocked: '⚠️ Microphone access is blocked in your browser. You can type your questions in the box below anytime.',
+      greetingNamed: 'Hello **{{userName}}**! I am **ArthaSetu**, your dedicated AI business advisor.{{businessContext}}\n\nHow can I help you today? You can type or tap the microphone to speak.',
+      greetingAnon: 'Namaste! I am **ArthaSetu**, your AI business advisor.\n\nAsk me anything about starting, funding, or growing your micro-enterprise. How can I assist your business today?',
+      businessPart: ' I see you are working on your **{{business}}**{{locationPart}}.',
+      locationPart: ' in **{{location}}**'
+    },
+    bubble: {
+      spokenVoice: 'Spoken voice message',
+      translating: 'Translating...',
+      translate: 'Translate ▾',
+      original: 'Original',
+      stopListening: 'Stop Listening',
+      stopSpeech: 'Stop speech',
+      listenAdvice: 'Listen to this advice',
+      readAloud: 'Read Aloud',
+      copied: 'Copied',
+      copy: 'Copy',
+      copyClipboard: 'Copy to clipboard',
+      translateTooltip: 'Translate this message',
+      failedTranslate: 'Failed to translate message.'
+    }
   },
 
   // Voice
@@ -323,8 +349,23 @@ const en = {
     notSupported: 'Voice is not supported in this browser. Please use text input.',
     retry: 'Tap to try again',
     stop: 'Stop',
-    selectLanguage: 'Select speech language',
+    selectLanguage: 'Select Voice Language',
     speechLanguage: 'Voice Language',
+    doneSpeaking: '✓ Done Speaking',
+    english: 'English',
+  },
+
+  languageSelector: {
+    changeLanguage: 'Change interface language',
+    scheduledLanguages: '22 Scheduled Languages',
+    machineTranslated: 'AI = Machine Trans.',
+  },
+
+  tts: {
+    stopReadAloud: 'Stop read-aloud',
+    readAloudWithVoice: 'Read aloud with voice',
+    stopVoice: 'Stop Voice',
+    readAloud: 'Read Aloud',
   },
 
   // Planner
@@ -388,6 +429,156 @@ const en = {
     resetSliders: 'Reset Sliders',
     loanGap: 'Loan Gap',
     netProfit: 'Net Profit',
+    result: {
+      generatedForScale: 'Generated for your enterprise scale',
+      savedState: '✓ Saved',
+      exportPdf: '📄 Export PDF',
+      availableSavings: 'Available Savings',
+      minProductionOverhead: '{{units}} units/month minimum production needed to cover fixed overheads.',
+      estimatedRecovery: 'Estimated recovery timeframe',
+      capitalRecovery: 'Estimated Capital Recovery',
+      equipmentMachinery: 'Equipment & Machinery',
+      setupShed: 'Setup & Shed',
+      initialStock: 'Initial Stock',
+      workingCapital: 'Working Capital',
+      rawMaterials: 'Raw Materials',
+      rentUtilities: 'Rent & Utilities',
+      laborWages: 'Labor Wages',
+      matchedSchemesTitle: 'Matched Government Subsidies & Schemes ({{count}})',
+      bridgeGapTitle: 'Bridge your ₹{{gap}} Funding Gap with Subsidies',
+      bridgeGapDesc: 'Discover Central and State subsidy schemes (PMEGP, MUDRA, NLM) matching your profile in {{location}}.',
+    },
+    whatif: {
+      baseProjection: 'Base Projection',
+      standardModel: 'Standard Model',
+      conservativeStress: 'Conservative Stress',
+      conservativeDesc: '-20% Demand, +10% Costs',
+      optimisticGrowth: 'Optimistic Growth',
+      optimisticDesc: '+25% Sales, 25% PMEGP Subsidy',
+      customSimulation: 'Custom Simulation',
+      liveSliders: 'Live Sliders',
+      safeStatus: 'Safe (DSCR > 1.5x)',
+      noDebtStatus: 'No Debt Service',
+      criticalRiskStatus: 'Critical Risk (DSCR < 1.0x)',
+      moderateRiskStatus: 'Moderate Risk (DSCR 1.0–1.3x)',
+    },
+    wizard: {
+      step1Title: 'Step 1: Business Context & Planning Mode',
+      step1Desc: 'Choose whether you are starting fresh or expanding an existing profitable business',
+      startupDesc: 'Starting a new venture from scratch with initial machinery, shed, and initial stock.',
+      expansionDesc: 'Start from current monthly revenue & expenses to calculate growth capital needs.',
+      businessTypeLabel: 'Business Type / Activity',
+      businessTypePlaceholder: 'e.g. Broiler Poultry Farm, Tailoring Shop, Dairy Unit',
+      businessScaleLabel: 'Target Capacity / Operating Scale',
+      businessScalePlaceholder: 'e.g. 500 birds per batch, 8 Sewing machines, 5 Dairy cows',
+      locationLabel: 'Operating Location (Village / District / State)',
+      locationPlaceholder: 'e.g. Hajo, Kamrup, Assam',
+      nextCurrentCashFlow: 'Next: Current Cash Flow →',
+      nextStartupInvestment: 'Next: Startup Investment →',
+      
+      step2CurrentCashFlowTitle: 'Step 2: Current Operating Cash Flow',
+      step2CurrentCashFlowDesc: 'Enter your current monthly sales and recurring costs before expansion',
+      currentMonthlyRevenue: 'Current Monthly Revenue / Sales (₹)',
+      currentMonthlyExpenses: 'Current Monthly Expenses (₹)',
+      currentBaselineProfit: 'Current Baseline Monthly Profit:',
+      
+      step2StartupTitle: 'Step 2: Startup Capital & Initial Investment',
+      step2StartupDesc: 'Enter your one-time initial setup and equipment purchases',
+      equipmentCost: 'Equipment & Machinery (₹)',
+      setupCost: 'Shed, Shop Setup & Civil Works (₹)',
+      initialInventory: 'Initial Stock / First Batch Raw Material (₹)',
+      workingCapitalReserve: 'Working Capital Reserve Buffer (₹)',
+      
+      back: '← Back',
+      nextExpansionCapital: 'Next: Expansion Capital →',
+      nextRevenueModel: 'Next: Revenue Model →',
+      
+      step3ExpansionTitle: 'Step 3: Growth Capital & Expansion Assets Needed',
+      step3ExpansionDesc: 'What new assets or working capital do you need to expand operations?',
+      expansionGoal: 'Expansion Goal / Purpose',
+      expansionGoalPlaceholder: 'e.g. Purchase automated packaging unit and expand shed',
+      newMachineryCost: 'New Machinery / Asset Purchases (₹)',
+      additionalWorkingCapital: 'Additional Working Capital / Stock (₹)',
+      
+      step3RevenueTitle: 'Step 3: Unit Sales & Monthly Revenue Model',
+      step3RevenueDesc: 'Estimate monthly unit pricing and sales volume',
+      unitPrice: 'Price per Finished Unit / Service (₹)',
+      unitsSoldPerMonth: 'Estimated Units Sold per Month',
+      otherMonthlyRevenue: 'Secondary / Byproduct Revenue (₹/month)',
+      
+      nextProjectedGrowth: 'Next: Projected Growth →',
+      nextOperatingExpenses: 'Next: Operating Expenses →',
+      
+      step4GrowthTitle: 'Step 4: Projected Post-Expansion Growth',
+      step4GrowthDesc: 'Estimate your revenue surge and expanded operating capacity',
+      expectedRevenueIncrease: 'Expected Revenue Increase (% Growth)',
+      projectedMonthlyRevenue: 'Projected Monthly Revenue:',
+      projectedOperatingExpenses: 'Projected Operating Expenses:',
+      
+      step4ExpensesTitle: 'Step 4: Monthly Operating Expenses (OPEX)',
+      step4ExpensesDesc: 'Recurring monthly costs needed to produce and distribute goods',
+      rawMaterials: 'Raw Materials / Feed / Inputs (₹/month)',
+      rentUtilities: 'Rent & Utilities (Power, Water) (₹/month)',
+      labor: 'Direct Labor / Helpers (₹/month)',
+      transportPackaging: 'Transport, Logistics & Packaging (₹/month)',
+      maintenanceOther: 'Maintenance, Marketing & Other (₹/month)',
+      
+      nextFundingReview: 'Next: Funding & Review →',
+      
+      step5ReviewTitle: 'Step 5: Capital Plan, Loan Assumptions & Final Review',
+      step5ReviewDesc: 'Specify your own contribution and review financing recommendations',
+      totalExpansionCapital: 'Total Expansion Capital Required:',
+      totalInitialCapital: 'Total Initial Setup Capital Required:',
+      ownCapital: 'Your Available Own Capital / Savings (₹)',
+      fundingGapBridge: 'Remaining Funding Gap to Bridge:',
+      
+      planBankLoanPrompt: 'Do you plan to take a bank loan to finance this ₹{{gap}} gap?',
+      yesBankLoan: '🏦 Yes, Explore Bank Loan',
+      noSubsidies: '🏛️ No (Subsidies / Other)',
+      annualInterestRate: 'Annual Loan Interest Rate (%)',
+      loanTenure: 'Loan Tenure (Months)',
+      
+      feasibilityWarning: 'Your required external funding of ₹{{gap}} exceeds 12x your estimated monthly net profit (₹{{profit}}/mo). We recommend applying for capital subsidies (such as PMEGP 25-35% subsidy or MUDRA) or phased expansion to ensure comfortable repayment.',
+      
+      calculatedSummary: 'Calculated Plan Summary (Deterministic Math)',
+      generatePlanBtn: 'Generate Complete Plan with AI Insights ✨',
+      
+      liveMetricsTitle: 'Live Plan Metrics',
+      appMathBadge: '⚙️ App Math',
+      totalCapitalLabel: 'Total Capital:',
+      ownCapitalLabel: 'Own Capital:',
+      fundingGapLabel: 'Funding Gap (Loan):',
+      monthlyEmiLabel: 'Monthly EMI:',
+      grossMonthlyRevenueLabel: 'Gross Monthly Revenue:',
+      opexLabel: 'Operating Expenses (OPEX):',
+      monthlyNetProfitLabel: 'Monthly Net Profit',
+      marginLabel: 'Margin: {{percent}}%',
+      breakEvenLabel: 'Break-Even Payback Period:',
+      months: 'Months',
+      na: 'N/A',
+      errBusinessType: 'Please enter your business type or trade (e.g. Poultry, Tailoring, Dairy)',
+      errLocation: 'Please enter your operating location (e.g. Village/Town, District, State)',
+    },
+    localBusinessContext: {
+      title: 'Local & Seasonal Business Context',
+      regionalInsights: 'Regional Insights',
+      subtitleContext: 'Operational and climate considerations for {{business}} in {{location}}',
+      disclaimerTitle: 'AI-Estimated General Guidance — Not Verified Local Data',
+      disclaimerDesc: 'These operational insights and seasonal patterns are estimated using AI general knowledge. Always verify current prices, market demand, and local regulations with your nearest Mandi, District Industries Centre (DIC), or Krishi Vigyan Kendra (KVK).',
+      festiveSeason: '🎉 Festive / Peak Season',
+      monsoonSeason: '🌧️ Monsoon & Wet Season',
+      summerSeason: '☀️ Summer / Lean Season',
+      demandFluctuations: 'Estimated Demand Fluctuations',
+      demandFestiveDesc: 'Demand for {{business}} in {{location}} typically surges by 25–40% during wedding and festival cycles (Diwali, Chhath, Bihu, Pongal, Eid). Plan excess working capital 30 days in advance.',
+      demandMonsoonDesc: 'Monsoon months often bring temporary road transit delays and local weekly haat slowdowns. Maintain a 15-day raw material inventory buffer.',
+      demandSummerDesc: 'Summer lean months require aggressive local relationship management and cash flow budgeting to bridge low-demand weeks.',
+      inputSourcing: 'Input Sourcing & Mandi Logistics',
+      inputSourcingDesc: 'Source raw materials directly from wholesale district distributors or farmer-producer cooperatives (FPOs) rather than retail intermediaries to safeguard a 15–20% gross margin advantage.',
+      powerPrecautions: 'Power, Water & Storage Precautions',
+      powerPrecautionsDesc: 'Rural grid power fluctuations can cause machinery downtime or livestock mortality. Factor in solar rooftop subsidies (PM Surya Ghar) or a diesel backup generator in your CapEx proposal.',
+      shgLinkages: 'Institutional & SHG Linkages',
+      shgLinkagesDesc: 'Partner with local Self-Help Groups (SHGs), Gram Panchayats, or District MSME facilitation cells to secure bulk local institutional orders and government tender preference.',
+    },
     newStartupPlan: 'New Startup Plan',
     existingExpansion: 'Existing Business Expansion',
     feasibilityNotice: 'Financial Feasibility Notice',
@@ -485,6 +676,76 @@ const en = {
     backToExplorer: 'Back to Schemes Explorer',
     eligibilityConditions: 'Eligibility Conditions',
     howToApplyAlt: 'How to Apply',
+    searchPlaceholder: 'Search by scheme name, agency, or sector...',
+    matchOnly: 'Show Match Only',
+    matchedSchemes: '{{count}} Schemes Matched',
+    card: {
+      centralScheme: '🏛️ Central Scheme',
+      stateScheme: '📍 {{state}} State',
+      microEnterprise: 'Micro-Enterprise',
+      matchScore: '{{score}}% Match',
+      viewDetails: 'View Eligibility & Details →',
+      openPortal: 'Open official government portal'
+    },
+    filters: {
+      allRegions: 'All Regions (Central & States/UTs)',
+      all: 'All',
+      showingCount: 'Showing {{count}} verified schemes',
+      verifiedByNodal: '💡 Verified by administrative nodal records'
+    },
+    checklist: {
+      title: 'Document Readiness Checklist',
+      subtitle: '{{completed}} of {{total}} documents confirmed ready',
+      percentReady: '{{percent}}% Ready',
+      tabs: {
+        all: 'All Documents',
+        identity: '👤 Identity & KYC',
+        business: '🏪 Business Proofs',
+        financial: '💰 Financial & DPR',
+        social: '🎖️ Social / SHG'
+      },
+      mandatory: 'Mandatory',
+      optional: 'Optional Bonus',
+      ready: '✓ Ready',
+      markReady: 'Mark Ready',
+      docs: {
+        aadhaar: {
+          name: 'Aadhaar Card of Applicant / Partners',
+          desc: 'Primary government identity & biometric address verification document.',
+          tip: 'Ensure mobile number is linked for OTP verification during portal e-sign.'
+        },
+        pan: {
+          name: 'PAN Card (Individual or Business Entity)',
+          desc: 'Permanent Account Number required for banking and tax compliance.',
+          tip: 'Must match name spelled on Aadhaar exactly to avoid rejection.'
+        },
+        udyam: {
+          name: 'Udyam MSME Registration Certificate',
+          desc: 'Official Ministry of MSME registration certificate with 19-digit URN.',
+          tip: 'Completely free to generate on udyamregistration.gov.in with Aadhaar in 10 mins.'
+        },
+        dpr: {
+          name: 'Detailed Project Report (DPR) & Machinery Quotations',
+          desc: 'Proforma invoices and machinery cost estimates from registered suppliers.',
+          tip: 'ArthaSetu’s Financial Plan PDF can be directly submitted as your preliminary project feasibility report.'
+        },
+        bankStmt: {
+          name: 'Bank Account Statement (Past 6 Months)',
+          desc: 'Operating bank statement showing clean transaction track record and KYC.',
+          tip: 'Demonstrates active financial discipline and account history to bank loan officers.'
+        },
+        premises: {
+          name: 'Land Record / Rent / Lease Agreement',
+          desc: 'Proof of legal possession of work shed, retail shop, or agricultural unit premises.',
+          tip: 'Lease deed should ideally have remaining tenure covering the loan repayment period.'
+        },
+        socialCert: {
+          name: 'Social Category Certificate / SHG Proof',
+          desc: 'SC / ST / OBC / Women / Minority certificate or SHG Member passbook.',
+          tip: 'Unlocks higher subsidy brackets (e.g. 35% under PMEGP Special Category vs 25% General).'
+        }
+      }
+    }
   },
 
   chat: {
@@ -516,17 +777,31 @@ const en = {
     userErasureDesc: 'Permanently delete user and log to admin audit trail',
     targetAccount: 'Target Account',
     confirmDeleteUser: 'Confirm & Delete Target User',
-    auditLogTitle: 'Scheme Update Audit Log',
-    auditLogSubtitle: 'Immutable history of all AI-drafted policy updates, human approvals, and rejections',
-    schemesDirectoryTitle: 'Government Scheme Records',
-    schemesDirectorySubtitle: 'Live directory of all central and state welfare programs with deterministic rules',
-    addNewScheme: 'Add New Scheme',
-    editScheme: 'AI Edit / Propose →',
-    searchPlaceholder: 'Search by name, state, or category...',
-    deleteSchemeTitle: 'Permanent Scheme Deletion',
-    deleteSchemeSubtitle: 'Destructive action logged to admin audit trail',
-    confirmDeleteScheme: 'Confirm & Delete Scheme',
-  },
+      auditLogTitle: 'Scheme Update Audit Log',
+      auditLogSubtitle: 'Immutable history of all AI-drafted policy updates, human approvals, and rejections',
+      schemesDirectoryTitle: 'Government Scheme Records',
+      schemesDirectorySubtitle: 'Live directory of all central and state welfare programs with deterministic rules',
+      addNewScheme: 'Add New Scheme',
+      findSchemes: 'Find Subsidies',
+      searchPlaceholder: 'Search by scheme name, agency, or sector...',
+      matchOnly: 'Show Match Only',
+      matchedSchemes: '{{count}} Schemes Matched',
+      card: {
+        centralScheme: '🏛️ Central Scheme',
+        stateScheme: '📍 {{state}} State',
+        microEnterprise: 'Micro-Enterprise',
+        matchScore: '{{score}}% Match',
+        viewDetails: 'View Eligibility & Details →',
+        openPortal: 'Open official government portal'
+      },
+      checklist: {
+        title: 'Eligibility Checklist',
+        subtitle: 'Review requirements for this scheme'
+      },
+      deleteSchemeTitle: 'Permanent Scheme Deletion',
+      deleteSchemeSubtitle: 'Destructive action logged to admin audit trail',
+      confirmDeleteScheme: 'Confirm & Delete Scheme',
+    },
 
   // Common
   common: {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Card from '@/components/ui/Card';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LocalBusinessContextProps {
   businessType: string;
@@ -14,6 +15,7 @@ export default function LocalBusinessContext({
   location,
   className = '',
 }: LocalBusinessContextProps) {
+  const { t } = useLanguage();
   const [activeSeason, setActiveSeason] = useState<'summer' | 'monsoon' | 'festive_winter'>('festive_winter');
 
   const cleanLocation = location?.trim() || 'Rural / Semi-Urban India';
@@ -27,14 +29,14 @@ export default function LocalBusinessContext({
           <div className="flex items-center gap-2">
             <span className="text-xl">🌾</span>
             <h3 className="text-base font-bold text-foreground">
-              Local &amp; Seasonal Business Context
+              {t.planner.localBusinessContext.title}
             </h3>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-              Regional Insights
+              {t.planner.localBusinessContext.regionalInsights}
             </span>
           </div>
           <p className="text-xs text-muted mt-0.5">
-            Operational and climate considerations for <span className="font-semibold text-foreground">{cleanBusiness}</span> in <span className="font-semibold text-foreground">{cleanLocation}</span>
+            {t.planner.localBusinessContext.subtitleContext.replace('{{business}}', cleanBusiness).replace('{{location}}', cleanLocation)}
           </p>
         </div>
       </div>
@@ -44,10 +46,10 @@ export default function LocalBusinessContext({
         <span className="text-base shrink-0">🤖</span>
         <div>
           <p className="font-bold text-[11px] uppercase tracking-wider">
-            AI-Estimated General Guidance — Not Verified Local Data
+            {t.planner.localBusinessContext.disclaimerTitle}
           </p>
           <p className="mt-0.5 text-xs opacity-90">
-            These operational insights and seasonal patterns are estimated using AI general knowledge. Always verify current prices, market demand, and local regulations with your nearest Mandi, District Industries Centre (DIC), or Krishi Vigyan Kendra (KVK).
+            {t.planner.localBusinessContext.disclaimerDesc}
           </p>
         </div>
       </div>
@@ -55,9 +57,9 @@ export default function LocalBusinessContext({
       {/* Season Selector Tabs */}
       <div className="flex items-center gap-2 text-xs">
         {[
-          { id: 'festive_winter', label: '🎉 Festive / Peak Season' },
-          { id: 'monsoon', label: '🌧️ Monsoon & Wet Season' },
-          { id: 'summer', label: '☀️ Summer / Lean Season' },
+          { id: 'festive_winter', label: t.planner.localBusinessContext.festiveSeason },
+          { id: 'monsoon', label: t.planner.localBusinessContext.monsoonSeason },
+          { id: 'summer', label: t.planner.localBusinessContext.summerSeason },
         ].map((s) => (
           <button
             key={s.id}
@@ -80,14 +82,14 @@ export default function LocalBusinessContext({
         <div className="p-4 rounded-2xl bg-surface border border-border space-y-2">
           <div className="flex items-center gap-2 font-bold text-foreground">
             <span>📈</span>
-            <h4>Estimated Demand Fluctuations</h4>
+            <h4>{t.planner.localBusinessContext.demandFluctuations}</h4>
           </div>
           <p className="text-muted leading-relaxed">
             {activeSeason === 'festive_winter'
-              ? `Demand for ${cleanBusiness} in ${cleanLocation} typically surges by 25–40% during wedding and festival cycles (Diwali, Chhath, Bihu, Pongal, Eid). Plan excess working capital 30 days in advance.`
+              ? t.planner.localBusinessContext.demandFestiveDesc.replace('{{business}}', cleanBusiness).replace('{{location}}', cleanLocation)
               : activeSeason === 'monsoon'
-              ? `Monsoon months often bring temporary road transit delays and local weekly haat slowdowns. Maintain a 15-day raw material inventory buffer.`
-              : `Summer lean months require aggressive local relationship management and cash flow budgeting to bridge low-demand weeks.`}
+              ? t.planner.localBusinessContext.demandMonsoonDesc
+              : t.planner.localBusinessContext.demandSummerDesc}
           </p>
         </div>
 
@@ -95,10 +97,10 @@ export default function LocalBusinessContext({
         <div className="p-4 rounded-2xl bg-surface border border-border space-y-2">
           <div className="flex items-center gap-2 font-bold text-foreground">
             <span>📦</span>
-            <h4>Input Sourcing &amp; Mandi Logistics</h4>
+            <h4>{t.planner.localBusinessContext.inputSourcing}</h4>
           </div>
           <p className="text-muted leading-relaxed">
-            Source raw materials directly from wholesale district distributors or farmer-producer cooperatives (FPOs) rather than retail intermediaries to safeguard a 15–20% gross margin advantage.
+            {t.planner.localBusinessContext.inputSourcingDesc}
           </p>
         </div>
 
@@ -106,10 +108,10 @@ export default function LocalBusinessContext({
         <div className="p-4 rounded-2xl bg-surface border border-border space-y-2">
           <div className="flex items-center gap-2 font-bold text-foreground">
             <span>⚡</span>
-            <h4>Power, Water &amp; Storage Precautions</h4>
+            <h4>{t.planner.localBusinessContext.powerPrecautions}</h4>
           </div>
           <p className="text-muted leading-relaxed">
-            Rural grid power fluctuations can cause machinery downtime or livestock mortality. Factor in solar rooftop subsidies (PM Surya Ghar) or a diesel backup generator in your CapEx proposal.
+            {t.planner.localBusinessContext.powerPrecautionsDesc}
           </p>
         </div>
 
@@ -117,10 +119,10 @@ export default function LocalBusinessContext({
         <div className="p-4 rounded-2xl bg-surface border border-border space-y-2">
           <div className="flex items-center gap-2 font-bold text-foreground">
             <span>🤝</span>
-            <h4>Institutional &amp; SHG Linkages</h4>
+            <h4>{t.planner.localBusinessContext.shgLinkages}</h4>
           </div>
           <p className="text-muted leading-relaxed">
-            Partner with local Self-Help Groups (SHGs), Gram Panchayats, or District MSME facilitation cells to secure bulk local institutional orders and government tender preference.
+            {t.planner.localBusinessContext.shgLinkagesDesc}
           </p>
         </div>
       </div>

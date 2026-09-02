@@ -2,6 +2,7 @@
 
 import Input, { Select } from '@/components/ui/Input';
 import { ALL_INDIAN_REGIONS } from '@/lib/constants/states';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SchemeFiltersProps {
   searchQuery: string;
@@ -22,8 +23,10 @@ export default function SchemeFilters({
   onLevelChange,
   totalCount,
 }: SchemeFiltersProps) {
+  const { t } = useLanguage();
+
   const stateOptions = [
-    { value: '', label: 'All Regions (Central & States/UTs)' },
+    { value: '', label: t.schemes.filters.allRegions },
     ...ALL_INDIAN_REGIONS.map((state) => ({
       value: state,
       label: state,
@@ -39,7 +42,7 @@ export default function SchemeFilters({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search schemes by name, sector, or subsidy..."
+            placeholder={t.schemes.searchPlaceholder}
             icon={
               <svg className="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -72,16 +75,16 @@ export default function SchemeFilters({
                 }
               `}
             >
-              {lvl === 'all' ? 'All' : lvl === 'central' ? 'Central' : 'State'}
+              {lvl === 'all' ? t.schemes.filters.all : lvl === 'central' ? t.schemes.central : t.schemes.state}
             </button>
           ))}
         </div>
       </div>
 
       <div className="flex items-center justify-between text-xs text-muted pt-1">
-        <span>Showing {totalCount} verified schemes</span>
+        <span>{t.schemes.filters.showingCount.replace('{{count}}', totalCount.toString())}</span>
         <span className="text-[11px] italic">
-          💡 Verified by administrative nodal records
+          {t.schemes.filters.verifiedByNodal}
         </span>
       </div>
     </div>

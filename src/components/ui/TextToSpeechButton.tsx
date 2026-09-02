@@ -16,7 +16,7 @@ export default function TextToSpeechButton({
   size = 'sm',
   label,
 }: TextToSpeechButtonProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { isSupported, isSpeaking, speak, stop } = useSpeechSynthesis();
 
   if (!isSupported) return null;
@@ -36,8 +36,8 @@ export default function TextToSpeechButton({
     <button
       type="button"
       onClick={handleToggle}
-      title={isSpeaking ? 'Stop read-aloud' : 'Read aloud with voice'}
-      aria-label={isSpeaking ? 'Stop read-aloud' : 'Read aloud with voice'}
+      title={isSpeaking ? t.tts?.stopReadAloud || 'Stop read-aloud' : t.tts?.readAloudWithVoice || 'Read aloud with voice'}
+      aria-label={isSpeaking ? t.tts?.stopReadAloud || 'Stop read-aloud' : t.tts?.readAloudWithVoice || 'Read aloud with voice'}
       className={`
         inline-flex items-center gap-1.5 rounded-xl font-bold transition-all
         ${isSpeaking
@@ -56,7 +56,7 @@ export default function TextToSpeechButton({
             <span className="w-0.5 h-3.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
             <span className="w-0.5 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
           </div>
-          <span>Stop Voice</span>
+          <span>{t.tts?.stopVoice || 'Stop Voice'}</span>
         </>
       ) : (
         <>
@@ -73,7 +73,7 @@ export default function TextToSpeechButton({
               d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.21-1.605.572-2.288.234-.847 1.058-1.354 1.938-1.354h2.24z"
             />
           </svg>
-          <span>{label || 'Read Aloud'}</span>
+          <span>{label || t.tts?.readAloud || 'Read Aloud'}</span>
         </>
       )}
     </button>

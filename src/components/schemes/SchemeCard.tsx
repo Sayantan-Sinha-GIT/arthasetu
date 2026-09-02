@@ -46,11 +46,11 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
                 }
               `}
             >
-              {isCentral ? '🏛️ Central Scheme' : `📍 ${scheme.state} State`}
+              {isCentral ? t.schemes.card.centralScheme : t.schemes.card.stateScheme.replace('{{state}}', scheme.state || '')}
             </span>
 
             <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-surface text-muted border border-border">
-              {scheme.category || 'Micro-Enterprise'}
+              {scheme.category || t.schemes.card.microEnterprise}
             </span>
           </div>
 
@@ -59,7 +59,7 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
             {matchInfo && (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-saffron-500 text-white shadow-sm flex items-center gap-1">
                 <span>⚡</span>
-                <span>{matchInfo.matchScore}% Match</span>
+                <span>{t.schemes.card.matchScore.replace('{{score}}', matchInfo.matchScore.toString())}</span>
               </span>
             )}
             <TextToSpeechButton text={schemeSummarySpeech} size="sm" />
@@ -132,7 +132,7 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
         <div className="flex items-center gap-2">
           <Link href={`/schemes/${scheme.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full justify-center">
-              View Eligibility & Details →
+              {t.schemes.card.viewDetails}
             </Button>
           </Link>
 
@@ -141,7 +141,7 @@ export default function SchemeCard({ scheme, matchInfo }: SchemeCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 rounded-xl border border-border bg-surface hover:bg-surface-elevated text-muted hover:text-foreground transition-colors shrink-0"
-            title="Open official government portal"
+            title={t.schemes.card.openPortal}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

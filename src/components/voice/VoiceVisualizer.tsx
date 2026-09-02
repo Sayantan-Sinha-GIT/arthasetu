@@ -39,7 +39,7 @@ export default function VoiceVisualizer({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-saffron-600 dark:text-saffron-400">
-                {t.voice.listening} ({isEnglish ? 'English' : speechLanguage.toUpperCase()})
+                {t.voice.listening} ({isEnglish ? t.voice.english : speechLanguage.toUpperCase()})
               </span>
             </div>
             <p className="text-xs text-foreground font-medium truncate mt-0.5">
@@ -62,7 +62,7 @@ export default function VoiceVisualizer({
             onClick={onStop}
             className="px-4 py-1.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm transition-all"
           >
-            ✓ Done Speaking
+            {t.voice.doneSpeaking}
           </button>
         </div>
       </div>

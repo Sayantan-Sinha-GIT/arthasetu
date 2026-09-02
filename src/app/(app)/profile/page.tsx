@@ -413,50 +413,54 @@ export default function ProfilePage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Select
-                        label={`${t.onboarding.state} ${isAddressLocked ? '🔒' : ''}`}
+                        label={`${t.onboarding.state}`}
                         value={formData.state || ''}
-                        onChange={(e) => handleProfileStateChange(e.target.value)}
+                        onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                         options={stateOptions}
-                        disabled={isAddressLocked}
+                        disabled={true}
                         required
+                        hint="🔒 Auto-populated based on PIN Code"
                       />
                       <Select
-                        label={`${t.onboarding.district} ${isAddressLocked ? '🔒' : ''}`}
+                        label={`${t.onboarding.district}`}
                         value={formData.district || ''}
-                        onChange={(e) => handleDistrictChange(e.target.value)}
+                        onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
                         options={districtOptions}
-                        disabled={isAddressLocked || !formData.state}
+                        disabled={true}
                         required
-                        hint={
-                          legacyDistrict
-                            ? `Your previously saved district ('${legacyDistrict}') didn't match our list — please reselect it.`
-                            : undefined
-                        }
+                        hint="🔒 Auto-populated based on PIN Code"
                       />
                     </div>
 
                     <div>
-                      <Input
-                        label={t.onboarding.locality}
-                        type="text"
-                        list="profile-area-suggestions"
+                      <Select
+                        label={t.onboarding.locality + ' / Post Office'}
                         value={formData.locality || ''}
                         onChange={(e) => setFormData((prev) => ({ ...prev, locality: e.target.value }))}
-                        placeholder={t.onboarding.localityPlaceholder}
-                        required
-                        hint={
+                        options={
                           resolvedInfo?.areas && resolvedInfo.areas.length > 0
-                            ? `Suggested PIN areas: ${resolvedInfo.areas.slice(0, 3).join(', ')}`
-                            : undefined
+                            ? [
+                                { value: '', label: t.onboarding.locality + ' / Post Office' },
+                                ...resolvedInfo.areas.map(a => ({ value: a, label: a }))
+                              ]
+                            : [{ value: '', label: 'Select a valid PIN code first' }]
                         }
+                        disabled={!isAddressLocked || !resolvedInfo?.areas?.length}
+                        required
+                        hint={isAddressLocked ? "Select your specific Post Office branch" : "Requires valid PIN Code"}
                       />
-                      {resolvedInfo?.areas && resolvedInfo.areas.length > 0 && (
-                        <datalist id="profile-area-suggestions">
-                          {resolvedInfo.areas.map((a, idx) => (
-                            <option key={idx} value={a} />
-                          ))}
-                        </datalist>
-                      )}
+                    </div>
+
+                    {/* Road Name / House No */}
+                    <div>
+                      <Input
+                        label={t.onboarding.roadName}
+                        type="text"
+                        value={formData.roadName || ''}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, roadName: e.target.value }))}
+                        placeholder={t.onboarding.roadNamePlaceholder}
+                        hint={t.onboarding.roadNameHint}
+                      />
                     </div>
                   </div>
                 </CardContent>

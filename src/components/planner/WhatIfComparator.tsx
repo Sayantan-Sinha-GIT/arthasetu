@@ -95,10 +95,10 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
     const operatingCashFlow = monthlyGrossRevenue - monthlyOperatingCosts;
     const dscr = monthlyLoanEmi > 0 ? Number((operatingCashFlow / monthlyLoanEmi).toFixed(2)) : 9.99;
 
-    let dscrStatus = 'Safe (DSCR > 1.5x)';
-    if (monthlyLoanEmi === 0) dscrStatus = 'No Debt Service';
-    else if (dscr < 1.0) dscrStatus = 'Critical Risk (DSCR < 1.0x)';
-    else if (dscr < 1.3) dscrStatus = 'Moderate Risk (DSCR 1.0–1.3x)';
+    let dscrStatus = t.planner.whatif.safeStatus;
+    if (monthlyLoanEmi === 0) dscrStatus = t.planner.whatif.noDebtStatus;
+    else if (dscr < 1.0) dscrStatus = t.planner.whatif.criticalRiskStatus;
+    else if (dscr < 1.3) dscrStatus = t.planner.whatif.moderateRiskStatus;
 
     return {
       title,
@@ -116,8 +116,8 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
   };
 
   const baseline = computeScenario(
-    'Base Projection',
-    'Standard Model',
+    t.planner.whatif.baseProjection,
+    t.planner.whatif.standardModel,
     'primary',
     1.0,
     1.0,
@@ -126,8 +126,8 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
   );
 
   const conservative = computeScenario(
-    'Conservative Stress',
-    '-20% Demand, +10% Costs',
+    t.planner.whatif.conservativeStress,
+    t.planner.whatif.conservativeDesc,
     'warning',
     0.8,
     1.1,
@@ -136,8 +136,8 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
   );
 
   const optimistic = computeScenario(
-    'Optimistic Growth',
-    '+25% Sales, 25% PMEGP Subsidy',
+    t.planner.whatif.optimisticGrowth,
+    t.planner.whatif.optimisticDesc,
     'success',
     1.25,
     0.95,
@@ -146,8 +146,8 @@ export default function WhatIfComparator({ inputs, calculated }: WhatIfComparato
   );
 
   const custom = computeScenario(
-    'Custom Simulation',
-    'Live Sliders',
+    t.planner.whatif.customSimulation,
+    t.planner.whatif.liveSliders,
     'info',
     1 + revenueDeltaPct / 100,
     1 + costsDeltaPct / 100,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { Scheme } from '@/types';
 
 interface DocumentItem {
@@ -77,6 +78,7 @@ interface DocumentChecklistProps {
 }
 
 export default function DocumentChecklist({ scheme, className = '' }: DocumentChecklistProps) {
+  const { t } = useLanguage();
   const storageKey = `arthasetu_docs_${scheme?.id || 'general'}`;
   
   // Track checked document IDs
@@ -114,6 +116,19 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
   const totalCount = DEFAULT_DOCUMENTS.length;
   const percentComplete = Math.round((completedCount / totalCount) * 100);
 
+  const getDocTranslation = (id: string) => {
+    switch(id) {
+      case 'aadhaar': return t.schemes.checklist.docs.aadhaar;
+      case 'pan': return t.schemes.checklist.docs.pan;
+      case 'udyam': return t.schemes.checklist.docs.udyam;
+      case 'dpr_quotes': return t.schemes.checklist.docs.dpr;
+      case 'bank_statement': return t.schemes.checklist.docs.bankStmt;
+      case 'premises_proof': return t.schemes.checklist.docs.premises;
+      case 'caste_shg_cert': return t.schemes.checklist.docs.socialCert;
+      default: return null;
+    }
+  };
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Progress Card */}
@@ -123,10 +138,10 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
             <span className="text-xl">📁</span>
             <div>
               <h3 className="text-sm font-bold text-foreground">
-                Document Readiness Checklist
+                {t.schemes.checklist.title}
               </h3>
               <p className="text-xs text-muted">
-                {completedCount} of {totalCount} documents confirmed ready
+                {t.schemes.checklist.subtitle.replace('{{completed}}', completedCount.toString()).replace('{{total}}', totalCount.toString())}
               </p>
             </div>
           </div>
@@ -137,7 +152,7 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
                 : 'bg-primary/10 border-primary/20 text-primary'
             }`}
           >
-            {percentComplete}% Ready
+            {t.schemes.checklist.percentReady.replace('{{percent}}', percentComplete.toString())}
           </span>
         </div>
 
@@ -155,11 +170,11 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
       {/* Category Tabs */}
       <div className="flex flex-wrap gap-2">
         {[
-          { key: 'all', label: 'All Documents' },
-          { key: 'identity', label: '👤 Identity & KYC' },
-          { key: 'business', label: '🏪 Business Proofs' },
-          { key: 'financial', label: '💰 Financial & DPR' },
-          { key: 'social', label: '🎖️ Social / SHG' },
+          { key: 'all', label: t.schemes.checklist.tabs.all },
+          { key: 'identity', label: t.schemes.checklist.tabs.identity },
+          { key: 'business', label: t.schemes.checklist.tabs.business },
+          { key: 'financial', label: t.schemes.checklist.tabs.financial },
+          { key: 'social', label: t.schemes.checklist.tabs.social },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -176,10 +191,10 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
         ))}
       </div>
 
-      {/* Checklist Items */}
       <div className="space-y-3">
         {filteredDocs.map((doc) => {
           const isChecked = checkedIds.includes(doc.id);
+          const tDoc = getDocTranslation(doc.id);
 
           return (
             <div
@@ -206,22 +221,22 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
                           isChecked ? 'text-foreground line-through opacity-80' : 'text-foreground'
                         }`}
                       >
-                        {doc.name}
+                        {tDoc ? tDoc.name : doc.name}
                       </span>
                       {doc.isRequired ? (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold">
-                          Mandatory
+                          {t.schemes.checklist.mandatory}
                         </span>
                       ) : (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold">
-                          Optional Bonus
+                          {t.schemes.checklist.optional}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted leading-relaxed">{doc.description}</p>
-                    {doc.tip && (
+                    <p className="text-xs text-muted leading-relaxed">{tDoc ? tDoc.desc : doc.description}</p>
+                    {(tDoc?.tip || doc.tip) && (
                       <p className="text-[11px] text-amber-800 dark:text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg inline-block">
-                        💡 {doc.tip}
+                        💡 {tDoc ? tDoc.tip : doc.tip}
                       </p>
                     )}
                   </div>
@@ -235,7 +250,7 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
                         : 'bg-surface text-muted border-border'
                     }`}
                   >
-                    {isChecked ? '✓ Ready' : 'Mark Ready'}
+                    {isChecked ? t.schemes.checklist.ready : t.schemes.checklist.markReady}
                   </span>
                 </div>
               </div>

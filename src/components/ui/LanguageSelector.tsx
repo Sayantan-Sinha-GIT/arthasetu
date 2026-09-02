@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LanguageSelector() {
-  const { language, setLanguage, currentMeta, languages } = useLanguage();
+  const { language, setLanguage, currentMeta, languages, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +25,7 @@ export default function LanguageSelector() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-elevated transition-all duration-200 text-xs font-semibold text-foreground shadow-sm"
-        title="Change interface language"
+        title={t.languageSelector?.changeLanguage || 'Change interface language'}
         aria-expanded={isOpen}
       >
         <span>🌐</span>
@@ -49,8 +49,8 @@ export default function LanguageSelector() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 max-h-80 overflow-y-auto rounded-2xl bg-surface-elevated border border-border shadow-xl z-50 p-1 animate-scale-in">
           <div className="px-3 py-2 border-b border-border-subtle text-[11px] font-bold uppercase tracking-wider text-muted flex items-center justify-between">
-            <span>22 Scheduled Languages</span>
-            <span className="text-[10px] text-amber-600 font-normal">AI = Machine Trans.</span>
+            <span>{t.languageSelector?.scheduledLanguages || '22 Scheduled Languages'}</span>
+            <span className="text-[10px] text-amber-600 font-normal">{t.languageSelector?.machineTranslated || 'AI = Machine Trans.'}</span>
           </div>
 
           <div className="py-1 space-y-0.5">
