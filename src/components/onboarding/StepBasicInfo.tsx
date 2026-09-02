@@ -204,31 +204,42 @@ export default function StepBasicInfo({
           />
         </div>
 
-        {/* Locality Input with PIN-Area Datalist Suggestions */}
-        <div>
+        {/* Post Office / Area (Dropdown) */}
+        {resolvedInfo?.areas && resolvedInfo.areas.length > 0 ? (
+          <Select
+            label={t.onboarding.locality + ' / Post Office'}
+            value={data.locality || ''}
+            onChange={(e) => onChange({ locality: e.target.value })}
+            options={[
+              { value: '', label: 'Select Post Office / Area' },
+              ...resolvedInfo.areas.map(a => ({ value: a, label: a }))
+            ]}
+            required
+            error={errors.locality}
+            hint="Auto-populated based on PIN Code"
+          />
+        ) : (
           <Input
             label={t.onboarding.locality}
             type="text"
-            list="onboarding-area-suggestions"
             value={data.locality || ''}
             onChange={(e) => onChange({ locality: e.target.value })}
             placeholder={t.onboarding.localityPlaceholder}
             required
             error={errors.locality}
-            hint={
-              resolvedInfo?.areas && resolvedInfo.areas.length > 0
-                ? `Suggested PIN areas: ${resolvedInfo.areas.slice(0, 3).join(', ')}`
-                : undefined
-            }
           />
-          {resolvedInfo?.areas && resolvedInfo.areas.length > 0 && (
-            <datalist id="onboarding-area-suggestions">
-              {resolvedInfo.areas.map((a, idx) => (
-                <option key={idx} value={a} />
-              ))}
-            </datalist>
-          )}
-        </div>
+        )}
+
+        {/* Road Name / House No (Optional Text) */}
+        <Input
+          label="Road Name / House No. (Optional)"
+          type="text"
+          value={data.roadName || ''}
+          onChange={(e) => onChange({ roadName: e.target.value })}
+          placeholder="e.g. MG Road, Plot No. 12"
+          error={errors.roadName}
+          hint="You can manually enter the road name or house number here."
+        />
       </div>
     </div>
   );

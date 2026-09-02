@@ -93,9 +93,9 @@ export default function ProfileCompleteness({ profile }: ProfileCompletenessProp
               </span>
             ))}
             {missingFields.length > 3 && (
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-medium text-muted">
+              <Link href="/profile" className="px-2 py-0.5 rounded-md text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 cursor-pointer">
                 +{missingFields.length - 3} more
-              </span>
+              </Link>
             )}
           </div>
 

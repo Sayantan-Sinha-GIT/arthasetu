@@ -11,6 +11,7 @@ import { matchSchemesForProfile } from '@/lib/schemes/matcher';
 import { SEED_SCHEMES } from '@/lib/schemes/seed-data';
 import { savePlan } from '@/lib/firestore/plans';
 import { buildAdvisorSystemPrompt } from '@/lib/prompts/advisor';
+import { updateUserProfile } from '@/lib/firestore/users';
 import type { ChatMessage, UserProfile, PlanInputs, CalculatedValues } from '@/types';
 
 // Explicit maxDuration config per PRD §6.4 for Vercel Hobby plan
@@ -61,6 +62,19 @@ export function createAdvisorSession(savePlanFn = savePlan) {
           return { success: true, planId: docId, message: 'Plan saved successfully' };
         } catch (e: any) {
           return { error: 'Failed to save plan: ' + e.message };
+        }
+      }
+      if (name === 'updateProfile') {
+        if (!userProfile?.uid) return { error: 'User not logged in or missing ID' };
+        try {
+          // Remove undefined or null args to avoid overwriting with empty
+          const cleanArgs = Object.fromEntries(Object.entries(args).filter(([_, v]) => v != null));
+          await updateUserProfile(userProfile.uid, cleanArgs);
+          // Mutate the local userProfile so subsequent tools in this session use the new data
+          Object.assign(userProfile, cleanArgs);
+          return { success: true, message: 'Profile updated successfully' };
+        } catch (e: any) {
+          return { error: 'Failed to update profile: ' + e.message };
         }
       }
       return { error: 'Unknown tool' };
@@ -174,6 +188,21 @@ export async function POST(req: NextRequest) {
                     actionableNextSteps: { type: 'ARRAY', items: { type: 'STRING' } }
                   }
                 }
+              }
+            }
+          },
+          {
+            name: 'updateProfile',
+            description: 'Updates the user\'s profile details automatically when they share new information like budget, business type, or experience.',
+            parameters: {
+              type: 'OBJECT',
+              properties: {
+                businessType: { type: 'STRING' },
+                businessCategory: { type: 'STRING' },
+                availableCapital: { type: 'NUMBER' },
+                desiredFunding: { type: 'NUMBER' },
+                businessExperience: { type: 'STRING' },
+                businessStatus: { type: 'STRING', description: '"existing" or "planning"' }
               }
             }
           }

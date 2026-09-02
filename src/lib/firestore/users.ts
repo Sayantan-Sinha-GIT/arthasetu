@@ -111,6 +111,7 @@ export async function createUserProfile(profile: Partial<UserProfile> & { uid: s
       state: stateVal,
       district: districtVal,
       locality: profile.locality || '',
+      roadName: profile.roadName || '',
       pinCode: profile.pinCode || '',
       businessStatus: profile.businessStatus || 'planning',
       businessCategory: profile.businessCategory || '',

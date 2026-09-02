@@ -21,7 +21,8 @@ export interface UserProfile {
   // Location
   state: string;
   district: string;
-  locality: string; // village/town
+  locality: string; // village/town/post office
+  roadName?: string; // specific road/house
   pinCode?: string;
 
   // Business

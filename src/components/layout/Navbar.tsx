@@ -188,7 +188,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-border/50 bg-surface-elevated animate-fade-in">
+        <div className="lg:hidden border-t border-border/50 bg-surface-elevated animate-fade-in pointer-events-auto">
           <div className="py-3 px-2 space-y-1">
             {navLinks.map((link) => {
               const active = isActive(link.href);

@@ -117,7 +117,7 @@ const en = {
     districtPlaceholder: 'e.g. Kamrup / Varanasi',
     locality: 'Village / Town',
     localityPlaceholder: 'e.g. Guwahati / Sarnath',
-    pinCode: 'PIN Code (optional)',
+    pinCode: 'PIN Code (Required)',
     pinCodePlaceholder: 'e.g. 781001',
     // Business
     businessStatus: 'Business Status',
