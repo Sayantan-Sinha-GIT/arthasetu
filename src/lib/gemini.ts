@@ -4,7 +4,7 @@
 
 import { GoogleGenAI, type Content, type Tool, type FunctionCall } from '@google/genai';
 import { getErrorMessage } from '@/lib/utils/errors';
-import { groqGenerateContent, isGroqConfigured } from '@/lib/groq';
+import { groqAgentStream, groqGenerateContent, isGroqConfigured } from '@/lib/groq';
 
 export const GEMINI_MODELS = {
   /** Primary established model: advisor, financial planner, scheme explanation — ultra fast & high availability */
@@ -251,15 +251,49 @@ export async function* generateAgentStream(
     for await (const chunk of runAgent(model)) {
       yield chunk;
     }
+    return;
   } catch (primaryError) {
-    if (!options?.disableFallback && model !== GEMINI_MODELS.FLASH_LITE) {
-      console.warn(`⚠️ Primary Gemini agent (${model}) failed. Automatically failing over to fallback model (${GEMINI_MODELS.FLASH_LITE})...`, primaryError);
-      for await (const chunk of runAgent(GEMINI_MODELS.FLASH_LITE)) {
-        yield chunk;
+    if (options?.disableFallback) throw primaryError;
+
+    if (model !== GEMINI_MODELS.FLASH_LITE) {
+      console.warn(`⚠️ Primary Gemini agent (${model}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, primaryError);
+      try {
+        for await (const chunk of runAgent(GEMINI_MODELS.FLASH_LITE)) {
+          yield chunk;
+        }
+        return;
+      } catch (liteError) {
+        yield* groqAgentFallback(systemInstruction, history, tools, toolHandler, options, liteError);
+        return;
       }
-    } else {
-      throw primaryError;
     }
+
+    yield* groqAgentFallback(systemInstruction, history, tools, toolHandler, options, primaryError);
+  }
+}
+
+/**
+ * Last resort for the advisor: run the same tool loop on Groq.
+ *
+ * Both Gemini models share one 20-a-day project quota, so when the primary is
+ * exhausted the fallback almost always is too — without a different provider
+ * the advisor simply stops answering.
+ */
+async function* groqAgentFallback(
+  systemInstruction: string,
+  history: Content[],
+  tools: Tool[],
+  toolHandler: (name: string, args: Record<string, unknown>) => Promise<unknown>,
+  options: { temperature?: number; maxOutputTokens?: number } | undefined,
+  geminiError: unknown
+): AsyncGenerator<string> {
+  if (!isGroqConfigured()) throw geminiError;
+  console.warn('⚠️ Gemini exhausted. Failing over the advisor to Groq...', getErrorMessage(geminiError, 'unknown'));
+  try {
+    yield* groqAgentStream(systemInstruction, history, tools, toolHandler, options);
+  } catch (groqError) {
+    console.error('All providers failed for the advisor. Groq:', getErrorMessage(groqError, 'unknown'));
+    throw geminiError;
   }
 }
 
