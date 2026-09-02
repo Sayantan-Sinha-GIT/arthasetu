@@ -16,6 +16,7 @@ import type { ChatMessage, UserProfile, PlanInputs, CalculatedValues } from '@/t
 
 // Explicit maxDuration config per PRD §6.4 for Vercel Hobby plan
 export const maxDuration = 60;
+export const runtime = 'edge';
 
 export function createAdvisorSession(savePlanFn = savePlan) {
   let lastCalculatedPlan: { inputs: PlanInputs; calculatedValues: CalculatedValues } | null = null;
