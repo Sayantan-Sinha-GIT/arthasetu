@@ -10,10 +10,10 @@ import AmbientBackground from '@/components/ui/AmbientBackground';
 import Button from '@/components/ui/Button';
 import SchemeCard from '@/components/schemes/SchemeCard';
 import SchemeFilters from '@/components/schemes/SchemeFilters';
-import { getAllSchemes, seedSchemesToFirestore } from '@/lib/firestore/schemes';
+import { getAllSchemes } from '@/lib/firestore/schemes';
 import { getUserProfile } from '@/lib/firestore/users';
 import { matchSchemesForProfile } from '@/lib/schemes/matcher';
-import type { Scheme, SchemeMatchResult, UserProfile } from '@/types';
+import type { Scheme, UserProfile } from '@/types';
 
 export default function SchemesPage() {
   const { user, loading: authLoading } = useAuth();

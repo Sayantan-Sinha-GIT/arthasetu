@@ -34,7 +34,6 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<V
       state = '',
       district = '',
       pinCode = '',
-      availableCapital = 0,
       desiredFunding = 0,
       monthlyIncome = 0,
       monthlyExpenses = 0,
@@ -158,7 +157,7 @@ Return ALL text in language: "${language}".`;
         },
       });
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Validation API error:', error);
     // Overall fail-open to never block user progression
     return NextResponse.json({

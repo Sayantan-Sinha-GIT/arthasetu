@@ -5,6 +5,7 @@ import {
   lookupPincode,
   type PincodeInfo,
 } from '@/lib/constants/pincodes';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export const maxDuration = 60;
 
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
           const postOffices = json[0].PostOffice;
           const state = postOffices[0]?.State;
           const district = postOffices[0]?.District;
-          const areas = Array.from(new Set(postOffices.map((po: any) => (po.Name || '').trim()).filter(Boolean)));
+          const areas = Array.from(new Set(postOffices.map((po: { Name?: string }) => (po.Name || '').trim()).filter(Boolean)));
 
           if (state && district && areas.length > 0) {
             const resolved: PincodeInfo = { state, district, areas: areas as string[] };
@@ -139,10 +140,10 @@ export async function GET(req: NextRequest) {
       { success: false, error: 'Unresolvable PIN code' },
       { status: 404 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Pincode route error:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Server error resolving PIN code' },
+      { success: false, error: getErrorMessage(error, 'Server error resolving PIN code') },
       { status: 500 }
     );
   }

@@ -15,7 +15,6 @@ export default function AmbientBackground({
 }: AmbientBackgroundProps) {
   let quality = 'full';
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const net = useNetworkQuality();
     quality = net.quality;
   } catch {}

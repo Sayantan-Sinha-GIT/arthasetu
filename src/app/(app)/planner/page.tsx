@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import AmbientBackground from '@/components/ui/AmbientBackground';
 import PlannerWizard from '@/components/planner/PlannerWizard';
 import PlanResultView from '@/components/planner/PlanResultView';
 import { getUserProfile } from '@/lib/firestore/users';

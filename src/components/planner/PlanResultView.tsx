@@ -219,7 +219,7 @@ export default function PlanResultView({
       </Card>
 
       {/* Feature 1: What-If Scenario Comparator */}
-      <WhatIfComparator calculated={calculated} inputs={inputs} />
+      <WhatIfComparator inputs={inputs} />
 
       {/* Feature 3: Hyperlocal Cost Factors & Context */}
       <LocalBusinessContext location={inputs.location} businessType={inputs.businessType} />

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
 import { getLanguageMeta } from '@/i18n/languages';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { Scheme, UserProfile } from '@/types';
 
 export const maxDuration = 60;
@@ -84,12 +85,12 @@ Provide:
       success: true,
       explanation,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error generating scheme explanation:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to generate scheme explanation',
+        error: getErrorMessage(error, 'Failed to generate scheme explanation'),
       },
       { status: 500 }
     );

@@ -1,6 +1,5 @@
 'use client';
 
-import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { VoiceState } from '@/types';
 
 interface VoiceButtonProps {

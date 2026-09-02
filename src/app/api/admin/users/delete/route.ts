@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { verifyAdminRequest, deleteAuthUserSafely, ADMIN_EMAIL } from '@/lib/admin-auth';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export const maxDuration = 60;
 
@@ -60,10 +61,10 @@ export async function POST(req: NextRequest) {
         advice: adviceSnap.size,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error executing admin user deletion:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to delete user account' },
+      { success: false, error: getErrorMessage(error, 'Failed to delete user account') },
       { status: 500 }
     );
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
 import { buildSchemeParsingPrompt } from '@/lib/prompts/admin';
 import { verifyAdminRequest } from '@/lib/admin-auth';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { Scheme } from '@/types';
 
 export const maxDuration = 60;
@@ -58,12 +59,12 @@ export async function POST(req: NextRequest) {
       data: parsedData,
       sourceUrl: sourceUrl || '',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error drafting scheme with AI:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to parse circular text with AI',
+        error: getErrorMessage(error, 'Failed to parse circular text with AI'),
       },
       { status: 500 }
     );

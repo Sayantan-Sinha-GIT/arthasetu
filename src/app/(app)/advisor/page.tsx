@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import AmbientBackground from '@/components/ui/AmbientBackground';
 import ChatInterface from '@/components/advisor/ChatInterface';
 import { getUserProfile } from '@/lib/firestore/users';
 import type { UserProfile } from '@/types';

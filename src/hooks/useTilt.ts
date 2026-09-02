@@ -1,25 +1,23 @@
 'use client';
-import { useRef, useState, useCallback, useEffect, type CSSProperties } from 'react';
+import { useRef, useState, useCallback, type CSSProperties } from 'react';
 import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
 
 export function useTilt(maxTilt = 6) {
   const ref = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState<CSSProperties>({});
-  const [reducedMotion, setReducedMotion] = useState(false);
+  // Lazy initializer (not an effect): this only ever affects mouse-driven
+  // tilt behavior, never the initial rendered markup, so there's no
+  // hydration-mismatch risk in reading it synchronously on first render.
+  const [reducedMotion] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
+  );
   let quality = 'full';
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const net = useNetworkQuality();
     quality = net.quality;
   } catch {}
 
   const isDisabled = reducedMotion || quality !== 'full';
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    }
-  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (isDisabled) return;

@@ -6,7 +6,6 @@ import {
   type Translations,
   SUPPORTED_LANGUAGES,
   getLanguageMeta,
-  type SupportedLanguageCode,
   type LanguageMeta,
 } from '@/i18n';
 

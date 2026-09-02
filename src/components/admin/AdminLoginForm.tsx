@@ -8,6 +8,7 @@ import { auth } from '@/lib/firebase';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { getErrorMessage, getErrorCode } from '@/lib/utils/errors';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -44,9 +45,9 @@ export default function AdminLoginForm() {
 
       // Credentials match & authorized — redirect to secure admin dashboard
       router.push(`/${ADMIN_ROUTE_KEY}/admin`);
-    } catch (err: any) {
-      const code = err?.code || '';
-      const msg = err?.message || '';
+    } catch (err) {
+      const code = getErrorCode(err);
+      const msg = getErrorMessage(err, '');
 
       if (code === 'auth/user-not-found' || msg.includes('user-not-found')) {
         setError('Firebase Auth Error: No user account found with this email address.');

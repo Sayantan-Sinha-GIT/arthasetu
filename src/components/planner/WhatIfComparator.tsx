@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import Card from '@/components/ui/Card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { PlanInputs, CalculatedValues } from '@/types';
+import type { PlanInputs } from '@/types';
 
 interface WhatIfComparatorProps {
   inputs: PlanInputs;
-  calculated: CalculatedValues;
 }
 
 interface ScenarioResult {
@@ -24,7 +23,7 @@ interface ScenarioResult {
   dscrStatus: string;
 }
 
-export default function WhatIfComparator({ inputs, calculated }: WhatIfComparatorProps) {
+export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
   const { t } = useLanguage();
 
   // Custom scenario adjustment sliders

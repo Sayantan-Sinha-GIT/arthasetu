@@ -3,6 +3,7 @@
 // NEVER import this from client components — the API key must stay server-side.
 
 import { GoogleGenAI } from '@google/genai';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export const GEMINI_MODELS = {
   /** Primary established model: advisor, financial planner, scheme explanation — ultra fast & high availability */
@@ -187,8 +188,8 @@ export async function* generateAgentStream(
           let result: any;
           try {
             result = await toolHandler(call.name, call.args);
-          } catch (err: any) {
-            result = { error: err.message };
+          } catch (err) {
+            result = { error: getErrorMessage(err) };
           }
           return {
             functionResponse: {

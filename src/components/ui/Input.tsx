@@ -2,6 +2,7 @@
 
 import { forwardRef, useState, useEffect, type InputHTMLAttributes, type ReactNode } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import type { Translations } from '@/i18n';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -32,9 +33,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    let t: any = null;
+    let t: Translations | null = null;
     try {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       const lang = useLanguage();
       t = lang?.t;
     } catch {}

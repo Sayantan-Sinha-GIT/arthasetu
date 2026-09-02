@@ -11,7 +11,6 @@ import Button from '@/components/ui/Button';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { detectScriptLanguage } from '@/lib/lang/detectScript';
-import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { ChatMessage, UserProfile, VoiceState } from '@/types';
 
 interface ChatInterfaceProps {
@@ -51,17 +50,6 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       }
     }
   }, [currentMeta?.speechCode]);
-
-  const handleSpeechLanguageChange = (newCode: string) => {
-    setSpeechLanguage(newCode);
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(SPEECH_LANG_KEY, newCode);
-      } catch (err) {
-        console.warn('Failed to persist speech language:', err);
-      }
-    }
-  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -110,34 +98,34 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
     ? 'speaking'
     : 'idle';
 
-  // Initial welcome message from ArthaSetu
+  // Initial welcome message from ArthaSetu. `t` already reflects the current
+  // language, so this only needs one code path (not separate "En"/"Hi"
+  // variants) — and depending on `language` here (rather than the derived
+  // `isHindi` boolean) means switching between any two languages, not just
+  // to/from Hindi, correctly refreshes the greeting.
   useEffect(() => {
     if (messages.length === 0) {
       const userName = userProfile?.name || '';
       const business = userProfile?.businessType || '';
       const location = userProfile?.locality || userProfile?.district || userProfile?.state || '';
 
-      const locationPartEn = location ? t.advisor.chat.locationPart.replace('{{location}}', location) : '';
-      const businessContextEn = business ? t.advisor.chat.businessPart.replace('{{business}}', business).replace('{{locationPart}}', locationPartEn) : '';
-      const greetingNamedEn = t.advisor.chat.greetingNamed.replace('{{userName}}', userName).replace('{{businessContext}}', businessContextEn);
+      const locationPart = location ? t.advisor.chat.locationPart.replace('{{location}}', location) : '';
+      const businessContext = business ? t.advisor.chat.businessPart.replace('{{business}}', business).replace('{{locationPart}}', locationPart) : '';
+      const greetingNamed = t.advisor.chat.greetingNamed.replace('{{userName}}', userName).replace('{{businessContext}}', businessContext);
 
-      const locationPartHi = location ? t.advisor.chat.locationPart.replace('{{location}}', location) : '';
-      const businessContextHi = business ? t.advisor.chat.businessPart.replace('{{business}}', business).replace('{{locationPart}}', locationPartHi) : '';
-      const greetingNamedHi = t.advisor.chat.greetingNamed.replace('{{userName}}', userName).replace('{{businessContext}}', businessContextHi);
-
-      const greetingEn = userName ? greetingNamedEn : t.advisor.chat.greetingAnon;
-      const greetingHi = userName ? greetingNamedHi : t.advisor.chat.greetingAnon;
+      const greeting = userName ? greetingNamed : t.advisor.chat.greetingAnon;
 
       setMessages([
         {
           id: 'welcome-1',
           role: 'assistant',
-          content: isHindi ? greetingHi : greetingEn,
+          content: greeting,
           timestamp: new Date(),
         },
       ]);
     }
-  }, [userProfile, isHindi, messages.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile, language, messages.length]);
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {

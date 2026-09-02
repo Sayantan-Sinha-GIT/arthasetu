@@ -17,7 +17,6 @@ const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
 export default function AdminHistoryClient() {
   const { t } = useLanguage();
   const [history, setHistory] = useState<SchemeUpdateRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'approved' | 'rejected' | 'pending'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -28,8 +27,6 @@ export default function AdminHistoryClient() {
         setHistory(list);
       } catch (err) {
         console.error('Error loading scheme update history:', err);
-      } finally {
-        setLoading(false);
       }
     }
     load();
@@ -83,10 +80,11 @@ export default function AdminHistoryClient() {
           <div className="space-y-4">
             {filteredHistory.map((item) => {
               const isExpanded = expandedId === item.id;
-              const dateStr = item.timestamp
-                ? (typeof (item.timestamp as any).toDate === 'function'
-                    ? (item.timestamp as any).toDate().toLocaleString()
-                    : new Date(item.timestamp as any).toLocaleString())
+              const ts = item.timestamp as unknown;
+              const dateStr = ts
+                ? (typeof (ts as { toDate?: () => Date }).toDate === 'function'
+                    ? (ts as { toDate: () => Date }).toDate().toLocaleString()
+                    : new Date(ts as string | number | Date).toLocaleString())
                 : 'N/A';
 
               return (

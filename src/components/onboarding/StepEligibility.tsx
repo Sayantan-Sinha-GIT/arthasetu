@@ -162,7 +162,7 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
                   <Select
                     label={t.onboarding.lenderType}
                     value={loan.lenderType}
-                    onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as any })}
+                    onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as LoanDetail['lenderType'] })}
                     options={lenderOptions}
                   />
 

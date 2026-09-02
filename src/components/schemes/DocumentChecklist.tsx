@@ -179,7 +179,7 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
           <button
             key={tab.key}
             type="button"
-            onClick={() => setActiveCategory(tab.key as any)}
+            onClick={() => setActiveCategory(tab.key as 'all' | 'identity' | 'business' | 'financial' | 'social')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeCategory === tab.key
                 ? 'bg-primary text-white shadow-sm'

@@ -1,7 +1,7 @@
 'use client';
 
 interface DiffViewerProps {
-  proposedChanges: Record<string, { old: any; new: any }>;
+  proposedChanges: Record<string, { old: unknown; new: unknown }>;
   schemeName?: string;
 }
 
@@ -16,7 +16,7 @@ export default function DiffViewer({ proposedChanges, schemeName }: DiffViewerPr
     );
   }
 
-  const formatValue = (val: any): string => {
+  const formatValue = (val: unknown): string => {
     if (val === undefined || val === null) return 'None';
     if (Array.isArray(val)) return val.join(', ');
     if (typeof val === 'object') return JSON.stringify(val, null, 2);
@@ -44,7 +44,6 @@ export default function DiffViewer({ proposedChanges, schemeName }: DiffViewerPr
       <div className="space-y-3">
         {changeKeys.map((fieldKey) => {
           const { old: oldVal, new: newVal } = proposedChanges[fieldKey];
-          const isObjectOrArray = Array.isArray(newVal) || (typeof newVal === 'object' && newVal !== null);
 
           return (
             <div

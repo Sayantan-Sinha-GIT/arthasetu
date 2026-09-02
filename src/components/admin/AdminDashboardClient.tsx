@@ -20,6 +20,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { Scheme, SchemeUpdateRecord, UserProfile } from '@/types';
 
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -32,7 +33,6 @@ export default function AdminDashboardClient() {
   const [pendingUpdates, setPendingUpdates] = useState<SchemeUpdateRecord[]>([]);
   const [history, setHistory] = useState<SchemeUpdateRecord[]>([]);
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Selected update for diff view
@@ -64,8 +64,6 @@ export default function AdminDashboardClient() {
       setUsersList(uList);
     } catch (err) {
       console.error('Error loading admin dashboard data:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -148,9 +146,9 @@ export default function AdminDashboardClient() {
       setTargetUserToDelete(null);
       await loadData();
       setTimeout(() => setDeleteSuccessMsg(''), 6000);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Admin user deletion failed:', err);
-      setDeleteErrorMsg(err.message || 'Deletion failed.');
+      setDeleteErrorMsg(getErrorMessage(err, 'Deletion failed.'));
     } finally {
       setDeleteLoading(false);
     }

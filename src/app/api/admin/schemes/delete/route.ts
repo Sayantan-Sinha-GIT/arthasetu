@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { verifyAdminRequest, ADMIN_EMAIL } from '@/lib/admin-auth';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export const maxDuration = 60;
 
@@ -74,10 +75,10 @@ export async function POST(req: NextRequest) {
         updates: updatesSnap.size,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error executing admin scheme deletion:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to delete scheme' },
+      { success: false, error: getErrorMessage(error, 'Failed to delete scheme') },
       { status: 500 }
     );
   }

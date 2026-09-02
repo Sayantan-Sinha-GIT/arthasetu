@@ -5,7 +5,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Input, { NumberInput } from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import NumberBadge from '@/components/ui/NumberBadge';
 import { calculateFinancialPlan } from '@/lib/calculator';
 import type { PlanInputs, UserProfile } from '@/types';
 
@@ -20,7 +19,7 @@ export default function PlannerWizard({
   onGeneratePlan,
   isLoading,
 }: PlannerWizardProps) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   const isExistingProfile = initialProfile?.businessStatus === 'existing';
   const [step, setStep] = useState(1);

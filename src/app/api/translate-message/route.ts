@@ -22,7 +22,7 @@ Keep the formatting intact. Output ONLY the translated text, with no additional 
     const translation = await generateContent(GEMINI_MODELS.FLASH, systemPrompt, text);
 
     return NextResponse.json({ translatedText: translation });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Translation API error:', err);
     return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
   }

@@ -1,5 +1,5 @@
 // ─── Saved Advice Firestore Operations ───
-import { collection, doc, addDoc, getDocs, deleteDoc, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, getDocs, deleteDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Advice } from '@/types';
 

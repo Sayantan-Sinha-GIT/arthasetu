@@ -10,6 +10,7 @@ import DiffViewer from '@/components/admin/DiffViewer';
 import { createOrUpdateLiveScheme, proposeSchemeUpdate } from '@/lib/firestore/admin';
 import { useAuth } from '@/contexts/AuthContext';
 import { ALL_INDIAN_REGIONS } from '@/lib/constants/states';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { Scheme } from '@/types';
 
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -66,12 +67,12 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
   const [aiLoading, setAiLoading] = useState(false);
   const [aiDraftResult, setAiDraftResult] = useState<{
     summaryOfChanges?: string;
-    proposedChanges?: Record<string, { old: any; new: any }>;
+    proposedChanges?: Record<string, { old: unknown; new: unknown }>;
     updatedScheme?: Partial<Scheme>;
   } | null>(null);
 
   // Helper to update top-level fields
-  const handleChange = (key: keyof Scheme, val: any) => {
+  const handleChange = <K extends keyof Scheme>(key: K, val: Scheme[K]) => {
     setFormData((prev) => ({ ...prev, [key]: val }));
   };
 
@@ -130,8 +131,8 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
       }
 
       setAiDraftResult(json.data);
-    } catch (err: any) {
-      setError(err.message || 'AI parsing failed. Please check the text format.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'AI parsing failed. Please check the text format.'));
     } finally {
       setAiLoading(false);
     }
@@ -167,8 +168,8 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
       });
       setIsAiModalOpen(false);
       router.push(`/${ADMIN_ROUTE_KEY}/admin/history`);
-    } catch (err: any) {
-      setError(err.message || 'Failed to propose scheme update');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to propose scheme update'));
     } finally {
       setSaving(false);
     }
@@ -193,8 +194,8 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
       setTimeout(() => {
         router.push(`/${ADMIN_ROUTE_KEY}/admin/schemes`);
       }, 1000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to publish live scheme.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to publish live scheme.'));
     } finally {
       setSaving(false);
     }

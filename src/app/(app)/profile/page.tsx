@@ -26,6 +26,7 @@ import {
 import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
 import { lookupPincode, fetchPincodeInfo, validateAddressConsistency, isValidPincode, type PincodeInfo } from '@/lib/constants/pincodes';
 import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
+import { getErrorCode, getErrorMessage } from '@/lib/utils/errors';
 import type { UserProfile, LoanDetail } from '@/types';
 
 export default function ProfilePage() {
@@ -58,10 +59,8 @@ export default function ProfilePage() {
     theme: 'light',
   });
 
-  const [legacyDistrict, setLegacyDistrict] = useState<string>('');
   const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
   const [isResolving, setIsResolving] = useState(false);
-  const [useCustomLocality, setUseCustomLocality] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -85,18 +84,15 @@ export default function ProfilePage() {
         const profile = await getUserProfile(user.uid);
         if (profile) {
           let loadedDistrict = profile.district || '';
-          let legacyVal = '';
           if (profile.state && loadedDistrict) {
             const validDistricts = getDistrictsByState(profile.state);
-            if (validDistricts.includes(loadedDistrict)) {
-              // Valid canonical district
-            } else {
-              // Legacy non-canonical district
-              legacyVal = loadedDistrict;
+            if (!validDistricts.includes(loadedDistrict)) {
+              // Stored district no longer matches the canonical list for this
+              // state (e.g. renamed/reclassified district) — clear it so the
+              // dropdown doesn't show a stale, unselectable value.
               loadedDistrict = '';
             }
           }
-          setLegacyDistrict(legacyVal);
 
           if (profile.pinCode && /^[1-9][0-9]{5}$/.test(profile.pinCode)) {
             const direct = lookupPincode(profile.pinCode);
@@ -127,7 +123,6 @@ export default function ProfilePage() {
 
   const handlePinChange = async (pin: string) => {
     const clean = pin.replace(/[^0-9]/g, '').slice(0, 6);
-    setLegacyDistrict('');
 
     if (clean.length === 6 && /^[1-9][0-9]{5}$/.test(clean)) {
       setIsResolving(true);
@@ -261,15 +256,15 @@ export default function ProfilePage() {
       await deleteUserFirestoreData(user.uid);
       await deleteUser(user);
       router.push('/login?deleted=true');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Account deletion error:', err);
-      const code = err?.code || '';
+      const code = getErrorCode(err);
       if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setDeleteError('Incorrect password. Please enter your valid password to confirm deletion.');
       } else if (code === 'auth/requires-recent-login') {
         setDeleteError('Security timeout: Please log out and log in again before deleting your account.');
       } else {
-        setDeleteError(err?.message || 'Failed to delete account. Please try again.');
+        setDeleteError(getErrorMessage(err, 'Failed to delete account. Please try again.'));
       }
       setDeleteLoading(false);
     }
@@ -303,30 +298,7 @@ export default function ProfilePage() {
   ];
   const loansList = formData.loanDetails || [];
 
-  const handleProfileStateChange = (newState: string) => {
-    const validDistricts = getDistrictsByState(newState);
-    const shouldClearDistrict = formData.district && !validDistricts.includes(formData.district);
-    setLegacyDistrict('');
-    setFormData((prev) => ({
-      ...prev,
-      state: newState,
-      district: shouldClearDistrict ? '' : prev.district,
-    }));
-  };
-
-  const handleDistrictChange = (newDistrict: string) => {
-    setLegacyDistrict('');
-    setFormData((prev) => ({ ...prev, district: newDistrict }));
-  };
-
   const isAddressLocked = !!resolvedInfo && !!formData.pinCode && /^[1-9][0-9]{5}$/.test(formData.pinCode);
-
-  const areaOptions = resolvedInfo?.areas && resolvedInfo.areas.length > 0
-    ? [
-        ...resolvedInfo.areas.map((a) => ({ value: a, label: a })),
-        { value: '__custom__', label: '✏️ Other / Custom Area' },
-      ]
-    : [];
 
   return (
     <>
@@ -544,7 +516,7 @@ export default function ProfilePage() {
                               )}
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <Select label="Lender Type" value={loan.lenderType} onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as any })} options={lenderOptions} />
+                              <Select label="Lender Type" value={loan.lenderType} onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as LoanDetail['lenderType'] })} options={lenderOptions} />
                               <NumberInput label="Outstanding Balance (₹)" value={loan.outstandingAmount !== undefined ? loan.outstandingAmount : ''} onValueChange={(val) => handleUpdateLoan(loan.id, { outstandingAmount: val })} placeholder="e.g. 50000" min={0} />
                               <NumberInput label="Monthly EMI (₹)" value={loan.monthlyEmi !== undefined ? loan.monthlyEmi : ''} onValueChange={(val) => handleUpdateLoan(loan.id, { monthlyEmi: val })} placeholder="e.g. 2500" min={0} />
                             </div>

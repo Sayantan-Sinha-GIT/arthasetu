@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
-import AmbientBackground from '@/components/ui/AmbientBackground';
 import type { UserProfile } from '@/types';
 
 interface WelcomeBannerProps {

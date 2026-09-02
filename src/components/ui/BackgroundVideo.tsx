@@ -8,7 +8,6 @@ export default function BackgroundVideo({ src, className = '' }: { src: string; 
   const videoRef = useRef<HTMLVideoElement>(null);
   let quality = 'full';
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const net = useNetworkQuality();
     quality = net.quality;
   } catch {}

@@ -5,6 +5,15 @@
 // - Server-side Firestore operations
 //
 // NEVER import this file from client components.
+//
+// NOTE ON require() BELOW: firebase-admin/auth and firebase-admin/firestore
+// are deliberately require()'d lazily inside each Proxy getter, wrapped in
+// try/catch, instead of statically imported at the top. That keeps a
+// module-load-time failure of the native SDK (e.g. in a restrictive
+// serverless/edge runtime) from taking down this whole file — it just falls
+// through to the REST fallback below for that one call. A static import
+// would remove that isolation. See the resilience note on `adminAuth`.
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 import { initializeApp, getApps, cert, type ServiceAccount } from 'firebase-admin/app';
 import type { Auth } from 'firebase-admin/auth';

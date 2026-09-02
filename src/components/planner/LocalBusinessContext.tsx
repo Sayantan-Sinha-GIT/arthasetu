@@ -64,7 +64,7 @@ export default function LocalBusinessContext({
           <button
             key={s.id}
             type="button"
-            onClick={() => setActiveSeason(s.id as any)}
+            onClick={() => setActiveSeason(s.id as 'summer' | 'monsoon' | 'festive_winter')}
             className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
               activeSeason === s.id
                 ? 'bg-primary text-white shadow-sm'

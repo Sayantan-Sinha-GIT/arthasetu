@@ -12,6 +12,7 @@ import Input from '@/components/ui/Input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAllSchemes } from '@/lib/firestore/schemes';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { Scheme } from '@/types';
 
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -76,9 +77,9 @@ export default function AdminSchemesDirectoryClient() {
         data.message || `Scheme "${targetSchemeToDelete.name}" was permanently deleted.`
       );
       setTargetSchemeToDelete(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Scheme deletion failed:', err);
-      setDeleteErrorMsg(err.message || 'Failed to delete scheme. Please try again.');
+      setDeleteErrorMsg(getErrorMessage(err, 'Failed to delete scheme. Please try again.'));
     } finally {
       setDeleteLoading(false);
     }

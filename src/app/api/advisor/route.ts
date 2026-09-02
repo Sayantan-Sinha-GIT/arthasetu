@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  generateContentStream,
   generateAgentStream,
   GEMINI_MODELS,
   classifyAdvisorQuery,
@@ -12,6 +11,7 @@ import { SEED_SCHEMES } from '@/lib/schemes/seed-data';
 import { savePlan } from '@/lib/firestore/plans';
 import { buildAdvisorSystemPrompt } from '@/lib/prompts/advisor';
 import { updateUserProfile } from '@/lib/firestore/users';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { ChatMessage, UserProfile, PlanInputs, CalculatedValues } from '@/types';
 
 // Explicit maxDuration config per PRD §6.4 for Vercel Hobby plan
@@ -20,10 +20,10 @@ export const maxDuration = 60;
 export function createAdvisorSession(savePlanFn = savePlan) {
   let lastCalculatedPlan: { inputs: PlanInputs; calculatedValues: CalculatedValues } | null = null;
 
-  const toolHandler = async (name: string, args: any, userProfile?: Partial<UserProfile> | null) => {
+  const toolHandler = async (name: string, args: Record<string, unknown>, userProfile?: Partial<UserProfile> | null) => {
       if (name === 'calculateFinancials') {
-        const calculated = calculateFinancialPlan(args);
-        lastCalculatedPlan = { inputs: args as PlanInputs, calculatedValues: calculated };
+        const calculated = calculateFinancialPlan(args as unknown as PlanInputs);
+        lastCalculatedPlan = { inputs: args as unknown as PlanInputs, calculatedValues: calculated };
         
         let plausibilityWarning = undefined;
         if (calculated.monthlyGrossRevenue > calculated.totalInitialCost * 20) {
@@ -53,15 +53,20 @@ export function createAdvisorSession(savePlanFn = savePlan) {
         try {
           const docId = await savePlanFn(userProfile.uid, {
             userId: userProfile.uid,
-            title: args.title || 'Generated Business Plan',
-            businessType: args.businessType || 'Micro-Enterprise',
+            title: (args.title as string) || 'Generated Business Plan',
+            businessType: (args.businessType as string) || 'Micro-Enterprise',
             inputs: lastCalculatedPlan.inputs,
             calculatedValues: lastCalculatedPlan.calculatedValues,
-            aiNarrative: args.narrative,
+            aiNarrative: args.narrative as {
+              executiveSummary: string;
+              keyAssumptions: string[];
+              riskAnalysis: string[];
+              actionableNextSteps: string[];
+            },
           });
           return { success: true, planId: docId, message: 'Plan saved successfully' };
-        } catch (e: any) {
-          return { error: 'Failed to save plan: ' + e.message };
+        } catch (e) {
+          return { error: 'Failed to save plan: ' + getErrorMessage(e) };
         }
       }
       if (name === 'updateProfile') {
@@ -73,8 +78,8 @@ export function createAdvisorSession(savePlanFn = savePlan) {
           // Mutate the local userProfile so subsequent tools in this session use the new data
           Object.assign(userProfile, cleanArgs);
           return { success: true, message: 'Profile updated successfully' };
-        } catch (e: any) {
-          return { error: 'Failed to update profile: ' + e.message };
+        } catch (e) {
+          return { error: 'Failed to update profile: ' + getErrorMessage(e) };
         }
       }
       return { error: 'Unknown tool' };
@@ -128,10 +133,10 @@ export async function POST(req: NextRequest) {
 
     // Format conversation history for Gemini context
     // Format conversation history for Gemini context natively
-    let historyContext: any[] = [];
+    let historyContext: { role: string; parts: { text: string }[] }[] = [];
     if (conversationHistory.length > 0) {
       const recentHistory = conversationHistory.slice(-6);
-      historyContext = recentHistory.map((msg: any) => ({
+      historyContext = recentHistory.map((msg: ChatMessage) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }],
       }));

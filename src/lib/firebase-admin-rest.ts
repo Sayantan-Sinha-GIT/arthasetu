@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export interface DecodedRestToken {
   uid: string;
@@ -46,8 +47,8 @@ function getServiceAccountCredentials(): { projectId: string; clientEmail: strin
       throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY missing required fields (project_id, client_email, private_key)');
     }
     return { projectId, clientEmail, privateKey };
-  } catch (err: any) {
-    throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY: ${err?.message || 'Invalid format'}`);
+  } catch (err) {
+    throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY: ${getErrorMessage(err, 'Invalid format')}`);
   }
 }
 

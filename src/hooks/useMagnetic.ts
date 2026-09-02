@@ -1,24 +1,22 @@
 'use client';
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
 
 export function useMagnetic(strength = 0.25) {
   const ref = useRef<HTMLButtonElement>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  // Lazy initializer (not an effect): only ever affects mouse-driven
+  // magnetic behavior, never the initial rendered markup, so there's no
+  // hydration-mismatch risk in reading it synchronously on first render.
+  const [reducedMotion] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
+  );
   let quality = 'full';
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const net = useNetworkQuality();
     quality = net.quality;
   } catch {}
 
   const isDisabled = reducedMotion || quality !== 'full';
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    }
-  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (isDisabled) return;

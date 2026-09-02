@@ -18,7 +18,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const isAdmin = !!user && !!ADMIN_EMAIL && user.email?.toLowerCase().trim() === ADMIN_EMAIL;
   const { theme, toggleTheme } = useTheme();
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
 
   const isActive = (path: string) => pathname === path;
 

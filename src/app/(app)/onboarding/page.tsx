@@ -13,6 +13,7 @@ import StepBasicInfo from '@/components/onboarding/StepBasicInfo';
 import { getUserProfile, createUserProfile } from '@/lib/firestore/users';
 import { getDistrictsByState } from '@/lib/constants/districts';
 import { validateAddressConsistency, isValidPincode } from '@/lib/constants/pincodes';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { UserProfile } from '@/types';
 
 export default function OnboardingPage() {
@@ -23,7 +24,6 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [legacyDistrict, setLegacyDistrict] = useState<string>('');
 
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     name: '',
@@ -57,17 +57,15 @@ export default function OnboardingPage() {
         const existing = await getUserProfile(user.uid);
         if (existing) {
           let loadedDistrict = existing.district || '';
-          let legacyVal = '';
           if (existing.state && loadedDistrict) {
             const validDistricts = getDistrictsByState(existing.state);
-            if (validDistricts.includes(loadedDistrict)) {
-              // Valid canonical district
-            } else {
-              legacyVal = loadedDistrict;
+            if (!validDistricts.includes(loadedDistrict)) {
+              // Stored district no longer matches the canonical list for this
+              // state (e.g. renamed/reclassified district) — clear it so the
+              // dropdown doesn't show a stale, unselectable value.
               loadedDistrict = '';
             }
           }
-          setLegacyDistrict(legacyVal);
           setFormData((prev) => ({
             ...prev,
             ...existing,
@@ -146,12 +144,16 @@ export default function OnboardingPage() {
       router.push('/dashboard');
       setTimeout(() => {
         if (typeof window !== 'undefined' && window.location.pathname.includes('/onboarding')) {
+          // Deliberate hard-navigation fallback: if router.push above didn't
+          // actually leave /onboarding within 400ms, force it so the user is
+          // never stuck on a completed onboarding form.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = '/dashboard';
         }
       }, 400);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error completing onboarding:', err);
-      setErrors({ global: `Failed to save profile: ${err?.message || 'Please try again.'}` });
+      setErrors({ global: `Failed to save profile: ${getErrorMessage(err, 'Please try again.')}` });
       setSaving(false);
     }
   };
@@ -200,8 +202,6 @@ export default function OnboardingPage() {
               data={formData}
               onChange={updateFormData}
               errors={errors}
-              legacyDistrict={legacyDistrict}
-              onClearLegacyDistrict={() => setLegacyDistrict('')}
             />
 
             {errors.global && (

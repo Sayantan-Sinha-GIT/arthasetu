@@ -327,7 +327,7 @@ export async function fetchPincodeInfo(pincode: string): Promise<PincodeInfo | n
         const postOffices = data[0].PostOffice;
         const state = postOffices[0]?.State || local?.state;
         const district = postOffices[0]?.District || local?.district;
-        const areas = Array.from(new Set(postOffices.map((po: any) => (po.Name || '').trim()).filter(Boolean)));
+        const areas = Array.from(new Set(postOffices.map((po: { Name?: string }) => (po.Name || '').trim()).filter(Boolean)));
 
         if (state && district && areas.length > 0) {
           const resolved: PincodeInfo = { state, district, areas: areas as string[] };
@@ -373,6 +373,21 @@ export function validateAddressConsistency(
     return {
       valid: false,
       reason: `PIN code ${pincode} belongs to ${info.state}, but ${state} was specified.`,
+    };
+  }
+
+  // Normalize district comparison (fuzzy: "Bengaluru Urban" should match "Bengaluru", etc.)
+  const cleanDistrict = district.trim().toLowerCase();
+  const infoDistrict = info.district.trim().toLowerCase();
+  if (
+    cleanDistrict &&
+    cleanDistrict !== infoDistrict &&
+    !cleanDistrict.includes(infoDistrict) &&
+    !infoDistrict.includes(cleanDistrict)
+  ) {
+    return {
+      valid: false,
+      reason: `PIN code ${pincode} belongs to ${info.district}, but ${district} was specified.`,
     };
   }
 

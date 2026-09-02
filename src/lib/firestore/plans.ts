@@ -8,7 +8,6 @@ import {
   query,
   where,
   serverTimestamp,
-  type DocumentData,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Plan } from '@/types';

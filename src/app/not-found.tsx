@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950 px-6">
@@ -15,12 +17,12 @@ export default function NotFound() {
             आप जिस पेज को खोज रहे हैं वह मौजूद नहीं है।
           </p>
         </div>
-        <a
+        <Link
           href="/"
           className="inline-block px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors"
         >
           Go Home / होम पर जाएं
-        </a>
+        </Link>
       </div>
     </div>
   );

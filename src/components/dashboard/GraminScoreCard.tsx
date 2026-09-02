@@ -255,7 +255,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
               <label className="block text-muted font-medium mb-1">{t.graminScore.revenueConsistency}</label>
               <select
                 value={inputs.revenueConsistency}
-                onChange={(e) => setInputs((p) => ({ ...p, revenueConsistency: e.target.value as any }))}
+                onChange={(e) => setInputs((p) => ({ ...p, revenueConsistency: e.target.value as GraminScoreInputs['revenueConsistency'] }))}
                 className="w-full p-2.5 rounded-xl border border-border bg-surface-elevated text-foreground"
               >
                 <option value="stable">{t.graminScore.stable}</option>
@@ -348,7 +348,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
                   <span className="text-muted block text-[10px]">{t.graminScore.lenderType}</span>
                   <select
                     value={loan.lenderType}
-                    onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as any })}
+                    onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as ExistingLoanInput['lenderType'] })}
                     className="w-full p-1.5 rounded-lg border border-border bg-surface text-foreground"
                   >
                     <option value="bank">{t.graminScore.bank}</option>
@@ -372,7 +372,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
                   <span className="text-muted block text-[10px]">{t.graminScore.repaymentStatus}</span>
                   <select
                     value={loan.status}
-                    onChange={(e) => handleUpdateLoan(loan.id, { status: e.target.value as any })}
+                    onChange={(e) => handleUpdateLoan(loan.id, { status: e.target.value as ExistingLoanInput['status'] })}
                     className="w-full p-1.5 rounded-lg border border-border bg-surface text-foreground"
                   >
                     <option value="on_time">{t.graminScore.onTime}</option>

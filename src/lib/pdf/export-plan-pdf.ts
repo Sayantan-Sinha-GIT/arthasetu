@@ -13,7 +13,7 @@ interface ExportPdfOptions {
   profile?: Partial<UserProfile> | null;
   graminScore?: number;
   graminBand?: string;
-  t?: any;
+  t?: unknown;
   language?: string;
 }
 
@@ -162,10 +162,10 @@ export async function generateBankReadyPlanPdf({
   const getT = (key: string, fallback: string) => {
     if (!t) return fallback;
     const keys = key.split('.');
-    let val = t;
+    let val: unknown = t;
     for (const k of keys) {
       if (val && typeof val === 'object' && k in val) {
-        val = val[k];
+        val = (val as Record<string, unknown>)[k];
       } else {
         return fallback;
       }

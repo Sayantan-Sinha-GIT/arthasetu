@@ -6,15 +6,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
 export default function LandingPage() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { quality } = useNetworkQuality();
-  
+
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,

@@ -3,7 +3,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   serverTimestamp,
   collection,
   getDocs,
@@ -14,6 +13,7 @@ import {
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 import { INDIAN_STATES, UNION_TERRITORIES, ALL_INDIAN_REGIONS } from '@/lib/constants/states';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export { INDIAN_STATES, UNION_TERRITORIES, ALL_INDIAN_REGIONS };
 
@@ -247,8 +247,8 @@ export async function deleteUserFirestoreData(userId: string, dbInstance?: any):
     for (const d of plansSnap.docs) {
       await deleteDoc(doc(targetDb, 'plans', d.id));
     }
-  } catch (err: any) {
-    console.error('Failed step 1 (plans):', err.message);
+  } catch (err) {
+    console.error('Failed step 1 (plans):', getErrorMessage(err));
     throw err;
   }
 
@@ -259,8 +259,8 @@ export async function deleteUserFirestoreData(userId: string, dbInstance?: any):
     for (const d of adviceSnap.docs) {
       await deleteDoc(doc(targetDb, 'advice', d.id));
     }
-  } catch (err: any) {
-    console.error('Failed step 2 (advice):', err.message);
+  } catch (err) {
+    console.error('Failed step 2 (advice):', getErrorMessage(err));
     throw err;
   }
 
@@ -268,8 +268,8 @@ export async function deleteUserFirestoreData(userId: string, dbInstance?: any):
   try {
     const userDocRef = doc(targetDb, 'users', userId);
     await deleteDoc(userDocRef);
-  } catch (err: any) {
-    console.error('Failed step 3 (users):', err.message);
+  } catch (err) {
+    console.error('Failed step 3 (users):', getErrorMessage(err));
     throw err;
   }
 }

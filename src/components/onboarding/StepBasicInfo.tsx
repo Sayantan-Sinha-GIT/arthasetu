@@ -13,16 +13,12 @@ interface StepBasicInfoProps {
   data: Partial<UserProfile>;
   onChange: (fields: Partial<UserProfile>) => void;
   errors?: Record<string, string>;
-  legacyDistrict?: string;
-  onClearLegacyDistrict?: () => void;
 }
 
 export default function StepBasicInfo({
   data,
   onChange,
   errors = {},
-  legacyDistrict,
-  onClearLegacyDistrict,
 }: StepBasicInfoProps) {
   const { t, setLanguage, language } = useLanguage();
   const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
@@ -57,7 +53,6 @@ export default function StepBasicInfo({
 
   const handlePinChange = async (pin: string) => {
     const clean = pin.replace(/[^0-9]/g, '').slice(0, 6);
-    if (onClearLegacyDistrict) onClearLegacyDistrict();
 
     if (clean.length === 6 && /^[1-9][0-9]{5}$/.test(clean)) {
       setIsResolving(true);
@@ -85,7 +80,6 @@ export default function StepBasicInfo({
   const handleStateChange = (newState: string) => {
     const validDistricts = getDistrictsByState(newState);
     const shouldClearDistrict = data.district && !validDistricts.includes(data.district);
-    if (onClearLegacyDistrict) onClearLegacyDistrict();
     onChange({
       state: newState,
       district: shouldClearDistrict ? '' : data.district,
@@ -93,7 +87,6 @@ export default function StepBasicInfo({
   };
 
   const handleDistrictChange = (newDistrict: string) => {
-    if (onClearLegacyDistrict) onClearLegacyDistrict();
     onChange({ district: newDistrict });
   };
 

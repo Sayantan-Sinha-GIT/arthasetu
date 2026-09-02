@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyIdTokenRest, deleteUserRest } from '@/lib/firebase-admin-rest';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'sayantansinha2005@gmail.com').trim().toLowerCase();
 
@@ -62,8 +63,8 @@ export async function verifyAdminRequest(req: NextRequest): Promise<AdminVerific
       uid: decoded.uid,
       email,
     };
-  } catch (error: any) {
-    console.error('Admin token verification error:', error?.message || 'Token verification failed');
+  } catch (error) {
+    console.error('Admin token verification error:', getErrorMessage(error, 'Token verification failed'));
     return {
       isAdmin: false,
       error: 'Forbidden: Valid admin credentials required',
@@ -85,8 +86,8 @@ export async function verifyAdminRequest(req: NextRequest): Promise<AdminVerific
 export async function deleteAuthUserSafely(uid: string): Promise<boolean> {
   try {
     return await deleteUserRest(uid);
-  } catch (error: any) {
-    console.error('Auth user deletion error:', error?.message || error);
+  } catch (error) {
+    console.error('Auth user deletion error:', getErrorMessage(error));
     return false;
   }
 }

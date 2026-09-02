@@ -1,20 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Routes that require authentication
-const protectedRoutes = [
-  '/dashboard',
-  '/advisor',
-  '/planner',
-  '/schemes',
-  '/profile',
-  '/onboarding',
-  '/saved-plans',
-  '/saved-advice',
-];
-
-// Routes only for non-authenticated users
-const authRoutes = ['/login', '/signup', '/forgot-password'];
-
 // Admin-only routes
 const adminRoutes = ['/admin'];
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
 import { buildPlannerPrompt } from '@/lib/prompts/planner';
+import { getErrorMessage } from '@/lib/utils/errors';
 import type { PlanInputs, CalculatedValues, UserProfile } from '@/types';
 
 export const maxDuration = 60;
@@ -81,12 +82,12 @@ export async function POST(req: NextRequest) {
       success: true,
       narrative: parsedNarrative,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error generating financial plan narrative:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to generate financial plan narrative',
+        error: getErrorMessage(error, 'Failed to generate financial plan narrative'),
       },
       { status: 500 }
     );
