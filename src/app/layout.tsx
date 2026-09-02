@@ -48,6 +48,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-screen flex flex-col font-sans antialiased">
+        {/*
+          Applies the saved (or system) theme to <html> before first paint.
+          Without it the tree renders light, then ThemeProvider's effect flips
+          it to dark a beat later — a full-page flash in which dark-mode text
+          sits on the light background and is briefly unreadable. It also
+          means the background video mounts against the right theme the first
+          time, instead of fetching the wrong clip and swapping.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('arthasetu-theme');" +
+              "if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}" +
+              "document.documentElement.classList.add(t);}catch(e){}",
+          }}
+        />
         <SmoothScrollProvider>
           <Providers>
             <IntroSplash />

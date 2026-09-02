@@ -410,3 +410,189 @@ body {
   color: var(--color-warning);
   border: 1px solid var(--color-warning);
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   Ambient Background Video (Phase 16)
+   Applied to every route except the homepage, for users who are NOT
+   on Data Saver / minimal network quality and have not asked for
+   reduced motion. All rules are scoped under `.has-bg-video`, a class
+   that PageBackgroundVideo toggles on <html>, so the non-video
+   experience is byte-for-byte unchanged.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* The <html> element paints the page canvas. Normally <body> carries the
+   background colour; when the video is active <body> goes transparent so
+   the fixed, negative-z-index video layer is visible above the canvas. */
+html {
+  background-color: var(--color-background);
+  transition: background-color 0.3s var(--ease-smooth);
+}
+
+.has-bg-video body {
+  background-color: transparent;
+}
+
+/* Page shells that would otherwise paint an opaque colour over the video. */
+.page-shell {
+  background-color: var(--color-background);
+}
+.has-bg-video .page-shell {
+  background-color: transparent;
+}
+
+/* ─── The video layers ─── */
+
+/* An opaque, isolated field to blend against, so the clips composite with
+   the brand background instead of the whole page behind them. */
+.bg-video-wrap {
+  background-color: var(--color-background);
+  isolation: isolate;
+  /* Peak opacity of the visible layer. The component multiplies its
+     crossfade through this, so tuning the strength here never breaks the
+     seamless loop. */
+  --bg-video-opacity: 0.62;
+}
+.dark .bg-video-wrap {
+  /* Dark mode is already damped by the brightness pull-down below. */
+  --bg-video-opacity: 1;
+}
+
+.bg-video-layer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transition: opacity 700ms linear;
+  /* The light clip is dark specks on a flat grey card. Multiply drops the
+     grey entirely (the brightness lift pushes it to white, which multiplies
+     to a no-op) and keeps only the specks, while sepia + a hue nudge turns
+     them into warm saffron motes over the beige ground — texture, not haze.
+     The half-pixel blur softens the specks from "dirt on the screen" into
+     drifting dust. */
+  mix-blend-mode: multiply;
+  filter: sepia(0.8) saturate(1.9) hue-rotate(-14deg) brightness(1.72) contrast(0.95)
+    blur(0.5px);
+}
+
+/* The dark clip is coloured light-streaks on black. Screen makes the black
+   contribute nothing at all, so the streaks glow out of the obsidian with no
+   grey veil. The brightness pull-down is deliberate: the source has a
+   near-white flash frame that screen would otherwise blow out to a full-page
+   white pulse. */
+.dark .bg-video-layer {
+  mix-blend-mode: screen;
+  filter: saturate(1.7) contrast(1.12) brightness(0.5);
+}
+
+/* ─── The scrim ───
+   With the blend modes doing the heavy lifting, this is no longer a veil —
+   just a downward vignette that calms the lower half of the page where body
+   copy and long lists live, plus a warm ember bloom in dark mode. */
+.bg-video-scrim {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-background) 25%, transparent) 60%,
+    color-mix(in srgb, var(--color-background) 55%, transparent) 100%
+  );
+}
+
+.dark .bg-video-scrim {
+  background:
+    radial-gradient(
+      120% 80% at 80% 4%,
+      color-mix(in srgb, var(--color-primary) 9%, transparent) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-background) 30%, transparent) 0%,
+      color-mix(in srgb, var(--color-background) 46%, transparent) 60%,
+      color-mix(in srgb, var(--color-background) 70%, transparent) 100%
+    );
+}
+
+/* Fine grain over the scrim knits video and flat UI into one surface. */
+.bg-video-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ─── Panels over the video ───
+   Cards become frosted glass so the motion reads *through* the layout
+   instead of being boxed out by it — the depth cue in the reference
+   designs. Only Card roots opt in via [data-panel]; modals, dropdowns
+   and menus stay fully opaque for legibility. */
+.has-bg-video [data-panel] {
+  background-color: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+  backdrop-filter: blur(16px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  border-color: color-mix(in srgb, var(--color-border) 70%, transparent);
+  box-shadow:
+    0 1px 0 0 color-mix(in srgb, var(--color-surface-elevated) 60%, transparent) inset,
+    var(--shadow-lg);
+}
+
+.dark.has-bg-video [data-panel],
+.has-bg-video .dark [data-panel] {
+  background-color: color-mix(in srgb, var(--color-surface-elevated) 72%, transparent);
+  border-color: color-mix(in srgb, var(--color-border) 85%, transparent);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.05) inset,
+    var(--shadow-xl);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .has-bg-video [data-panel] {
+    background-color: var(--color-surface-elevated);
+  }
+}
+
+/* ─── Refined glass (navbar, glass cards) ───
+   The old value was a hard white wash that ignored the warm palette. */
+.glass {
+  background: color-mix(in srgb, var(--color-surface-elevated) 78%, transparent);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+}
+.dark .glass {
+  background: color-mix(in srgb, var(--color-surface) 74%, transparent);
+  border: 1px solid rgb(255 255 255 / 0.07);
+}
+
+/* ─── Selection & scrollbar tuned to the brand ─── */
+::selection {
+  background: color-mix(in srgb, var(--color-primary) 26%, transparent);
+  color: var(--color-foreground);
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-primary) 55%, var(--color-muted));
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+.has-bg-video ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* The video is decorative; never let it run for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  .bg-video-layer {
+    display: none;
+  }
+}
+
+/* The ambient orb field is the flat-page substitute for the video; when the
+   video is running, the orbs would only fog it, so they step aside. */
+.has-bg-video [data-ambient] > div:not(.grain-overlay) {
+  display: none;
+}

@@ -4,14 +4,20 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 
 interface Props {
   src: string;
-  overlayClassName?: string;
 }
 
-export default function SeamlessBackgroundVideo({ src, overlayClassName = '' }: Props) {
+/**
+ * Two stacked <video> layers playing the same clip, crossfaded near the end
+ * of each pass so the loop point is invisible. Layer B is only fetched once
+ * layer A is actually playing (it then comes straight from the HTTP cache),
+ * which keeps the initial network burst to a single clip.
+ */
+export default function SeamlessBackgroundVideo({ src }: Props) {
   const videoARef = useRef<HTMLVideoElement>(null);
   const videoBRef = useRef<HTMLVideoElement>(null);
   const [activeIsA, setActiveIsA] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [ready, setReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const crossfadeStartedRef = useRef(false);
 
@@ -81,47 +87,82 @@ export default function SeamlessBackgroundVideo({ src, overlayClassName = '' }: 
     };
   }, [activeIsA, scheduleCrossfade, src]);
 
-  // Resets/reloads the two <video> elements whenever `src` changes — an
-  // imperative sync with the DOM video elements, which needs an effect.
+  // Resets/reloads the two <video> elements whenever `src` changes (theme
+  // switch) — an imperative sync with the DOM video elements.
   useEffect(() => {
-    // reset both layers whenever src changes (theme switch)
     crossfadeStartedRef.current = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveIsA(true);
+    setReady(false);
     videoARef.current?.load();
-    videoBRef.current?.load();
     videoARef.current?.play().catch(() => {});
   }, [src]);
 
+  // Browsers refuse autoplay in hidden or power-saving tabs, and the rejected
+  // promise is silent — so nudge the active layer whenever it could newly be
+  // allowed to run, rather than trusting the `autoPlay` attribute alone.
+  const nudgePlay = useCallback(() => {
+    const el = (activeIsA ? videoARef : videoBRef).current;
+    if (el && el.paused) el.play().catch(() => {});
+  }, [activeIsA]);
+
+  useEffect(() => {
+    nudgePlay();
+    document.addEventListener('visibilitychange', nudgePlay);
+    window.addEventListener('focus', nudgePlay);
+    return () => {
+      document.removeEventListener('visibilitychange', nudgePlay);
+      window.removeEventListener('focus', nudgePlay);
+    };
+  }, [nudgePlay]);
+
+  // Layer A is up and running: fade the stack in, and only now pull layer B
+  // (served from cache) so it is buffered before the first loop point.
+  const handlePlaying = useCallback(() => {
+    setReady(true);
+    const b = videoBRef.current;
+    if (b && b.preload !== 'auto') {
+      b.preload = 'auto';
+      b.load();
+    }
+  }, []);
+
   if (failed || reducedMotion) return null;
 
-  const baseClass = 'fixed inset-0 w-full h-full object-cover transition-opacity duration-700 ease-linear pointer-events-none';
-
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div
+      className="bg-video-wrap fixed inset-0 -z-10 overflow-hidden pointer-events-none"
+      aria-hidden="true"
+    >
       <video
         ref={videoARef}
-        className={`${baseClass} ${activeIsA ? 'opacity-100' : 'opacity-0'}`}
+        className="bg-video-layer"
+        style={{ opacity: ready && activeIsA ? 'var(--bg-video-opacity, 1)' : 0 }}
         muted
         loop
         playsInline
         autoPlay
         preload="auto"
+        onPlaying={handlePlaying}
+        onCanPlay={nudgePlay}
+        onLoadedData={nudgePlay}
         onError={() => setFailed(true)}
       >
         <source src={src} type="video/mp4" />
       </video>
       <video
         ref={videoBRef}
-        className={`${baseClass} ${activeIsA ? 'opacity-0' : 'opacity-100'}`}
+        className="bg-video-layer"
+        style={{ opacity: ready && !activeIsA ? 'var(--bg-video-opacity, 1)' : 0 }}
         muted
         loop
         playsInline
-        preload="auto"
+        preload="none"
       >
         <source src={src} type="video/mp4" />
       </video>
-      <div className={`fixed inset-0 pointer-events-none ${overlayClassName}`} />
+      <div className="bg-video-scrim" />
+      <div className="bg-video-grain" />
     </div>
   );
 }

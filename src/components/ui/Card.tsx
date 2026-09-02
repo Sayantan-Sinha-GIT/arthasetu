@@ -33,6 +33,7 @@ export default function Card({
       onMouseLeave={useTiltEffect ? handleMouseLeave : undefined}
       style={useTiltEffect ? style : undefined}
       onClick={onClick}
+      data-panel={glass ? undefined : ""}
       className={`
         group relative rounded-2xl border border-border
         ${useTiltEffect ? 'tilt-card' : ''}

@@ -6,6 +6,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NetworkQualityProvider, useNetworkQuality } from '@/contexts/NetworkQualityContext';
 import { MotionConfig } from 'framer-motion';
+import PageBackgroundVideo from '@/components/ui/PageBackgroundVideo';
 
 function MotionQualityWrapper({ children }: { children: ReactNode }) {
   const { quality } = useNetworkQuality();
@@ -32,6 +33,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>
+              <PageBackgroundVideo />
               {children}
             </AuthProvider>
           </LanguageProvider>

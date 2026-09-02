@@ -69,7 +69,7 @@ export default function AdminLoginForm() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
+    <main className="page-shell min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md animate-slide-up">
         {/* Header */}
         <div className="text-center mb-8">
