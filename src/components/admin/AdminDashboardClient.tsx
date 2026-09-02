@@ -67,7 +67,10 @@ export default function AdminDashboardClient() {
     }
   };
 
+  // Firestore data fetch on mount — setState calls happen after the awaited
+  // reads resolve, not synchronously in the effect body.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 

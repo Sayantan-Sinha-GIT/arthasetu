@@ -24,11 +24,13 @@ export default function StepBasicInfo({
   const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
   const [isResolving, setIsResolving] = useState(false);
 
-  // Sync initial PIN code resolution on mount or data load
+  // Sync initial PIN code resolution on mount or data load. Needs an effect:
+  // `fetchPincodeInfo` is an async network call.
   useEffect(() => {
     if (data.pinCode && /^[1-9][0-9]{5}$/.test(data.pinCode)) {
       const direct = lookupPincode(data.pinCode);
       if (direct) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setResolvedInfo(direct);
       }
       fetchPincodeInfo(data.pinCode).then((info) => {

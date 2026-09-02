@@ -63,8 +63,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const [viewYear, setViewYear] = useState<number>(initialYear);
   const [viewMonth, setViewMonth] = useState<number>(initialMonth);
 
-  // Sync view when value changes externally
-  useEffect(() => {
+  // Sync view when `value` changes externally. Adjusted during render (React's
+  // recommended pattern for "state derived from a prop") rather than in an
+  // effect, since this has no async/subscription component — see
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (value) {
       const d = new Date(value + 'T00:00:00');
       if (!isNaN(d.getTime())) {
@@ -72,7 +77,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         setViewMonth(d.getMonth());
       }
     }
-  }, [value]);
+  }
 
   // Close calendar popover on outside click
   useEffect(() => {

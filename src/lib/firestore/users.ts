@@ -9,6 +9,7 @@ import {
   query,
   where,
   deleteDoc,
+  type Firestore,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
@@ -65,8 +66,8 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 /**
  * Strip all undefined keys recursively to prevent Firestore 'Unsupported field value: undefined' errors
  */
-export function sanitizeFirestoreObject<T extends Record<string, any>>(obj: T): T {
-  const clean: Record<string, any> = {};
+export function sanitizeFirestoreObject<T extends Record<string, unknown>>(obj: T): T {
+  const clean: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
       if (
@@ -77,7 +78,7 @@ export function sanitizeFirestoreObject<T extends Record<string, any>>(obj: T): 
         !('_methodName' in value) &&
         !('toMillis' in value)
       ) {
-        clean[key] = sanitizeFirestoreObject(value);
+        clean[key] = sanitizeFirestoreObject(value as Record<string, unknown>);
       } else {
         clean[key] = value;
       }
@@ -238,7 +239,7 @@ export function calculateProfileCompleteness(profile: Partial<UserProfile> | nul
  * - all plans where userId == userId
  * - all advice where userId == userId
  */
-export async function deleteUserFirestoreData(userId: string, dbInstance?: any): Promise<void> {
+export async function deleteUserFirestoreData(userId: string, dbInstance?: Firestore): Promise<void> {
   const targetDb = dbInstance || db;
   // 1. Delete all user plans
   try {

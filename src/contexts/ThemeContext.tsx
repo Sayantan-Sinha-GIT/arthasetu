@@ -16,7 +16,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
+  // Deferred to an effect (rather than a lazy useState initializer) so
+  // server and first client render both render 'light', avoiding a
+  // hydration mismatch on the `<html>` class the second effect below applies.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const saved = localStorage.getItem('arthasetu-theme') as Theme | null;
     if (saved && (saved === 'light' || saved === 'dark')) {

@@ -13,6 +13,16 @@ interface NetworkQualityContextType {
 
 const NetworkQualityContext = createContext<NetworkQualityContextType | undefined>(undefined);
 
+// Minimal shape of the (still non-standard, Chromium-only) Network
+// Information API — not in the DOM lib types.
+interface INetworkInformation {
+  effectiveType?: string;
+  saveData?: boolean;
+  downlink?: number;
+  addEventListener?: (type: 'change', listener: () => void) => void;
+  removeEventListener?: (type: 'change', listener: () => void) => void;
+}
+
 function classify(
   effectiveType: string | undefined,
   saveData: boolean | undefined,
@@ -28,18 +38,23 @@ function classify(
 export function NetworkQualityProvider({ children }: { children: ReactNode }) {
   const [detected, setDetected] = useState<NetworkQuality>('full');
   const [manualOverride, setManualOverrideState] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [showAutoToast, setShowAutoToast] = useState(false);
 
+  // Reads localStorage/the Network Information API and (in the fallback
+  // branch) fetches a probe request — all client-only, and `detected`/
+  // `manualOverride` gate UI behavior across the app, so this has to stay an
+  // effect rather than a lazy initializer to avoid a hydration mismatch.
   useEffect(() => {
-    setMounted(true);
     const saved = localStorage.getItem('arthasetu-data-saver');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved === 'true') setManualOverrideState(true);
 
-    const conn =
-      (navigator as any).connection ||
-      (navigator as any).mozConnection ||
-      (navigator as any).webkitConnection;
+    const nav = navigator as Navigator & {
+      connection?: INetworkInformation;
+      mozConnection?: INetworkInformation;
+      webkitConnection?: INetworkInformation;
+    };
+    const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
 
     const evaluate = (q: NetworkQuality) => {
       setDetected(q);
@@ -82,7 +97,8 @@ export function NetworkQualityProvider({ children }: { children: ReactNode }) {
 
   const setManualOverride = (v: boolean) => {
     setManualOverrideState(v);
-    if (mounted) localStorage.setItem('arthasetu-data-saver', String(v));
+    // Only ever called from a user-triggered browser event, so window/localStorage are always available here.
+    localStorage.setItem('arthasetu-data-saver', String(v));
   };
 
   const quality: NetworkQuality = manualOverride ? 'minimal' : detected;

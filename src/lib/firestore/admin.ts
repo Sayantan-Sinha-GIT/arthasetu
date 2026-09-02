@@ -83,7 +83,7 @@ export async function getAllUpdateHistory(): Promise<SchemeUpdateRecord[]> {
   }
 }
 
-function setNestedProperty(obj: Record<string, any>, path: string, value: any) {
+function setNestedProperty(obj: Record<string, unknown>, path: string, value: unknown) {
   const parts = path.split('.');
   let current = obj;
   for (let i = 0; i < parts.length - 1; i++) {
@@ -91,7 +91,7 @@ function setNestedProperty(obj: Record<string, any>, path: string, value: any) {
     if (!current[part] || typeof current[part] !== 'object') {
       current[part] = {};
     }
-    current = current[part];
+    current = current[part] as Record<string, unknown>;
   }
   current[parts[parts.length - 1]] = value;
 }
@@ -135,7 +135,7 @@ export async function approveSchemeUpdate(
 
       await setDoc(schemeDocRef, cleanMerged, { merge: true });
     } else {
-      const newFields: Record<string, any> = {};
+      const newFields: Record<string, unknown> = {};
       for (const [key, valueObj] of Object.entries(updateData.proposedChanges)) {
         setNestedProperty(newFields, key, valueObj.new);
       }

@@ -3,10 +3,39 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { LANGUAGE_BCP47_MAP } from './useSpeechSynthesis';
 
-// Declare Web Speech API interface for TypeScript
+// Minimal Web Speech API surface used here — the DOM lib doesn't ship types
+// for this API, and browser vendors haven't converged on a shared shape, so
+// we declare just what we touch rather than pulling in a third-party types
+// package for a handful of fields.
+interface ISpeechRecognitionResult {
+  isFinal: boolean;
+  [index: number]: { transcript: string };
+}
+interface ISpeechRecognitionEvent {
+  resultIndex: number;
+  results: { length: number; [index: number]: ISpeechRecognitionResult };
+}
+interface ISpeechRecognitionErrorEvent {
+  error: string;
+}
+interface ISpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  lang: string;
+  onstart: (() => void) | null;
+  onresult: ((event: ISpeechRecognitionEvent) => void) | null;
+  onerror: ((event: ISpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+type SpeechRecognitionConstructor = new () => ISpeechRecognition;
+
 interface IWindow extends Window {
-  SpeechRecognition?: any;
-  webkitSpeechRecognition?: any;
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
 }
 
 interface UseSpeechRecognitionOptions {
@@ -27,7 +56,7 @@ export function useSpeechRecognition({
   const [error, setError] = useState<string | null>(null);
   const [isPermissionDenied, setIsPermissionDenied] = useState(false);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const onResultRef = useRef(onResult);
   const onErrorRef = useRef(onError);
 
@@ -36,12 +65,15 @@ export function useSpeechRecognition({
     onErrorRef.current = onError;
   });
 
-  // Check browser support on client mount
+  // Check browser support on client mount. Deferred to an effect (rather than
+  // a lazy useState initializer) so server and first client render both start
+  // `false`, avoiding a hydration mismatch on whatever UI this flag gates.
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const win = window as IWindow;
       const SpeechRecognitionClass = win.SpeechRecognition || win.webkitSpeechRecognition;
       if (SpeechRecognitionClass) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsSupported(true);
       }
     }
@@ -112,7 +144,7 @@ export function useSpeechRecognition({
         setIsListening(true);
       };
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: ISpeechRecognitionEvent) => {
         let currentInterim = '';
         let currentFinal = '';
 
@@ -136,7 +168,7 @@ export function useSpeechRecognition({
         }
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: ISpeechRecognitionErrorEvent) => {
         console.warn('Speech recognition error event:', event.error);
         let errorMsg = 'An error occurred during speech recognition.';
 

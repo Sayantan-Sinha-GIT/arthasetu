@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Type, type Tool } from '@google/genai';
 import {
   generateAgentStream,
   GEMINI_MODELS,
@@ -143,27 +144,27 @@ export async function POST(req: NextRequest) {
     }
     historyContext.push({ role: 'user', parts: [{ text: message }] });
 
-    const tools = [
+    const tools: Tool[] = [
       {
         functionDeclarations: [
           {
             name: 'calculateFinancials',
             description: 'Calculates project viability, funding gap, and loan EMI deterministically based on business inputs. Call this tool when the user asks for financial estimates, project costs, or viability of a business idea.',
             parameters: {
-              type: 'OBJECT',
+              type: Type.OBJECT,
               properties: {
-                businessType: { type: 'STRING', description: 'Type of business (e.g. Tailoring, Dairy, Grocery)' },
-                planType: { type: 'STRING', description: '"startup" or "existing_expansion"' },
-                equipmentCost: { type: 'NUMBER', description: 'Cost of machinery or equipment (INR)' },
-                setupCost: { type: 'NUMBER', description: 'Cost of shop setup/shed (INR)' },
-                initialInventory: { type: 'NUMBER', description: 'Initial stock/raw materials cost (INR)' },
-                workingCapitalReserve: { type: 'NUMBER', description: 'Reserve cash (INR)' },
-                availableSavings: { type: 'NUMBER', description: 'User\'s available savings/budget (INR)' },
-                unitPrice: { type: 'NUMBER', description: 'Average price per unit/customer (INR)' },
-                unitsSoldPerMonth: { type: 'NUMBER', description: 'Expected units/customers per month' },
-                monthlyRawMaterials: { type: 'NUMBER', description: 'Monthly cost of raw materials (INR)' },
-                monthlyRentUtilities: { type: 'NUMBER', description: 'Monthly rent and utilities (INR)' },
-                monthlyLabor: { type: 'NUMBER', description: 'Monthly labor cost (INR)' },
+                businessType: { type: Type.STRING, description: 'Type of business (e.g. Tailoring, Dairy, Grocery)' },
+                planType: { type: Type.STRING, description: '"startup" or "existing_expansion"' },
+                equipmentCost: { type: Type.NUMBER, description: 'Cost of machinery or equipment (INR)' },
+                setupCost: { type: Type.NUMBER, description: 'Cost of shop setup/shed (INR)' },
+                initialInventory: { type: Type.NUMBER, description: 'Initial stock/raw materials cost (INR)' },
+                workingCapitalReserve: { type: Type.NUMBER, description: 'Reserve cash (INR)' },
+                availableSavings: { type: Type.NUMBER, description: 'User\'s available savings/budget (INR)' },
+                unitPrice: { type: Type.NUMBER, description: 'Average price per unit/customer (INR)' },
+                unitsSoldPerMonth: { type: Type.NUMBER, description: 'Expected units/customers per month' },
+                monthlyRawMaterials: { type: Type.NUMBER, description: 'Monthly cost of raw materials (INR)' },
+                monthlyRentUtilities: { type: Type.NUMBER, description: 'Monthly rent and utilities (INR)' },
+                monthlyLabor: { type: Type.NUMBER, description: 'Monthly labor cost (INR)' },
               }
             }
           },
@@ -171,7 +172,7 @@ export async function POST(req: NextRequest) {
             name: 'matchSchemes',
             description: 'Finds eligible government schemes for the user based on their profile. Call this tool when the user asks about government schemes, loans, subsidies, or financial assistance.',
             parameters: {
-              type: 'OBJECT',
+              type: Type.OBJECT,
               properties: {}
             }
           },
@@ -179,18 +180,18 @@ export async function POST(req: NextRequest) {
             name: 'saveGeneratedPlan',
             description: 'Saves a completed business plan to the user\'s profile. Call this ONLY after the user explicitly confirms they want to save the plan in response to your question "Should I save this plan for you?".',
             parameters: {
-              type: 'OBJECT',
+              type: Type.OBJECT,
               properties: {
-                title: { type: 'STRING', description: 'A short, descriptive title for the business plan' },
-                businessType: { type: 'STRING', description: 'Type of business' },
+                title: { type: Type.STRING, description: 'A short, descriptive title for the business plan' },
+                businessType: { type: Type.STRING, description: 'Type of business' },
                 narrative: {
-                  type: 'OBJECT',
+                  type: Type.OBJECT,
                   description: 'Qualitative analysis for the plan.',
                   properties: {
-                    executiveSummary: { type: 'STRING' },
-                    keyAssumptions: { type: 'ARRAY', items: { type: 'STRING' } },
-                    riskAnalysis: { type: 'ARRAY', items: { type: 'STRING' } },
-                    actionableNextSteps: { type: 'ARRAY', items: { type: 'STRING' } }
+                    executiveSummary: { type: Type.STRING },
+                    keyAssumptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    riskAnalysis: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    actionableNextSteps: { type: Type.ARRAY, items: { type: Type.STRING } }
                   }
                 }
               }
@@ -200,14 +201,14 @@ export async function POST(req: NextRequest) {
             name: 'updateProfile',
             description: 'Updates the user\'s profile details automatically when they share new information like budget, business type, or experience.',
             parameters: {
-              type: 'OBJECT',
+              type: Type.OBJECT,
               properties: {
-                businessType: { type: 'STRING' },
-                businessCategory: { type: 'STRING' },
-                availableCapital: { type: 'NUMBER' },
-                desiredFunding: { type: 'NUMBER' },
-                businessExperience: { type: 'STRING' },
-                businessStatus: { type: 'STRING', description: '"existing" or "planning"' }
+                businessType: { type: Type.STRING },
+                businessCategory: { type: Type.STRING },
+                availableCapital: { type: Type.NUMBER },
+                desiredFunding: { type: Type.NUMBER },
+                businessExperience: { type: Type.STRING },
+                businessStatus: { type: Type.STRING, description: '"existing" or "planning"' }
               }
             }
           }

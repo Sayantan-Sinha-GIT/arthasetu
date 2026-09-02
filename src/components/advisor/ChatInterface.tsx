@@ -42,14 +42,19 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
     return defaultSpeechLanguage;
   });
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(SPEECH_LANG_KEY);
-      if (!saved && currentMeta?.speechCode) {
-        setSpeechLanguage(currentMeta.speechCode);
-      }
+  // Re-sync speechLanguage when the UI language's speech code changes (unless
+  // the user has an explicit saved preference). Adjusted during render
+  // (React's recommended pattern for "state derived from a prop") rather
+  // than in an effect — by the time `currentMeta.speechCode` first differs
+  // from its previous value this is always a post-mount, client-side render,
+  // so the localStorage read here is safe.
+  const [prevSpeechCode, setPrevSpeechCode] = useState(currentMeta?.speechCode);
+  if (currentMeta?.speechCode !== prevSpeechCode) {
+    setPrevSpeechCode(currentMeta?.speechCode);
+    if (typeof window !== 'undefined' && currentMeta?.speechCode && !localStorage.getItem(SPEECH_LANG_KEY)) {
+      setSpeechLanguage(currentMeta.speechCode);
     }
-  }, [currentMeta?.speechCode]);
+  }
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -103,6 +108,10 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   // variants) — and depending on `language` here (rather than the derived
   // `isHindi` boolean) means switching between any two languages, not just
   // to/from Hindi, correctly refreshes the greeting.
+  // Seeds the first message once userProfile/language are available, and
+  // re-seeds the greeting on a language switch. Has to stay an effect: the
+  // message carries `new Date()`, which must not be computed at render time
+  // (that would differ between server and client and break hydration).
   useEffect(() => {
     if (messages.length === 0) {
       const userName = userProfile?.name || '';
@@ -115,6 +124,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
 
       const greeting = userName ? greetingNamed : t.advisor.chat.greetingAnon;
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages([
         {
           id: 'welcome-1',

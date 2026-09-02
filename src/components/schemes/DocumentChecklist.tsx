@@ -85,12 +85,16 @@ export default function DocumentChecklist({ scheme, className = '' }: DocumentCh
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<'all' | 'identity' | 'business' | 'financial' | 'social'>('all');
 
-  // Load from local storage
+  // Load from local storage. Deferred to an effect (rather than a lazy
+  // useState initializer) so server and first client render both start with
+  // nothing checked, avoiding a hydration mismatch; also needs to re-run
+  // whenever `storageKey` changes (navigating between scheme pages).
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedChecked = localStorage.getItem(`${storageKey}_checked`);
       if (savedChecked) {
         try {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setCheckedIds(JSON.parse(savedChecked));
         } catch {}
       }

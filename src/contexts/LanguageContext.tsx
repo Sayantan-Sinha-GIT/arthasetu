@@ -22,9 +22,13 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<string>('en');
 
+  // Deferred to an effect (rather than a lazy useState initializer) so
+  // server and first client render both render in English, avoiding a
+  // hydration mismatch across every piece of translated text on the page.
   useEffect(() => {
     const saved = localStorage.getItem('arthasetu-language');
     if (saved && SUPPORTED_LANGUAGES.some((l) => l.code === saved)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLanguageState(saved);
     }
   }, []);

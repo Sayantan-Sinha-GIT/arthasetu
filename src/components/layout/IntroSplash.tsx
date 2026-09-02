@@ -16,6 +16,9 @@ export default function IntroSplash() {
   const [showSplash, setShowSplash] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
+  // Deferred to an effect (rather than a lazy useState initializer) so server
+  // and first client render both start with the splash hidden, avoiding a
+  // hydration mismatch — it only ever appears after mount.
   useEffect(() => {
     try {
       // 1. If already shown in this tab session, do not render
@@ -32,6 +35,7 @@ export default function IntroSplash() {
       }
 
       // 3. Trigger initial display
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowSplash(true);
 
       // 4. Begin fade out after 750ms

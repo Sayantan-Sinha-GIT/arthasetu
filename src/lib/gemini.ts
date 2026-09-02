@@ -2,7 +2,7 @@
 // All Gemini calls must go through this module using the official @google/genai SDK.
 // NEVER import this from client components — the API key must stay server-side.
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, type Content, type Tool, type FunctionCall } from '@google/genai';
 import { getErrorMessage } from '@/lib/utils/errors';
 
 export const GEMINI_MODELS = {
@@ -85,7 +85,7 @@ export async function generateContent(
 export async function* generateContentStream(
   model: string,
   systemInstruction: string,
-  userMessage: string | any[],
+  userMessage: string | Content[],
   options?: {
     temperature?: number;
     maxOutputTokens?: number;
@@ -131,9 +131,9 @@ export async function* generateContentStream(
 export async function* generateAgentStream(
   model: string,
   systemInstruction: string,
-  userMessage: string | any[],
-  tools: any[],
-  toolHandler: (name: string, args: any) => Promise<any>,
+  userMessage: string | Content[],
+  tools: Tool[],
+  toolHandler: (name: string, args: Record<string, unknown>) => Promise<unknown>,
   options?: {
     temperature?: number;
     maxOutputTokens?: number;
@@ -142,7 +142,7 @@ export async function* generateAgentStream(
 ): AsyncGenerator<string> {
   const client = getClient();
 
-  const history: any[] = typeof userMessage === 'string'
+  const history: Content[] = typeof userMessage === 'string'
     ? [{ role: 'user', parts: [{ text: userMessage }] }]
     : userMessage;
 
@@ -168,7 +168,7 @@ export async function* generateAgentStream(
     let maxIterations = 5;
     while (maxIterations > 0) {
       maxIterations--;
-      const functionCalls: any[] = [];
+      const functionCalls: FunctionCall[] = [];
       for await (const chunk of activeStream) {
         if (chunk.functionCalls && chunk.functionCalls.length > 0) {
           functionCalls.push(...chunk.functionCalls);
@@ -185,16 +185,21 @@ export async function* generateAgentStream(
       // Execute all function calls returned in this turn
       const responses = await Promise.all(
         functionCalls.map(async (call) => {
-          let result: any;
+          let result: unknown;
           try {
-            result = await toolHandler(call.name, call.args);
+            result = await toolHandler(call.name ?? '', call.args ?? {});
           } catch (err) {
             result = { error: getErrorMessage(err) };
           }
           return {
             functionResponse: {
               name: call.name,
-              response: result,
+              // The SDK's FunctionResponse type is stricter (Record<string,
+              // unknown>) than what toolHandler can actually return (e.g.
+              // matchSchemes returns an array) — the Gemini API itself
+              // accepts any JSON value here, so this cast doesn't change
+              // what's sent, just widens the compile-time type to match.
+              response: result as Record<string, unknown>,
               id: call.id,
             },
           };
@@ -312,8 +317,8 @@ async function retryWithBackoff<T>(
          error.message.includes('RESOURCE_EXHAUSTED') ||
          error.message.includes('Too Many Requests') ||
          error.message.includes('high demand') ||
-         (error as any)?.status === 429 ||
-         (error as any)?.status === 503);
+         (error as { status?: number })?.status === 429 ||
+         (error as { status?: number })?.status === 503);
 
       if (isTransient && attempt < retries) {
         const delay = BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 500;

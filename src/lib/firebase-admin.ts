@@ -45,7 +45,13 @@ function getServiceAccount(): ServiceAccount {
     raw = raw.slice(1, -1);
   }
   try {
-    const sa: any = JSON.parse(raw);
+    // Service account JSON as downloaded from the Firebase console uses
+    // snake_case; some tooling re-serializes it to camelCase, so accept both.
+    const sa: {
+      privateKey?: string; private_key?: string;
+      projectId?: string; project_id?: string;
+      clientEmail?: string; client_email?: string;
+    } = JSON.parse(raw);
     const privateKey = (sa.privateKey || sa.private_key || '').replace(/\\n/g, '\n');
     const projectId = sa.projectId || sa.project_id;
     const clientEmail = sa.clientEmail || sa.client_email;
@@ -123,7 +129,7 @@ export const adminAuth = new Proxy({} as Auth, {
         } catch {
           const user = await getUserRest(uid);
           if (!user) {
-            const err: any = new Error(`No user record found for ${uid}`);
+            const err = new Error(`No user record found for ${uid}`) as Error & { code: string };
             err.code = 'auth/user-not-found';
             throw err;
           }
@@ -141,7 +147,7 @@ export const adminAuth = new Proxy({} as Auth, {
         } catch {
           const user = await getUserByEmailRest(email);
           if (!user) {
-            const err: any = new Error(`No user record found for email ${email}`);
+            const err = new Error(`No user record found for email ${email}`) as Error & { code: string };
             err.code = 'auth/user-not-found';
             throw err;
           }
@@ -151,7 +157,7 @@ export const adminAuth = new Proxy({} as Auth, {
     }
 
     if (prop === 'setCustomUserClaims') {
-      return async (uid: string, customClaims: Record<string, any>) => {
+      return async (uid: string, customClaims: Record<string, unknown>) => {
         try {
           ensureInitialized();
           const { getAuth: resolveAuth } = require('firebase-admin/auth');
@@ -166,7 +172,7 @@ export const adminAuth = new Proxy({} as Auth, {
     ensureInitialized();
     const { getAuth: resolveAuth } = require('firebase-admin/auth');
     const authInstance = resolveAuth();
-    const val = (authInstance as any)[prop];
+    const val = authInstance[prop];
     return typeof val === 'function' ? val.bind(authInstance) : val;
   },
 });
@@ -176,7 +182,7 @@ export const adminDb = new Proxy({} as Firestore, {
     ensureInitialized();
     const { getFirestore: resolveDb } = require('firebase-admin/firestore');
     const dbInstance = resolveDb();
-    const val = (dbInstance as any)[prop];
+    const val = dbInstance[prop];
     return typeof val === 'function' ? val.bind(dbInstance) : val;
   },
 });

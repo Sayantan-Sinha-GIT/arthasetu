@@ -15,8 +15,13 @@ export default function SeamlessBackgroundVideo({ src, overlayClassName = '' }: 
   const [reducedMotion, setReducedMotion] = useState(false);
   const crossfadeStartedRef = useRef(false);
 
+  // Deferred to an effect (rather than a lazy useState initializer) so
+  // server and first client render both render the video, avoiding a
+  // hydration mismatch — `reducedMotion` gates whether we render at all
+  // (see below). Also subscribes to live changes, which needs an effect regardless.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReducedMotion(mq.matches);
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mq.addEventListener('change', handler);
@@ -76,9 +81,12 @@ export default function SeamlessBackgroundVideo({ src, overlayClassName = '' }: 
     };
   }, [activeIsA, scheduleCrossfade, src]);
 
+  // Resets/reloads the two <video> elements whenever `src` changes — an
+  // imperative sync with the DOM video elements, which needs an effect.
   useEffect(() => {
     // reset both layers whenever src changes (theme switch)
     crossfadeStartedRef.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveIsA(true);
     videoARef.current?.load();
     videoBRef.current?.load();

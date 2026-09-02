@@ -65,9 +65,12 @@ export function useSpeechSynthesis() {
 
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Load available voices
+  // Load available voices. Feature-detection + the voiceschanged subscription
+  // both need to run client-side only, so this stays an effect (deferred to
+  // avoid a hydration mismatch, matching useSpeechRecognition's isSupported).
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSupported(true);
 
       const updateVoices = () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useState, useEffect, type InputHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Translations } from '@/i18n';
 
@@ -301,12 +301,17 @@ export function NumberInput({
   const [displayValue, setDisplayValue] = useState<string>(() => formatValue(value));
   const [isFocused, setIsFocused] = useState(false);
 
-  // Sync external value changes when not actively typing
-  useEffect(() => {
+  // Sync external value changes when not actively typing. Adjusted during
+  // render (React's recommended pattern for "state derived from a prop")
+  // rather than in an effect — focus-loss resync is already handled
+  // explicitly by handleBlur below, so this only needs to react to `value`.
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (!isFocused) {
       setDisplayValue(formatValue(value));
     }
-  }, [value, isFocused]);
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let raw = e.target.value;

@@ -78,11 +78,15 @@ export default function SchemeDeadlinesCard() {
   const { t } = useLanguage();
   const [reminders, setReminders] = useState<string[]>([]);
 
+  // Deferred to an effect (rather than a lazy useState initializer) so
+  // server and first client render both start with an empty list, avoiding
+  // a hydration mismatch against the reminder-toggle UI below.
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('arthasetu_scheme_reminders');
       if (saved) {
         try {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setReminders(JSON.parse(saved));
         } catch {}
       }

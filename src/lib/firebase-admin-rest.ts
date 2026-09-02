@@ -7,8 +7,8 @@ export interface DecodedRestToken {
   email_verified?: boolean;
   admin?: boolean;
   role?: string;
-  claims: Record<string, any>;
-  [key: string]: any;
+  claims: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export interface RestUserRecord {
@@ -17,7 +17,7 @@ export interface RestUserRecord {
   emailVerified?: boolean;
   displayName?: string;
   disabled?: boolean;
-  customClaims?: Record<string, any>;
+  customClaims?: Record<string, unknown>;
   createdAt?: string;
   lastLoginAt?: string;
 }
@@ -142,7 +142,7 @@ export async function verifyIdTokenRest(idToken: string): Promise<DecodedRestTok
     throw new Error('Invalid ID token: No user profile found');
   }
 
-  let claims: Record<string, any> = {};
+  let claims: Record<string, unknown> = {};
   if (user.customAttributes) {
     try {
       claims = JSON.parse(user.customAttributes);
@@ -156,7 +156,7 @@ export async function verifyIdTokenRest(idToken: string): Promise<DecodedRestTok
     email: user.email ? user.email.trim().toLowerCase() : undefined,
     email_verified: Boolean(user.emailVerified),
     admin: Boolean(claims.admin === true || claims.role === 'admin'),
-    role: claims.role || (claims.admin ? 'admin' : undefined),
+    role: (typeof claims.role === 'string' ? claims.role : undefined) || (claims.admin ? 'admin' : undefined),
     claims,
     ...claims,
   };
@@ -224,7 +224,7 @@ export async function getUserRest(uid: string): Promise<RestUserRecord | null> {
   const user = data.users?.[0];
   if (!user) return null;
 
-  let customClaims: Record<string, any> = {};
+  let customClaims: Record<string, unknown> = {};
   if (user.customAttributes) {
     try {
       customClaims = JSON.parse(user.customAttributes);
@@ -267,7 +267,7 @@ export async function getUserByEmailRest(email: string): Promise<RestUserRecord 
   const user = data.users?.[0];
   if (!user) return null;
 
-  let customClaims: Record<string, any> = {};
+  let customClaims: Record<string, unknown> = {};
   if (user.customAttributes) {
     try {
       customClaims = JSON.parse(user.customAttributes);
@@ -289,7 +289,7 @@ export async function getUserByEmailRest(email: string): Promise<RestUserRecord 
 /**
  * Sets custom claims on a user using Google Identity Toolkit REST API.
  */
-export async function setCustomUserClaimsRest(uid: string, claims: Record<string, any>): Promise<void> {
+export async function setCustomUserClaimsRest(uid: string, claims: Record<string, unknown>): Promise<void> {
   const { projectId } = getServiceAccountCredentials();
   const accessToken = await getGoogleOAuthAccessToken();
 
