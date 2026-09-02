@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Card from '@/components/ui/Card';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SchemeDeadlineItem {
   id: string;
@@ -74,6 +75,7 @@ const SCHEME_DEADLINES: SchemeDeadlineItem[] = [
 ];
 
 export default function SchemeDeadlinesCard() {
+  const { t } = useLanguage();
   const [reminders, setReminders] = useState<string[]>([]);
 
   useEffect(() => {
@@ -108,14 +110,14 @@ export default function SchemeDeadlinesCard() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">⏳</span>
             <h3 className="text-xl font-display font-bold text-foreground tracking-tight uppercase">
-              Government Scheme Application Cycles
+              {t.dashboard.schemeDeadlinesTitle}
             </h3>
             <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 uppercase tracking-widest">
-              Example Cycles
+              {t.dashboard.exampleCyclesBadge}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-2 font-serif">
-            Overview of central and state scheme subsidy cycles to plan your application timeline
+            {t.dashboard.schemeDeadlinesDesc}
           </p>
         </div>
 
@@ -123,7 +125,7 @@ export default function SchemeDeadlinesCard() {
           href="/schemes"
           className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1 self-start sm:self-auto uppercase tracking-widest"
         >
-          <span>View All Schemes</span>
+          <span>{t.dashboard.viewAllSchemesLink}</span>
           <span>→</span>
         </Link>
       </div>
@@ -133,10 +135,10 @@ export default function SchemeDeadlinesCard() {
         <span className="text-base shrink-0">ℹ️</span>
         <div>
           <p className="font-bold text-xs uppercase tracking-[0.15em]">
-            Illustrative Example Cycle — Dates Are Indicative, Not Live-Tracked
+            {t.dashboard.disclaimerTitle}
           </p>
           <p className="mt-1 text-sm opacity-90 font-serif">
-            Confirm the actual current deadline on each scheme’s official portal before applying.
+            {t.dashboard.disclaimerDesc}
           </p>
         </div>
       </div>
@@ -182,10 +184,10 @@ export default function SchemeDeadlinesCard() {
                     `}
                   >
                     {item.status === 'closing_soon'
-                      ? `Example: ~${item.daysRemaining}d typical cycle`
+                      ? t.dashboard.typicalCycle.replace('{{days}}', item.daysRemaining.toString())
                       : item.status === 'open'
-                      ? `Example: ~${item.daysRemaining}d typical window`
-                      : 'Rolling / Continuous Window'
+                      ? t.dashboard.typicalWindow.replace('{{days}}', item.daysRemaining.toString())
+                      : t.dashboard.rollingWindow
                     }
                   </span>
                 </div>
@@ -215,7 +217,7 @@ export default function SchemeDeadlinesCard() {
                   `}
                 >
                   <span>{hasReminder ? '🔔' : '🔕'}</span>
-                  <span>{hasReminder ? 'Reminder Set' : 'Set Reminder'}</span>
+                  <span>{hasReminder ? t.dashboard.reminderSet : t.dashboard.setReminder}</span>
                 </button>
 
                 {item.portalUrl ? (
@@ -225,7 +227,7 @@ export default function SchemeDeadlinesCard() {
                     rel="noopener noreferrer"
                     className="text-primary font-bold hover:underline inline-flex items-center gap-1"
                   >
-                    <span>Official Portal</span>
+                    <span>{t.dashboard.officialPortal}</span>
                     <span>↗</span>
                   </a>
                 ) : (
@@ -233,7 +235,7 @@ export default function SchemeDeadlinesCard() {
                     href={item.schemeLink}
                     className="text-primary font-bold hover:underline inline-flex items-center gap-1"
                   >
-                    <span>Read Details</span>
+                    <span>{t.dashboard.readDetails}</span>
                     <span>→</span>
                   </Link>
                 )}

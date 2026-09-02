@@ -110,9 +110,13 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
 
         <div className="flex flex-wrap items-center gap-3">
           <TextToSpeechButton
-            text={`Your Gramin Credit Readiness Score is ${scoreResult.score} out of 900. Classification is ${scoreResult.band}. ${scoreResult.breakdown.cashFlowHealth.rationale}. ${scoreResult.breakdown.capitalAdequacy.rationale}.`}
+            text={t.graminScore.ttsSummary
+              .replace('{{score}}', scoreResult.score.toString())
+              .replace('{{band}}', scoreResult.band)
+              .replace('{{cashFlowRationale}}', scoreResult.breakdown.cashFlowHealth.rationale)
+              .replace('{{capitalRationale}}', scoreResult.breakdown.capitalAdequacy.rationale)}
             size="sm"
-            label="Read Score"
+            label={t.graminScore.readScore}
           />
 
           <Button
@@ -163,9 +167,9 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
 
           {scoreResult.isPartialData && (
             <div className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-500/10 p-2 rounded-xl space-y-1">
-              <p>ℹ️ {t.graminScore.partialDataNotice || 'Self-reported metrics estimate. Complete your financial profile for higher accuracy.'}</p>
+              <p>ℹ️ {t.graminScore.partialDataNotice}</p>
               <Link href="/profile" className="inline-block text-primary hover:underline font-semibold">
-                Complete Financial Profile →
+                {t.graminScore.completeProfileCta}
               </Link>
             </div>
           )}

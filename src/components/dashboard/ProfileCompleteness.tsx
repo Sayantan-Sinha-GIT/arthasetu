@@ -68,13 +68,13 @@ export default function ProfileCompleteness({ profile }: ProfileCompletenessProp
       {isFieldsCompleteUnverified ? (
         <div className="space-y-2 pt-1">
           <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
-            ⚠️ Profile details entered. Verify your email to unlock fully tailored schemes & 100% verified status.
+            {t.dashboard.verifyEmailNotice}
           </p>
           <Link
             href="/verify-email"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-hover transition-colors"
           >
-            <span>Verify Email Address</span>
+            <span>{t.dashboard.verifyEmailAction}</span>
             <span>→</span>
           </Link>
         </div>
@@ -94,7 +94,7 @@ export default function ProfileCompleteness({ profile }: ProfileCompletenessProp
             ))}
             {missingFields.length > 3 && (
               <Link href="/profile" className="px-2 py-0.5 rounded-md text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 cursor-pointer">
-                +{missingFields.length - 3} more
+                {t.dashboard.plusMore.replace('{{count}}', (missingFields.length - 3).toString())}
               </Link>
             )}
           </div>

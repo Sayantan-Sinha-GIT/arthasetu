@@ -31,11 +31,11 @@ export default function SaveAdviceModal({
   const [error, setError] = useState('');
 
   const categories = [
-    { value: 'business-strategy', label: 'Business Strategy & Planning' },
-    { value: 'financial-guidance', label: 'Financial Guidance & Budgeting' },
-    { value: 'government-schemes', label: 'Government Scheme Info' },
-    { value: 'market-customers', label: 'Marketing & Local Sourcing' },
-    { value: 'general', label: 'General Advice' },
+    { value: 'business-strategy', label: t.advisor.catBusiness },
+    { value: 'financial-guidance', label: t.advisor.catFinancial },
+    { value: 'government-schemes', label: t.advisor.catSchemes },
+    { value: 'market-customers', label: t.advisor.catMarket },
+    { value: 'general', label: t.advisor.catGeneral },
   ];
 
   const handleSave = async (e: React.FormEvent) => {
@@ -46,7 +46,7 @@ export default function SaveAdviceModal({
 
     try {
       await saveAdvice(userId, {
-        title: title.trim() || 'Advisor Recommendation',
+        title: title.trim() || t.advisor.defaultTitle,
         category,
         content,
         businessContext,
@@ -55,7 +55,7 @@ export default function SaveAdviceModal({
       onClose();
     } catch (err) {
       console.error('Failed to save advice:', err);
-      setError('Failed to save. Please try again.');
+      setError(t.errors.saveFailed);
     } finally {
       setSaving(false);
     }
@@ -70,15 +70,15 @@ export default function SaveAdviceModal({
     >
       <form onSubmit={handleSave} className="space-y-4">
         <Input
-          label="Advice Title"
+          label={t.advisor.adviceTitle}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Poultry Farm Setup & Capital Allocation"
+          placeholder={t.advisor.adviceTitlePlaceholder}
           required
         />
 
         <Select
-          label="Category"
+          label={t.advisor.category}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           options={categories}
@@ -86,7 +86,7 @@ export default function SaveAdviceModal({
 
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-muted">
-            Snippet Preview:
+            {t.advisor.snippetPreview}
           </label>
           <div className="p-3 rounded-xl bg-surface border border-border text-xs text-muted max-h-32 overflow-y-auto leading-relaxed whitespace-pre-wrap">
             {content}

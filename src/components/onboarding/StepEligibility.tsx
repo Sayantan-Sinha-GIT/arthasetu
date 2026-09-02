@@ -71,7 +71,7 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="bg-surface p-4 rounded-xl border border-border-subtle mb-4 text-xs text-muted leading-relaxed">
-        📋 <strong className="text-foreground">Optional Details:</strong> Many government schemes offer higher subsidies (up to 35%) for women, youth, and specific demographic categories. You can complete this now or later from your Profile.
+        📋 <strong className="text-foreground">{t.onboarding.optionalDetails}:</strong> {t.onboarding.optionalDetailsDesc}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -106,8 +106,7 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
           value={data.annualTurnover !== undefined ? data.annualTurnover : ''}
           onValueChange={(val) => onChange({ annualTurnover: val })}
           placeholder={t.onboarding.annualTurnoverPlaceholder}
-          min={0}
-          hint="Estimated yearly revenue (if existing)"
+          hint={t.onboarding.turnoverHint}
         />
       </div>
 
@@ -129,7 +128,7 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
           <div className="p-4 rounded-2xl bg-surface border border-border space-y-4 animate-scale-in">
             <div className="flex items-center justify-between border-b border-border-subtle pb-2">
               <span className="text-xs font-bold text-foreground">
-                Active Loan Details ({loans.length})
+                {t.onboarding.activeLoanDetails} ({loans.length})
               </span>
               <button
                 type="button"
@@ -137,7 +136,7 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
                 className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
               >
                 <span>➕</span>
-                <span>Add Another Loan</span>
+                <span>{t.onboarding.addAnotherLoan}</span>
               </button>
             </div>
 
@@ -147,28 +146,28 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
                 className="p-3.5 rounded-xl bg-surface-elevated border border-border space-y-3"
               >
                 <div className="flex items-center justify-between text-xs font-bold text-muted">
-                  <span>Loan #{idx + 1}</span>
+                  <span>{t.onboarding.loanNumber}{idx + 1}</span>
                   {loans.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveLoan(loan.id)}
                       className="text-danger hover:underline text-xs font-semibold"
                     >
-                      ✕ Remove
+                      ✕ {t.onboarding.remove}
                     </button>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Select
-                    label="Lender Type"
+                    label={t.onboarding.lenderType}
                     value={loan.lenderType}
                     onChange={(e) => handleUpdateLoan(loan.id, { lenderType: e.target.value as any })}
                     options={lenderOptions}
                   />
 
                   <NumberInput
-                    label="Outstanding Balance (₹)"
+                    label={t.onboarding.outstandingBalance}
                     value={loan.outstandingAmount !== undefined ? loan.outstandingAmount : ''}
                     onValueChange={(val) => handleUpdateLoan(loan.id, { outstandingAmount: val })}
                     placeholder="e.g. 50000"
@@ -176,7 +175,7 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
                   />
 
                   <NumberInput
-                    label="Monthly EMI (₹)"
+                    label={t.onboarding.monthlyEmi}
                     value={loan.monthlyEmi !== undefined ? loan.monthlyEmi : ''}
                     onValueChange={(val) => handleUpdateLoan(loan.id, { monthlyEmi: val })}
                     placeholder="e.g. 2500"
