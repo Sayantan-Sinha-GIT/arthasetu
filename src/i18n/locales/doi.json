@@ -358,7 +358,8 @@
     "stopReadAloud": "Zor naal parhna roko",
     "readAloudWithVoice": "Voice de naal zor naal pado",
     "stopVoice": "Voice Roko",
-    "readAloud": "Zor Naal Pado"
+    "readAloud": "Zor Naal Pado",
+    "voiceUnavailable": "पड़ने दी सुविधा उपलब्ध नेईं ऐ क्योंकि तुंदा डिवाइस इस भाषा आस्तै इंस्टाल होईै दी आवाज समर्थित नेईं करदा।"
   },
   "planner": {
     "title": "Financial Plan",

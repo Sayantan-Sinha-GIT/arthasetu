@@ -358,7 +358,8 @@
     "stopReadAloud": "Read-aloud thadoi",
     "readAloudWithVoice": "Voice ga loina read aloud tou",
     "stopVoice": "Voice Thadoi",
-    "readAloud": "Haiba"
+    "readAloud": "Haiba",
+    "voiceUnavailable": "মচিন অসিদা লোল অসিগীদমক ভইস্ ইন্সতোল তৌরকপনা মরম ওইদুনা পঢ়া-হায়বা ফংদ্রে।"
   },
   "planner": {
     "title": "Financial Plan",

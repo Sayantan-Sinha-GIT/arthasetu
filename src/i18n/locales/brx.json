@@ -358,7 +358,8 @@
     "stopReadAloud": "Stop read-aloud",
     "readAloudWithVoice": "Voice-sathi porwi nujw",
     "stopVoice": "Stop Voice",
-    "readAloud": "Porwi Nujw"
+    "readAloud": "Porwi Nujw",
+    "voiceUnavailable": "गुफुंथि थिनायनाय हाया, मानोना नोंनि यन्त्रआव बे राविनि थाखाय मावथि गलं फितिनाय गैया।"
   },
   "planner": {
     "title": "Financial Plan",

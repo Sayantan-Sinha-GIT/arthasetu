@@ -8,6 +8,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { GoogleGenAI } from '@google/genai';
 import en from '../src/i18n/en';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { checkOne } = require('./locale-script-purity.cjs');
 
 const envContent = fs.readFileSync(path.resolve(process.cwd(), '.env.local'), 'utf8');
 const match = envContent.match(/GEMINI_API_KEY\s*=\s*([^\s\r\n]+)/);
@@ -58,13 +60,18 @@ text-to-speech voice installed for their language.
 
 RULES:
 1. Use 100% native ${lang.script}.
-3. Return only JSON with the exact same key structure as the input.
+3. Every character must be in ${lang.script}. Not one character from any
+   other writing system, and no Latin/English letters at all — translate
+   loanwords like "voice", "install" and "device" too.
+4. Return only JSON with the exact same key structure as the input.
 
 Input JSON:
 ${JSON.stringify(chunk, null, 2)}`;
 
   const res = await ai.models.generateContent({
-    model: 'gemini-3.5-flash',
+    // Flash-Lite is this project's designated fast-translation model, and
+    // keeps the heavier Flash daily quota free for the advisor itself.
+    model: 'gemini-3.5-flash-lite',
     contents: prompt,
     config: { responseMimeType: 'application/json', temperature: 0.1 },
   });
@@ -95,14 +102,30 @@ function updateTs(code: string, values: Record<string, string>) {
 async function run() {
   for (const lang of languagesMeta) {
     try {
-      const out = await translate(lang);
-      const values = out.tts;
+      let values: Record<string, string> | undefined;
+      // Models drift into the wrong script on the rarer languages, so every
+      // result is validated against the target Unicode block and retried if
+      // it strays. Without this, sat came back carrying Tibetan glyphs and sd
+      // came back with Bengali inside Perso-Arabic.
+      for (let attempt = 1; attempt <= 4; attempt++) {
+        const out = await translate(lang);
+        const candidate = out.tts;
+        if (!candidate?.voiceUnavailable) continue;
+        const r = checkOne(lang.code, candidate.voiceUnavailable);
+        if (!r.foreign.length && r.latin === 0) {
+          values = candidate;
+          break;
+        }
+        console.log(`   retry ${lang.code} (${attempt}): foreign=[${r.foreign}] latin=${r.latin}`);
+        await new Promise((res) => setTimeout(res, 1500));
+      }
       if (!values?.voiceUnavailable) {
-        throw new Error('missing keys in model output');
+        throw new Error('no output passed script validation');
       }
       if (lang.code === 'hi' || lang.code === 'bn') updateTs(lang.code, values);
       else updateJson(lang.code, values);
       console.log(`✅ ${lang.code}: ${values.voiceUnavailable}`);
+      await new Promise((r) => setTimeout(r, 1500));
     } catch (err) {
       console.error(`❌ ${lang.code}:`, err instanceof Error ? err.message : err);
     }

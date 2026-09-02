@@ -358,7 +358,8 @@
     "stopReadAloud": "Read-aloud thamb",
     "readAloudWithVoice": "Voice sodun read aloud kor",
     "stopVoice": "Voice Thamb",
-    "readAloud": "Motthen Vacha"
+    "readAloud": "Motthen Vacha",
+    "voiceUnavailable": "ह्या भाषेखातीर तुमच्या उपकरणाचेर कसलोच आवाज प्रतिश्थापीत नाशिल्ल्यान, वाचनउपलब्ध ना."
   },
   "planner": {
     "title": "Paisa Yojana",
