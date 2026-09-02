@@ -4,6 +4,7 @@
 
 import { GoogleGenAI, type Content, type Tool, type FunctionCall } from '@google/genai';
 import { getErrorMessage } from '@/lib/utils/errors';
+import { groqGenerateContent, isGroqConfigured } from '@/lib/groq';
 
 export const GEMINI_MODELS = {
   /** Primary established model: advisor, financial planner, scheme explanation — ultra fast & high availability */
@@ -72,12 +73,46 @@ export async function generateContent(
   try {
     return await executeGeneration(model);
   } catch (primaryError) {
-    // If primary model failed and fallback is allowed, try Flash-Lite
-    if (!options?.disableFallback && model !== GEMINI_MODELS.FLASH_LITE) {
-      console.warn(`⚠️ Primary Gemini model (${model}) failed. Automatically failing over to fallback model (${GEMINI_MODELS.FLASH_LITE})...`, primaryError);
-      return await executeGeneration(GEMINI_MODELS.FLASH_LITE);
+    if (options?.disableFallback) throw primaryError;
+
+    // Tier 2: the lighter Gemini model, which has its own separate quota.
+    if (model !== GEMINI_MODELS.FLASH_LITE) {
+      console.warn(`⚠️ Primary Gemini model (${model}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, primaryError);
+      try {
+        return await executeGeneration(GEMINI_MODELS.FLASH_LITE);
+      } catch (liteError) {
+        return await tryGroqFallback(systemInstruction, userMessage, options, liteError);
+      }
     }
-    throw primaryError;
+
+    // Already on Flash-Lite and it failed — go straight to the other provider.
+    return await tryGroqFallback(systemInstruction, userMessage, options, primaryError);
+  }
+}
+
+/**
+ * Tier 3: a different provider entirely.
+ *
+ * Both Gemini models draw on the same free-tier project quota — 20 requests a
+ * day — so when one is exhausted the other usually is too, and failing over
+ * between them buys nothing. Groq is a separate account with far more
+ * headroom, which is what actually keeps the app answering.
+ */
+async function tryGroqFallback(
+  systemInstruction: string,
+  userMessage: string,
+  options: { temperature?: number; maxOutputTokens?: number } | undefined,
+  geminiError: unknown
+): Promise<string> {
+  if (!isGroqConfigured()) throw geminiError;
+  console.warn('⚠️ Gemini exhausted. Failing over to Groq...', getErrorMessage(geminiError, 'unknown'));
+  try {
+    return await groqGenerateContent(systemInstruction, userMessage, options);
+  } catch (groqError) {
+    console.error('All providers failed. Groq:', getErrorMessage(groqError, 'unknown'));
+    // Surface the original Gemini failure: it is the more informative one, and
+    // the routes already map it to a user-facing message.
+    throw geminiError;
   }
 }
 
