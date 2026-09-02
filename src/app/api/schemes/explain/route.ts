@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
 import { getLanguageMeta } from '@/i18n/languages';
 import { getErrorMessage } from '@/lib/utils/errors';
+import { getCachedExplanation, setCachedExplanation } from '@/lib/cache/explanation-cache';
 import type { Scheme, UserProfile } from '@/types';
 
 export const maxDuration = 60;
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Answered this scheme, in this language, for this kind of entrepreneur
+    // before? Reuse it. This is the difference between the free tier lasting
+    // a demo and running out during one.
+    const cached = await getCachedExplanation(scheme, language, userProfile);
+    if (cached) {
+      return NextResponse.json({ success: true, explanation: cached, cached: true });
+    }
+
     const langMeta = getLanguageMeta(language);
     const languageInstruction =
       language === 'en'
@@ -33,7 +42,6 @@ export async function POST(req: NextRequest) {
         : `Respond ENTIRELY in ${langMeta.name} (${langMeta.nativeName}), using ${langMeta.nativeName}'s native script throughout — every heading and sentence. Do not respond in English. Keep ₹ figures, numerals, and proper nouns/acronyms (ArthaSetu, PMEGP, MUDRA, scheme names) as-is.`;
     const profileContext = userProfile
       ? `
-Entrepreneur Name: ${userProfile.name || 'Entrepreneur'}
 Location: ${userProfile.locality ? `${userProfile.locality}, ` : ''}${userProfile.district ? `${userProfile.district}, ` : ''}${userProfile.state || 'India'}
 Business: ${userProfile.businessType || 'Micro-Enterprise'} (${userProfile.businessCategory || 'General'})
 Available Capital: ₹${(userProfile.availableCapital || 0).toLocaleString('en-IN')}
@@ -81,9 +89,12 @@ Provide:
       'Explain this verified scheme in plain language for the entrepreneur.'
     );
 
+    await setCachedExplanation(scheme, language, userProfile, explanation);
+
     return NextResponse.json({
       success: true,
       explanation,
+      cached: false,
     });
   } catch (error) {
     console.error('Error generating scheme explanation:', error);

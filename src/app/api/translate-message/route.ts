@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 Your task is to translate the provided text into ${targetLang.name} (${targetLang.nativeName}).
 Keep the formatting intact. Output ONLY the translated text, with no additional commentary, notes, or markdown blocks around it.`;
 
-    const translation = await generateContent(GEMINI_MODELS.FLASH, systemPrompt, text);
+    const translation = await generateContent(GEMINI_MODELS.FLASH_LITE, systemPrompt, text);
 
     return NextResponse.json({ translatedText: translation });
   } catch (err) {
