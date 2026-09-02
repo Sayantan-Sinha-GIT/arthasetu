@@ -50,15 +50,15 @@ export async function generateContent(
   
   const executeGeneration = async (targetModel: string) => {
     const response = await retryWithBackoff(() =>
-      client.models.generateContent({
-        model: targetModel,
-        contents: userMessage,
-        config: {
-          systemInstruction,
-          temperature: options?.temperature ?? 0.7,
-          maxOutputTokens: options?.maxOutputTokens ?? 4096,
-        },
-      })
+        client.models.generateContent({
+          model: targetModel,
+          contents: userMessage,
+          config: {
+            systemInstruction,
+            temperature: options?.temperature ?? 0.7,
+            maxOutputTokens: options?.maxOutputTokens ?? 4096,
+          },
+        })
     );
 
     const text = response.text;
@@ -95,15 +95,15 @@ export async function* generateContentStream(
 
   const getStream = async (targetModel: string) => {
     return await retryWithBackoff(() =>
-      client.models.generateContentStream({
-        model: targetModel,
-        contents: userMessage as any,
-        config: {
-          systemInstruction,
-          temperature: options?.temperature ?? 0.7,
-          maxOutputTokens: options?.maxOutputTokens ?? 4096,
-        },
-      })
+        client.models.generateContentStream({
+          model: targetModel,
+          contents: Array.isArray(userMessage) ? userMessage : [userMessage],
+          config: {
+            systemInstruction,
+            temperature: options?.temperature ?? 0.7,
+            maxOutputTokens: options?.maxOutputTokens ?? 4096,
+          },
+        })
     );
   };
 
