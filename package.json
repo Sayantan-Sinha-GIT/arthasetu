@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "2.20.0",
     "@studio-freight/lenis": "^1.0.42",
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",

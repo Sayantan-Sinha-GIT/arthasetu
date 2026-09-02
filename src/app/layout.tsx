@@ -44,10 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${notoDevanagari.variable} h-full`}
+      className={`${spaceGrotesk.variable} ${inter.variable} ${notoDevanagari.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans antialiased">
+      <body className="min-h-screen flex flex-col font-sans antialiased">
         <SmoothScrollProvider>
           <Providers>
             <IntroSplash />

@@ -16,7 +16,6 @@ import type { ChatMessage, UserProfile, PlanInputs, CalculatedValues } from '@/t
 
 // Explicit maxDuration config per PRD §6.4 for Vercel Hobby plan
 export const maxDuration = 60;
-export const runtime = 'edge';
 
 export function createAdvisorSession(savePlanFn = savePlan) {
   let lastCalculatedPlan: { inputs: PlanInputs; calculatedValues: CalculatedValues } | null = null;
@@ -219,10 +218,12 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const contentStream = generateContentStream(
+          const contentStream = generateAgentStream(
             GEMINI_MODELS.FLASH,
             systemInstruction,
             historyContext,
+            tools,
+            (name, args) => session.toolHandler(name, args, userProfile),
             { temperature: 0.7, maxOutputTokens: 2048 }
           );
 

@@ -1,21 +1,21 @@
-// ─── Google Gemini API Client (server-side only) ───
-// All Gemini calls must go through this module.
+// ─── Google GenAI API Client (server-side only) ───
+// All Gemini calls must go through this module using the official @google/genai SDK.
 // NEVER import this from client components — the API key must stay server-side.
 
-import { GoogleGenerativeAI, type GenerateContentResult } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 export const GEMINI_MODELS = {
-  /** Primary established model: advisor, financial planner, scheme explanation — high quality & high quota */
-  FLASH: 'gemini-3.6-flash',
+  /** Primary established model: advisor, financial planner, scheme explanation — ultra fast & high availability */
+  FLASH: 'gemini-3.5-flash',
   /** Dedicated fallback & lightweight tasks: admin scheme drafting, classification, high throughput */
   FLASH_LITE: 'gemini-3.5-flash-lite',
   /** Alternate aliases */
-  FLASH_LATEST: 'gemini-flash-latest',
-  FLASH_LITE_LATEST: 'gemini-flash-lite-latest',
+  FLASH_LATEST: 'gemini-3.5-flash',
+  FLASH_LITE_LATEST: 'gemini-3.5-flash-lite',
 } as const;
 
 // ─── Client Singleton ───
-function getGeminiClient(): GoogleGenerativeAI {
+function getGeminiClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -23,12 +23,12 @@ function getGeminiClient(): GoogleGenerativeAI {
       'Get one from https://aistudio.google.com/apikey'
     );
   }
-  return new GoogleGenerativeAI(apiKey);
+  return new GoogleGenAI({ apiKey });
 }
 
-let clientInstance: GoogleGenerativeAI | null = null;
+let clientInstance: GoogleGenAI | null = null;
 
-function getClient(): GoogleGenerativeAI {
+function getClient(): GoogleGenAI {
   if (!clientInstance) {
     clientInstance = getGeminiClient();
   }
@@ -49,20 +49,19 @@ export async function generateContent(
   const client = getClient();
   
   const executeGeneration = async (targetModel: string) => {
-    const genModel = client.getGenerativeModel({
-      model: targetModel,
-      systemInstruction,
-      generationConfig: {
-        temperature: options?.temperature ?? 0.7,
-        maxOutputTokens: options?.maxOutputTokens ?? 4096,
-      },
-    });
-
-    const result: GenerateContentResult = await retryWithBackoff(
-      () => genModel.generateContent(userMessage)
+    const response = await retryWithBackoff(() =>
+      client.models.generateContent({
+        model: targetModel,
+        contents: userMessage,
+        config: {
+          systemInstruction,
+          temperature: options?.temperature ?? 0.7,
+          maxOutputTokens: options?.maxOutputTokens ?? 4096,
+        },
+      })
     );
 
-    const text = result.response.text();
+    const text = response.text;
     if (!text) {
       throw new Error('Gemini returned an empty response');
     }
@@ -95,21 +94,16 @@ export async function* generateContentStream(
   const client = getClient();
 
   const getStream = async (targetModel: string) => {
-    const genModel = client.getGenerativeModel({
-      model: targetModel,
-      systemInstruction,
-      generationConfig: {
-        temperature: options?.temperature ?? 0.7,
-        maxOutputTokens: options?.maxOutputTokens ?? 4096,
-      },
-    });
-
-    const request = typeof userMessage === 'string'
-      ? userMessage
-      : { contents: userMessage };
-
-    return await retryWithBackoff(
-      () => genModel.generateContentStream(request as any)
+    return await retryWithBackoff(() =>
+      client.models.generateContentStream({
+        model: targetModel,
+        contents: userMessage as any,
+        config: {
+          systemInstruction,
+          temperature: options?.temperature ?? 0.7,
+          maxOutputTokens: options?.maxOutputTokens ?? 4096,
+        },
+      })
     );
   };
 
@@ -125,10 +119,9 @@ export async function* generateContentStream(
     }
   }
 
-  for await (const chunk of activeResult.stream) {
-    const text = chunk.text();
-    if (text) {
-      yield text;
+  for await (const chunk of activeResult) {
+    if (chunk.text) {
+      yield chunk.text;
     }
   }
 }
@@ -147,53 +140,84 @@ export async function* generateAgentStream(
   }
 ): AsyncGenerator<string> {
   const client = getClient();
-  const targetModel = model;
-  const genModel = client.getGenerativeModel({
-    model: targetModel,
-    systemInstruction,
-    tools,
-    generationConfig: {
-      temperature: options?.temperature ?? 0.7,
-      maxOutputTokens: options?.maxOutputTokens ?? 4096,
-    },
-  });
 
-  let history: any[] = typeof userMessage === 'string' ? [{ role: 'user', parts: [{ text: userMessage }] }] : userMessage;
+  const history: any[] = typeof userMessage === 'string'
+    ? [{ role: 'user', parts: [{ text: userMessage }] }]
+    : userMessage;
 
-  const chat = genModel.startChat({ history: history.slice(0, -1) });
-  const lastMessage = history[history.length - 1];
-  let msgContent = lastMessage.parts;
+  const runAgent = async function* (targetModel: string) {
+    const chat = client.chats.create({
+      model: targetModel,
+      config: {
+        systemInstruction,
+        tools,
+        temperature: options?.temperature ?? 0.7,
+        maxOutputTokens: options?.maxOutputTokens ?? 4096,
+      },
+      history: history.slice(0, -1),
+    });
 
-  let streamResult = await retryWithBackoff(() => chat.sendMessageStream(msgContent));
+    const lastMessage = history[history.length - 1];
+    const initialMessage = lastMessage?.parts?.[0]?.text ?? (typeof userMessage === 'string' ? userMessage : '');
 
-  let handledTool = false;
-  
-  for await (const chunk of streamResult.stream) {
-    if (chunk.functionCalls && chunk.functionCalls() && chunk.functionCalls()!.length > 0) {
-      const calls = chunk.functionCalls();
-      const call = calls![0];
-      try {
-        const result = await toolHandler(call.name, call.args);
-        msgContent = [{ functionResponse: { name: call.name, response: result } }];
-        handledTool = true;
-      } catch (err: any) {
-        msgContent = [{ functionResponse: { name: call.name, response: { error: err.message } } }];
-        handledTool = true;
+    let activeStream = await retryWithBackoff(() =>
+      chat.sendMessageStream({ message: initialMessage })
+    );
+
+    let maxIterations = 5;
+    while (maxIterations > 0) {
+      maxIterations--;
+      let functionCalls: any[] = [];
+      for await (const chunk of activeStream) {
+        if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+          functionCalls.push(...chunk.functionCalls);
+        }
+        if (chunk.text) {
+          yield chunk.text;
+        }
       }
-      break; // stop reading this stream, we will send the tool response
-    }
-    const text = chunk.text();
-    if (text) {
-      yield text;
-    }
-  }
 
-  if (handledTool) {
-    // Send tool response and yield the final stream
-    const finalStreamResult = await retryWithBackoff(() => chat.sendMessageStream(msgContent));
-    for await (const chunk of finalStreamResult.stream) {
-      const text = chunk.text();
-      if (text) yield text;
+      if (functionCalls.length === 0) {
+        break;
+      }
+
+      // Execute all function calls returned in this turn
+      const responses = await Promise.all(
+        functionCalls.map(async (call) => {
+          let result: any;
+          try {
+            result = await toolHandler(call.name, call.args);
+          } catch (err: any) {
+            result = { error: err.message };
+          }
+          return {
+            functionResponse: {
+              name: call.name,
+              response: result,
+              id: call.id,
+            },
+          };
+        })
+      );
+
+      activeStream = await retryWithBackoff(() =>
+        chat.sendMessageStream({ message: responses })
+      );
+    }
+  };
+
+  try {
+    for await (const chunk of runAgent(model)) {
+      yield chunk;
+    }
+  } catch (primaryError) {
+    if (!options?.disableFallback && model !== GEMINI_MODELS.FLASH_LITE) {
+      console.warn(`⚠️ Primary Gemini agent (${model}) failed. Automatically failing over to fallback model (${GEMINI_MODELS.FLASH_LITE})...`, primaryError);
+      for await (const chunk of runAgent(GEMINI_MODELS.FLASH_LITE)) {
+        yield chunk;
+      }
+    } else {
+      throw primaryError;
     }
   }
 }
@@ -257,7 +281,7 @@ Classification Rules:
 export function getAdvisorOffTopicRedirect(language = 'en'): string {
   switch (language) {
     case 'hi':
-      return 'नमस्ते! मैं **अर्थसेतु (ArthaSetu)** हूँ — आपका समर्पित ग्रामीण व्यवसाय व सरकारी योजना सलाहकार।\n\nमैं सामान्य कोडिंग, होमवर्क या गैर-व्यावसायिक प्रश्नों में सहायता नहीं कर सकता। कृपया अपने व्यवसाय (जैसे पोल्ट्री, डेयरी, सिलाई, दुकान), सरकारी योजनाओं (PMEGP, MUDRA) या वित्तीय योजना से संबंधित प्रश्न पूछें!';
+      return 'नमस्ते! मैं **अर्थसेতু (ArthaSetu)** हूँ — आपका समर्पित ग्रामीण व्यवसाय व सरकारी योजना सलाहकार।\n\nमैं सामान्य कोडिंग, होमवर्क या गैर-व्यावसायिक प्रश्नों में सहायता नहीं कर सकता। कृपया अपने व्यवसाय (जैसे पोल्ट्री, डेयरी, सिलाई, दुकान), सरकारी योजनाओं (PMEGP, MUDRA) या वित्तीय योजना से संबंधित प्रश्न पूछें!';
     case 'bn':
       return 'নমস্কার! আমি **অর্থসেতু (ArthaSetu)** — আপনার নিবেদিত গ্রামীণ ব্যবসা ও সরকারি প্রকল্প উপদেষ্টা।\n\nআমি সাধারণ কোডিং, হোমওয়ার্ক বা ব্যবসায়-বহির্ভূত বিষয়ে সহায়তা করতে পারি না। অনুগ্রহ করে আপনার ব্যবসা, সরকারি প্রকল্প (PMEGP, MUDRA) বা আর্থিক পরিকল্পনা সংক্রান্ত প্রশ্ন জিজ্ঞাসা করুন!';
     case 'as':
@@ -286,7 +310,9 @@ async function retryWithBackoff<T>(
          error.message.includes('Service Unavailable') ||
          error.message.includes('RESOURCE_EXHAUSTED') ||
          error.message.includes('Too Many Requests') ||
-         error.message.includes('high demand'));
+         error.message.includes('high demand') ||
+         (error as any)?.status === 429 ||
+         (error as any)?.status === 503);
 
       if (isTransient && attempt < retries) {
         const delay = BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 500;
@@ -297,6 +323,5 @@ async function retryWithBackoff<T>(
       throw error;
     }
   }
-  // Should never reach here, but TypeScript needs it
-  throw new Error('Max retries exceeded');
+  throw new Error('Exhausted retries');
 }
