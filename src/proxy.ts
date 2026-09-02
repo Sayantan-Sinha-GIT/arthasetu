@@ -27,7 +27,7 @@ export function proxy(request: NextRequest) {
 
   // Rate limiting for API routes
   if (pathname.startsWith('/api/')) {
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
     const now = Date.now();
     const record = rateLimitMap.get(ip);
     
