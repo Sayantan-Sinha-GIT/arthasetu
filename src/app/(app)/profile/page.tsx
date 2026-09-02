@@ -593,21 +593,21 @@ export default function ProfilePage() {
                 </label>
               </div>
               <p className="text-xs font-medium text-foreground">
-                Reduce animations, videos, and background images to save data
+                {t.profile.dataSaverDesc}
               </p>
               <p className="text-[11px] text-muted leading-relaxed">
-                Your financial plans, scheme matches, and chat always load at full speed regardless of this setting.
+                {t.profile.dataSaverNote}
               </p>
             </Card>
             <div className="rounded-2xl border border-danger/30 bg-danger-light/20 p-4 space-y-3">
               <div className="flex items-center gap-2 text-danger">
                 <span className="text-base">⚠️</span>
-                <h4 className="text-xs font-bold uppercase tracking-wider">Danger Zone</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider">{t.profile.dangerZone}</h4>
               </div>
-              <p className="text-xs text-muted leading-relaxed">Permanently erase your entrepreneur account, profile, all saved plans, advisor history, and Gramin Score.</p>
+              <p className="text-xs text-muted leading-relaxed">{t.profile.dangerZoneDesc}</p>
               <button type="button" onClick={() => { setDeleteError(''); setDeletePassword(''); setIsDeleteModalOpen(true); }} className="w-full py-2 px-3 rounded-xl bg-danger hover:bg-danger/90 text-white text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>🗑️</span>
-                <span>Delete My Account</span>
+                <span>{t.profile.deleteMyAccount}</span>
               </button>
             </div>
           </div>
@@ -622,34 +622,34 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground">
-                    Permanently Delete Account?
+                    {t.profile.deleteModalTitle}
                   </h3>
                   <p className="text-xs text-muted">
-                    This action is immediate, permanent, and cannot be undone.
+                    {t.profile.deleteModalSubtitle}
                   </p>
                 </div>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-danger-light/30 border border-danger/20 text-xs text-danger-dark dark:text-danger space-y-1.5">
-                <p className="font-bold">The following will be permanently erased:</p>
+                <p className="font-bold">{t.profile.deleteEraseListTitle}</p>
                 <ul className="list-disc pl-4 space-y-0.5 opacity-90">
-                  <li>Your user profile, location, and enterprise details</li>
-                  <li>All saved financial plans and break-even projections</li>
-                  <li>All saved AI advisor advice and recommendations</li>
-                  <li>All self-reported Gramin Credit Score records</li>
+                  <li>{t.profile.deleteEraseProfile}</li>
+                  <li>{t.profile.deleteErasePlans}</li>
+                  <li>{t.profile.deleteEraseAdvice}</li>
+                  <li>{t.profile.deleteEraseScore}</li>
                 </ul>
               </div>
 
               <form onSubmit={handleDeleteAccount} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-foreground mb-1">
-                    Re-enter your Password to confirm:
+                    {t.profile.deleteConfirmPasswordLabel}
                   </label>
                   <Input
                     type="password"
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
-                    placeholder="Enter current password"
+                    placeholder={t.profile.deleteConfirmPasswordPlaceholder}
                     required
                     autoFocus
                   />
@@ -669,7 +669,7 @@ export default function ProfilePage() {
                     disabled={deleteLoading}
                     onClick={() => setIsDeleteModalOpen(false)}
                   >
-                    Cancel
+                    {t.profile.deleteCancel}
                   </Button>
                   <Button
                     type="submit"
@@ -678,7 +678,7 @@ export default function ProfilePage() {
                     isLoading={deleteLoading}
                     className="shadow-md"
                   >
-                    Delete Everything & Close Account
+                    {t.profile.deleteConfirmCta}
                   </Button>
                 </div>
               </form>

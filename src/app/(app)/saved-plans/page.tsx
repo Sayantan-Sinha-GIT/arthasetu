@@ -102,7 +102,7 @@ export default function SavedPlansPage() {
               <span>{t.nav.savedPlans}</span>
             </h1>
             <p className="text-xs sm:text-sm text-muted mt-1">
-              Your saved financial feasibility models, funding gap calculations, and bank-ready proposals
+              {t.savedPlansPage.subtitle}
             </p>
           </div>
 
@@ -213,14 +213,14 @@ export default function SavedPlansPage() {
               📊
             </div>
             <h3 className="text-lg font-bold text-foreground">
-              No Financial Plans Saved Yet
+              {t.savedPlansPage.emptyTitle}
             </h3>
             <p className="text-xs sm:text-sm text-muted max-w-sm mx-auto leading-relaxed">
-              Use our guided financial planner to compute your startup costs, monthly profit, and loan EMI in 5 simple steps.
+              {t.savedPlansPage.emptyDesc}
             </p>
             <Link href="/planner" className="inline-block pt-2">
               <Button size="md">
-                Create Your First Financial Plan →
+                {t.savedPlansPage.emptyCta}
               </Button>
             </Link>
           </div>

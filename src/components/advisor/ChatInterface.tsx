@@ -30,8 +30,6 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [activeSpeakingMessageId, setActiveSpeakingMessageId] = useState<string | null>(null);
-  const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Default speech language derived from user's UI preference
   const defaultSpeechLanguage = currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN');
@@ -220,8 +218,8 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
         );
       }
 
-      // Auto-speak completed response if toggle enabled or query was spoken
-      if (fullAssistantText && (autoSpeakEnabled || fromVoice)) {
+      // Auto-speak completed response if the query itself was spoken (voice in -> voice out)
+      if (fullAssistantText && fromVoice) {
         setActiveSpeakingMessageId(assistantPlaceholderId);
         ttsSpeak(fullAssistantText, speechLanguage);
       }
@@ -288,49 +286,6 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
           <span className="font-bold text-foreground">{t.advisor.chat.geminiActive}</span>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Auto-read toggle & TTS info */}
-          {isTtsSupported && (
-            <label className="hidden sm:flex items-center gap-2 cursor-pointer select-none hover:text-foreground transition-colors">
-              <input
-                type="checkbox"
-                checked={autoSpeakEnabled}
-                onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
-                className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
-              />
-              <span>{t.advisor.chat.autoRead}</span>
-            </label>
-          )}
-          
-          <button
-            onClick={() => setSettingsOpen(!settingsOpen)}
-            className="p-1 hover:bg-surface-elevated rounded-md transition-colors"
-            title="Chat settings"
-          >
-            ⚙️
-          </button>
-        </div>
-
-        {/* Settings Popup */}
-        {settingsOpen && (
-          <div className="absolute right-4 top-full mt-2 w-64 bg-surface border border-border rounded-xl shadow-xl z-10 p-3">
-             <div className="font-semibold mb-2 text-foreground">{t.advisor.chat.autoRead}</div>
-             <div className="text-xs text-muted-foreground mb-3">
-                Toggle automatic reading of advisor messages aloud. Voice input language is detected automatically.
-             </div>
-             {isTtsSupported && (
-              <label className="flex items-center gap-2 cursor-pointer select-none text-foreground transition-colors">
-                <input
-                  type="checkbox"
-                  checked={autoSpeakEnabled}
-                  onChange={(e) => setAutoSpeakEnabled(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
-                />
-                <span className="text-sm">{t.advisor.chat.autoRead}</span>
-              </label>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Toast alert for errors or save confirmations */}

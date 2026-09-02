@@ -16,7 +16,7 @@ import type { PlanInputs, CalculatedValues, UserProfile } from '@/types';
 export default function PlannerPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,10 +140,10 @@ export default function PlannerPage() {
             <div className="relative z-10 space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-white flex items-center gap-4 tracking-tighter uppercase leading-[0.9]">
                 <span className="text-5xl sm:text-6xl text-primary drop-shadow-[0_0_15px_rgba(255,119,0,0.4)]">📊</span>
-                <span>Financial Structuring<br/>& Planning Engine</span>
+                <span>{t.planner.title}</span>
               </h1>
               <p className="text-sm sm:text-base text-white/70 font-serif max-w-2xl">
-                Deterministic financial arithmetic combined with AI-powered market assumptions and bankability analysis.
+                {t.planner.subtitle}
               </p>
             </div>
           </div>

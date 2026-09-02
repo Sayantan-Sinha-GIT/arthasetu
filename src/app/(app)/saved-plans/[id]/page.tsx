@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Button from '@/components/ui/Button';
@@ -19,6 +20,7 @@ export default function PlanDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,13 +75,13 @@ export default function PlanDetailPage({ params }: PageProps) {
             ⚠️
           </div>
           <h2 className="text-xl font-bold text-foreground">
-            {error || 'Plan Not Found'}
+            {error || t.savedPlansPage.notFoundTitle}
           </h2>
           <p className="text-sm text-muted">
-            The requested financial plan could not be located or may have been deleted.
+            {t.savedPlansPage.notFoundDesc}
           </p>
           <Link href="/saved-plans">
-            <Button size="md">← Back to Saved Plans</Button>
+            <Button size="md">{t.savedPlansPage.backToSavedPlans}</Button>
           </Link>
         </main>
       </>

@@ -130,21 +130,21 @@ export default function SchemesPage() {
           <div className="space-y-3">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-foreground flex items-center gap-4 tracking-tighter uppercase leading-[0.9]">
               <span className="text-5xl sm:text-6xl text-primary drop-shadow-[0_0_15px_rgba(255,119,0,0.4)]">🏛️</span>
-              <span>Government<br/>Schemes & Subsidies</span>
+              <span>{t.schemes.title}</span>
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground font-serif max-w-2xl">
-              Verified Central and State government financial assistance programs with deterministic eligibility matching.
+              {t.schemes.subtitle}
             </p>
           </div>
 
           {profile && (
             <div className="flex flex-col gap-1 items-start sm:items-end self-start sm:self-center">
-              <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">Targeting Profile</span>
+              <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">{t.schemes.targetingProfileLabel}</span>
               <div className="flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl bg-surface/50 border border-border/50 text-foreground uppercase tracking-widest backdrop-blur-md shadow-inner">
                 <span className="text-primary">👤</span>
-                <span>{profile.businessType || 'Enterprise'}</span>
+                <span>{profile.businessType || t.schemes.defaultEnterprise}</span>
                 <span className="text-border">•</span>
-                <span>{profile.state || 'India'}</span>
+                <span>{profile.state || t.schemes.defaultIndia}</span>
               </div>
             </div>
           )}
@@ -163,7 +163,7 @@ export default function SchemesPage() {
               }
             `}
           >
-            <span>⚡ Matched For Your Profile</span>
+            <span>{t.schemes.tabMatchedForProfile}</span>
             {matchedResults.length > 0 && (
               <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-primary-foreground">
                 {matchedResults.length}
@@ -182,7 +182,7 @@ export default function SchemesPage() {
               }
             `}
           >
-            <span>📚 All Schemes Directory</span>
+            <span>{t.schemes.tabAllDirectory}</span>
             <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-surface text-muted border border-border">
               {schemes.length}
             </span>
@@ -205,7 +205,7 @@ export default function SchemesPage() {
                   <div className="relative max-w-md">
                     <input
                       type="text"
-                      placeholder="Search within matched schemes..."
+                      placeholder={t.schemes.searchWithinMatchedPlaceholder}
                       value={matchedSearchQuery}
                       onChange={(e) => setMatchedSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -230,10 +230,10 @@ export default function SchemesPage() {
                     🔍
                   </div>
                   <h3 className="text-lg font-bold text-foreground">
-                    No Verified Matching Schemes Found
+                    {t.schemes.noMatchTitle}
                   </h3>
                   <p className="text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
-                    We did not find a verified government scheme specifically matching your current criteria in our verified database. ArthaSetu never invents unverified schemes.
+                    {t.schemes.noMatchDesc}
                   </p>
                   <Button
                     type="button"
@@ -241,7 +241,7 @@ export default function SchemesPage() {
                     size="md"
                     onClick={() => setActiveTab('all')}
                   >
-                    Browse All Central & State Schemes →
+                    {t.schemes.browseAllCta}
                   </Button>
                 </div>
               )

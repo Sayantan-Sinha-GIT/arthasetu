@@ -20,6 +20,23 @@ const en = {
     logout: 'Log Out',
   },
 
+  savedPlansPage: {
+    subtitle: 'Your saved financial feasibility models, funding gap calculations, and bank-ready proposals',
+    emptyTitle: 'No Financial Plans Saved Yet',
+    emptyDesc: 'Use our guided financial planner to compute your startup costs, monthly profit, and loan EMI in 5 simple steps.',
+    emptyCta: 'Create Your First Financial Plan →',
+    notFoundTitle: 'Plan Not Found',
+    notFoundDesc: 'The requested financial plan could not be located or may have been deleted.',
+    backToSavedPlans: '← Back to Saved Plans',
+  },
+
+  savedAdvicePage: {
+    subtitle: 'Your saved recommendations, financial tips, and business strategies',
+    emptyTitle: 'No Saved Advice Yet',
+    emptyDesc: 'When chatting with ArthaSetu, click the "Save as Advice" button on any response to bookmark it here.',
+    emptyCta: 'Ask ArthaSetu Now →',
+  },
+
   // Admin Navigation
   adminNav: {
     dashboard: '🛡️ Dashboard',
@@ -40,6 +57,9 @@ const en = {
     featuresSubtitle: 'Designed to help your business grow',
     featureVoiceTitle: 'Voice-First Advisor',
     featureVoiceDesc: 'Speak your questions naturally in your language. Text is always available as fallback.',
+    featureLanguageTitle: 'Native Tongues',
+    featureLanguageDesc: 'We break the English barrier. Access financial planning, scheme matching, and business growth tools in the language you speak every day.',
+    viewSchemesCta: 'View Schemes',
     featurePlannerTitle: 'Financial Planning',
     featurePlannerDesc: 'Build detailed business plans with deterministic calculations and AI-powered insights.',
     featureSchemesTitle: 'Verified Government Schemes',
@@ -125,7 +145,9 @@ const en = {
     // Business
     businessStatus: 'Business Status',
     existingBusiness: 'I have an existing business',
+    existingBusinessDesc: 'Currently running shop, craft, farm unit, or small trade',
     planningBusiness: 'I\'m planning to start a business',
+    planningBusinessDesc: 'New idea, startup, or diversifying into a new line of work',
     businessCategory: 'Business Category',
     selectCategory: 'Select category',
     businessType: 'Business Type / Product',
@@ -287,6 +309,22 @@ const en = {
     savedSuccess: 'Profile updated successfully!',
     completeness: 'Profile Completeness',
     missingFieldsNote: 'Add remaining details to unlock higher accuracy scheme matching and personalized financial projections.',
+    dataSaverDesc: 'Reduce animations, videos, and background images to save data',
+    dataSaverNote: 'Your financial plans, scheme matches, and chat always load at full speed regardless of this setting.',
+    dangerZone: 'Danger Zone',
+    dangerZoneDesc: 'Permanently erase your entrepreneur account, profile, all saved plans, advisor history, and Gramin Score.',
+    deleteMyAccount: 'Delete My Account',
+    deleteModalTitle: 'Permanently Delete Account?',
+    deleteModalSubtitle: 'This action is immediate, permanent, and cannot be undone.',
+    deleteEraseListTitle: 'The following will be permanently erased:',
+    deleteEraseProfile: 'Your user profile, location, and enterprise details',
+    deleteErasePlans: 'All saved financial plans and break-even projections',
+    deleteEraseAdvice: 'All saved AI advisor advice and recommendations',
+    deleteEraseScore: 'All self-reported Gramin Credit Score records',
+    deleteConfirmPasswordLabel: 'Re-enter your Password to confirm:',
+    deleteConfirmPasswordPlaceholder: 'Enter current password',
+    deleteCancel: 'Cancel',
+    deleteConfirmCta: 'Delete Everything & Close Account',
   },
 
   // Advisor
@@ -313,7 +351,6 @@ const en = {
     catGeneral: 'General Advice',
     chat: {
       geminiActive: 'Gemini Flash Active',
-      autoRead: 'Auto-Read Answers',
       voiceLangTitle: 'Voice Input Language',
       voiceLangDesc: 'Change the language used when you click the microphone to speak.',
       micBlocked: '⚠️ Microphone access is blocked in your browser. You can type your questions in the box below anytime.',
@@ -679,6 +716,15 @@ const en = {
     searchPlaceholder: 'Search by scheme name, agency, or sector...',
     matchOnly: 'Show Match Only',
     matchedSchemes: '{{count}} Schemes Matched',
+    tabMatchedForProfile: '⚡ Matched For Your Profile',
+    tabAllDirectory: '📚 All Schemes Directory',
+    targetingProfileLabel: 'Targeting Profile',
+    defaultEnterprise: 'Enterprise',
+    defaultIndia: 'India',
+    noMatchTitle: 'No Verified Matching Schemes Found',
+    noMatchDesc: 'We did not find a verified government scheme specifically matching your current criteria in our verified database. ArthaSetu never invents unverified schemes.',
+    browseAllCta: 'Browse All Central & State Schemes →',
+    searchWithinMatchedPlaceholder: 'Search within matched schemes...',
     card: {
       centralScheme: '🏛️ Central Scheme',
       stateScheme: '📍 {{state}} State',

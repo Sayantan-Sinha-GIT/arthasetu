@@ -133,13 +133,13 @@ export default function LandingPage() {
                      <div className="text-[10rem] md:text-[18rem] font-display font-black text-border-subtle/40 select-none leading-none absolute -top-24 md:-top-32 -right-10 z-0">02</div>
                      <div className="relative z-10">
                        <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold text-foreground tracking-tighter leading-[0.9] mb-8 uppercase">
-                         Native<br/>Tongues
+                         {t.landing.featureLanguageTitle}
                        </h2>
                        <p className="text-muted-foreground text-xl md:text-2xl leading-relaxed mb-10 font-serif">
-                         We break the English barrier. Access financial planning, scheme matching, and business growth tools in the language you speak every day.
+                         {t.landing.featureLanguageDesc}
                        </p>
                        <Link href="/schemes" className="text-primary hover:text-primary-hover font-bold inline-flex items-center gap-2 group tracking-[0.2em] uppercase text-sm">
-                         View Schemes <span className="group-hover:translate-x-2 transition-transform">→</span>
+                         {t.landing.viewSchemesCta} <span className="group-hover:translate-x-2 transition-transform">→</span>
                        </Link>
                      </div>
                    </motion.div>

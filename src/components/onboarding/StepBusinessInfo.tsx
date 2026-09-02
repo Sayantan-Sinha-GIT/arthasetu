@@ -49,7 +49,7 @@ export default function StepBusinessInfo({ data, onChange, errors = {} }: StepBu
                 {t.onboarding.planningBusiness}
               </div>
               <p className="text-xs text-muted mt-0.5">
-                New idea, startup, or diversifying into a new line of work
+                {t.onboarding.planningBusinessDesc}
               </p>
             </div>
           </button>
@@ -71,7 +71,7 @@ export default function StepBusinessInfo({ data, onChange, errors = {} }: StepBu
                 {t.onboarding.existingBusiness}
               </div>
               <p className="text-xs text-muted mt-0.5">
-                Currently running shop, craft, farm unit, or small trade
+                {t.onboarding.existingBusinessDesc}
               </p>
             </div>
           </button>

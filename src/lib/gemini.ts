@@ -167,7 +167,7 @@ export async function* generateAgentStream(
     let maxIterations = 5;
     while (maxIterations > 0) {
       maxIterations--;
-      let functionCalls: any[] = [];
+      const functionCalls: any[] = [];
       for await (const chunk of activeStream) {
         if (chunk.functionCalls && chunk.functionCalls.length > 0) {
           functionCalls.push(...chunk.functionCalls);

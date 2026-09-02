@@ -94,7 +94,7 @@ export default function SavedAdvicePage() {
               <span>{t.nav.savedAdvice}</span>
             </h1>
             <p className="text-muted text-sm sm:text-base mt-1">
-              Your saved recommendations, financial tips, and business strategies
+              {t.savedAdvicePage.subtitle}
             </p>
           </div>
 
@@ -180,14 +180,14 @@ export default function SavedAdvicePage() {
               💡
             </div>
             <h3 className="text-lg font-bold text-foreground">
-              No Saved Advice Yet
+              {t.savedAdvicePage.emptyTitle}
             </h3>
             <p className="text-sm text-muted max-w-sm mx-auto leading-relaxed">
-              When chatting with ArthaSetu, click the <strong>&ldquo;Save as Advice&rdquo;</strong> button on any response to bookmark it here.
+              {t.savedAdvicePage.emptyDesc}
             </p>
             <Link href="/advisor" className="inline-block pt-2">
               <Button size="md">
-                Ask ArthaSetu Now →
+                {t.savedAdvicePage.emptyCta}
               </Button>
             </Link>
           </div>

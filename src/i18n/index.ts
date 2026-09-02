@@ -26,31 +26,57 @@ import taLocale from './locales/ta.json';
 import teLocale from './locales/te.json';
 import urLocale from './locales/ur.json';
 
-const translations: Record<string, Translations> = {
+const rawTranslations: Record<string, unknown> = {
   en,
   hi,
   bn,
-  as: asLocale as unknown as Translations,
-  brx: brxLocale as unknown as Translations,
-  doi: doiLocale as unknown as Translations,
-  gu: guLocale as unknown as Translations,
-  kn: knLocale as unknown as Translations,
-  ks: ksLocale as unknown as Translations,
-  kok: kokLocale as unknown as Translations,
-  mai: maiLocale as unknown as Translations,
-  ml: mlLocale as unknown as Translations,
-  mni: mniLocale as unknown as Translations,
-  mr: mrLocale as unknown as Translations,
-  ne: neLocale as unknown as Translations,
-  or: orLocale as unknown as Translations,
-  pa: paLocale as unknown as Translations,
-  sa: saLocale as unknown as Translations,
-  sat: satLocale as unknown as Translations,
-  sd: sdLocale as unknown as Translations,
-  ta: taLocale as unknown as Translations,
-  te: teLocale as unknown as Translations,
-  ur: urLocale as unknown as Translations,
+  as: asLocale,
+  brx: brxLocale,
+  doi: doiLocale,
+  gu: guLocale,
+  kn: knLocale,
+  ks: ksLocale,
+  kok: kokLocale,
+  mai: maiLocale,
+  ml: mlLocale,
+  mni: mniLocale,
+  mr: mrLocale,
+  ne: neLocale,
+  or: orLocale,
+  pa: paLocale,
+  sa: saLocale,
+  sat: satLocale,
+  sd: sdLocale,
+  ta: taLocale,
+  te: teLocale,
+  ur: urLocale,
 };
+
+// Recursively fills any key missing from a locale with the English value for
+// that key. Locale files (especially the machine-generated JSON ones) do not
+// always have 100% key parity with `en.ts` — without this fallback, a missing
+// key resolves to `undefined` and any code that calls a string method on it
+// (e.g. `.replace(...)`) throws and crashes the whole page render.
+function withEnglishFallback<T>(base: T, override: unknown): T {
+  if (base === null || typeof base !== 'object' || Array.isArray(base)) {
+    // Scalars/arrays: prefer the translated value, fall back to English.
+    return (override === undefined || override === null ? base : (override as T));
+  }
+  const result: Record<string, unknown> = {};
+  const baseObj = base as Record<string, unknown>;
+  const overrideObj = (override && typeof override === 'object' ? override : {}) as Record<string, unknown>;
+  for (const key of Object.keys(baseObj)) {
+    result[key] = withEnglishFallback(baseObj[key], overrideObj[key]);
+  }
+  return result as T;
+}
+
+const translations: Record<string, Translations> = Object.fromEntries(
+  Object.entries(rawTranslations).map(([code, value]) => [
+    code,
+    code === 'en' ? en : withEnglishFallback(en, value),
+  ])
+) as Record<string, Translations>;
 
 export function getTranslations(language: string): Translations {
   return translations[language] || translations['en'] || en;
