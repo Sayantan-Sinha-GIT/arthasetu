@@ -596,3 +596,20 @@ html {
 .has-bg-video [data-ambient] > div:not(.grain-overlay) {
   display: none;
 }
+
+/* Touch devices get the translucency without the blur. /schemes renders 369
+   cards at once, and `backdrop-filter` on that many elements is a real cost
+   on the low-end Android hardware this product targets — the frosted look is
+   not worth dropped frames there. The panel is made more opaque to
+   compensate for the missing blur. */
+@media (hover: none) and (pointer: coarse) {
+  .has-bg-video [data-panel] {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: color-mix(in srgb, var(--color-surface-elevated) 93%, transparent);
+  }
+  .dark.has-bg-video [data-panel],
+  .has-bg-video .dark [data-panel] {
+    background-color: color-mix(in srgb, var(--color-surface-elevated) 90%, transparent);
+  }
+}

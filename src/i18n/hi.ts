@@ -358,6 +358,7 @@ const hi: Translations = {
     "machineTranslated": "AI = मशीन अनुवादित"
   },
   "tts": {
+    "voiceUnavailable": "पढ़कर सुनाने की सुविधा उपलब्ध नहीं है, क्योंकि आपके डिवाइस में इस भाषा के लिए कोई आवाज़ इंस्टॉल नहीं है।",
     "stopReadAloud": "ज़ोर से पढ़ना बंद करें",
     "readAloudWithVoice": "आवाज़ के साथ ज़ोर से पढ़ें",
     "stopVoice": "आवाज़ बंद करें",

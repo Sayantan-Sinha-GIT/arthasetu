@@ -404,6 +404,7 @@ const en = {
     readAloudWithVoice: 'Read aloud with voice',
     stopVoice: 'Stop Voice',
     readAloud: 'Read Aloud',
+    voiceUnavailable: 'Read-aloud is unavailable because your device has no voice installed for this language.',
   },
 
   // Planner

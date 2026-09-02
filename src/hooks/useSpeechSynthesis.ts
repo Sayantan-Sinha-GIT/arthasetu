@@ -4,6 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * BCP-47 Locale Map for all 22 Official Scheduled Indian Languages + English
+ *
+ * Languages with no speech engine of their own borrow the closest one that
+ * shares their script, which is the best the Web Speech API can do for them.
  */
 export const LANGUAGE_BCP47_MAP: Record<string, string> = {
   hi: 'hi-IN',
@@ -32,6 +35,22 @@ export const LANGUAGE_BCP47_MAP: Record<string, string> = {
 };
 
 /**
+ * Second-choice engines, tried when the language's own voice is missing but a
+ * closely related one that renders the same script is installed. Reading
+ * Bengali with an Assamese voice is imperfect; reading it with an English
+ * voice produces nothing at all, which is what used to happen.
+ */
+const SCRIPT_SIBLINGS: Record<string, string[]> = {
+  bn: ['as'],
+  as: ['bn'],
+  hi: ['mr', 'ne', 'sa'],
+  mr: ['hi'],
+  ne: ['hi'],
+  sa: ['hi'],
+  ur: ['hi'],
+};
+
+/**
  * Strip Markdown tokens to make text sound natural during speech synthesis
  */
 export function cleanTextForSpeech(markdown: string): string {
@@ -57,107 +76,280 @@ export function cleanTextForSpeech(markdown: string): string {
     .trim();
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Shared voice registry
+
+   The voice list loads asynchronously: in Chromium the first synchronous
+   getVoices() call returns an empty array, and the `voiceschanged` event
+   arrives later (or, on some builds, never). Resolving it once at module
+   scope and broadcasting matters because pages like /schemes mount hundreds
+   of read-aloud buttons — the previous code assigned
+   `speechSynthesis.onvoiceschanged` from inside each hook instance, so every
+   new button silently unsubscribed all the buttons mounted before it and
+   they were left with an empty voice list forever.
+   ───────────────────────────────────────────────────────────────────────── */
+
+let voiceCache: SpeechSynthesisVoice[] = [];
+const voiceSubscribers = new Set<(voices: SpeechSynthesisVoice[]) => void>();
+let voiceWatchStarted = false;
+
+function hasSpeech(): boolean {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window;
+}
+
+function readVoices(): SpeechSynthesisVoice[] {
+  if (!hasSpeech()) return [];
+  try {
+    return window.speechSynthesis.getVoices() || [];
+  } catch {
+    return [];
+  }
+}
+
+function startVoiceWatch() {
+  if (voiceWatchStarted || !hasSpeech()) return;
+  voiceWatchStarted = true;
+
+  const publish = () => {
+    const next = readVoices();
+    if (!next.length) return;
+    voiceCache = next;
+    voiceSubscribers.forEach((fn) => fn(next));
+  };
+
+  publish();
+  window.speechSynthesis.addEventListener('voiceschanged', publish);
+
+  // Some Chromium builds never fire `voiceschanged`, so poll briefly too.
+  let attempts = 0;
+  const poll = setInterval(() => {
+    publish();
+    if (voiceCache.length || ++attempts > 20) clearInterval(poll);
+  }, 250);
+}
+
+const normalise = (tag: string) => tag.toLowerCase().replace(/_/g, '-');
+const primarySubtag = (tag: string) => normalise(tag).split('-')[0];
+
+/**
+ * Resolve the best installed voice for an app language code, or null when the
+ * device has nothing that can pronounce it.
+ *
+ * Deliberately never falls back to English for non-English text. The old code
+ * did, and because a Latin-script engine cannot render Bengali or Devanagari
+ * glyphs the utterance completed instantly and silently: onstart and onend
+ * both fired, no error event was raised, and the UI showed its "speaking"
+ * animation over total silence. Returning null lets the caller say so.
+ */
+export function findVoiceFor(
+  langCode: string,
+  voices: SpeechSynthesisVoice[]
+): SpeechSynthesisVoice | null {
+  if (!voices.length) return null;
+
+  const target = normalise(LANGUAGE_BCP47_MAP[langCode] || langCode || 'en-IN');
+  const base = primarySubtag(target);
+
+  const exact = voices.find((v) => normalise(v.lang) === target);
+  if (exact) return exact;
+
+  const sameLanguage = voices.find((v) => primarySubtag(v.lang) === base);
+  if (sameLanguage) return sameLanguage;
+
+  for (const sibling of SCRIPT_SIBLINGS[base] || []) {
+    const siblingTag = primarySubtag(LANGUAGE_BCP47_MAP[sibling] || sibling);
+    const match = voices.find((v) => primarySubtag(v.lang) === siblingTag);
+    if (match) return match;
+  }
+
+  return null;
+}
+
+/**
+ * Split into utterances the engine will finish. Chromium truncates long
+ * utterances and stops outright after roughly fifteen seconds, so the text is
+ * queued in sentence-sized pieces. Danda (।) is a sentence end in Devanagari
+ * and Bengali scripts, alongside the Latin terminators.
+ */
+function chunkForSpeech(text: string, maxLength = 180): string[] {
+  const sentences = text.match(/[^.!?।॥]+[.!?।॥]*\s*/g) || [text];
+  const chunks: string[] = [];
+  let current = '';
+
+  for (const sentence of sentences) {
+    if (current && current.length + sentence.length > maxLength) {
+      chunks.push(current.trim());
+      current = '';
+    }
+    // A single sentence longer than the budget is split on word boundaries.
+    if (sentence.length > maxLength) {
+      if (current.trim()) chunks.push(current.trim());
+      current = '';
+      let piece = '';
+      for (const word of sentence.split(/\s+/)) {
+        if (piece && piece.length + word.length + 1 > maxLength) {
+          chunks.push(piece.trim());
+          piece = '';
+        }
+        piece += (piece ? ' ' : '') + word;
+      }
+      if (piece.trim()) chunks.push(piece.trim());
+    } else {
+      current += sentence;
+    }
+  }
+
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.filter(Boolean);
+}
+
 export function useSpeechSynthesis() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>(voiceCache);
 
-  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const pausedRef = useRef(false);
+  const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load available voices. Feature-detection + the voiceschanged subscription
-  // both need to run client-side only, so this stays an effect (deferred to
-  // avoid a hydration mismatch, matching useSpeechRecognition's isSupported).
+  // Feature detection and the shared voice subscription are both client-only,
+  // so they stay in an effect (deferred to avoid a hydration mismatch,
+  // matching useSpeechRecognition's isSupported).
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsSupported(true);
+    if (!hasSpeech()) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsSupported(true);
+    startVoiceWatch();
 
-      const updateVoices = () => {
-        const available = window.speechSynthesis.getVoices();
-        setVoices(available);
-      };
+    const onVoices = (next: SpeechSynthesisVoice[]) => setVoices(next);
+    voiceSubscribers.add(onVoices);
+    if (voiceCache.length) setVoices(voiceCache);
 
-      updateVoices();
-      window.speechSynthesis.onvoiceschanged = updateVoices;
+    return () => {
+      voiceSubscribers.delete(onVoices);
+    };
+  }, []);
+
+  const clearKeepAlive = useCallback(() => {
+    if (keepAliveRef.current) {
+      clearInterval(keepAliveRef.current);
+      keepAliveRef.current = null;
     }
   }, []);
 
   const stop = useCallback(() => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      setIsPaused(false);
-    }
-  }, []);
-
-  const speak = useCallback((text: string, langCode = 'en') => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      console.warn('Speech synthesis not supported');
-      return;
-    }
-
-    // Stop any ongoing utterance
+    if (!hasSpeech()) return;
+    clearKeepAlive();
     window.speechSynthesis.cancel();
+    pausedRef.current = false;
+    setIsSpeaking(false);
+    setIsPaused(false);
+  }, [clearKeepAlive]);
 
-    const cleanText = cleanTextForSpeech(text);
-    if (!cleanText) return;
+  /**
+   * True when this device can actually pronounce the given app language.
+   * Lets callers explain the situation instead of miming speech in silence.
+   */
+  const canSpeakLanguage = useCallback(
+    (langCode: string) => !!findVoiceFor(langCode, readVoices().length ? readVoices() : voices),
+    [voices]
+  );
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    currentUtteranceRef.current = utterance;
+  const speak = useCallback(
+    (text: string, langCode = 'en'): boolean => {
+      if (!hasSpeech()) {
+        console.warn('Speech synthesis not supported');
+        return false;
+      }
 
-    // Resolve target BCP-47 tag
-    const targetTag = LANGUAGE_BCP47_MAP[langCode] || langCode || 'en-IN';
-    utterance.lang = targetTag;
+      window.speechSynthesis.cancel();
+      clearKeepAlive();
 
-    // Find best voice match
-    const matchingVoice = voices.find((v) =>
-      v.lang.toLowerCase().replace('_', '-').includes(targetTag.toLowerCase())
-    ) || voices.find((v) =>
-      v.lang.toLowerCase().includes(targetTag.slice(0, 2))
-    ) || voices.find((v) =>
-      v.lang.toLowerCase().includes('en-in') || v.lang.toLowerCase().includes('hi-in')
-    );
+      const cleanText = cleanTextForSpeech(text);
+      if (!cleanText) return false;
 
-    if (matchingVoice) {
-      utterance.voice = matchingVoice;
-    }
+      // Read fresh — the cache may have filled since the last render.
+      const live = readVoices();
+      const available = live.length ? live : voices;
+      const voice = findVoiceFor(langCode, available);
 
-    utterance.rate = 0.95; // Slightly slower for clarity
-    utterance.pitch = 1.0;
+      // No engine for this script. Speaking anyway is worse than not: the
+      // browser reports success and plays nothing.
+      if (!voice) return false;
 
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      setIsPaused(false);
-    };
+      const chunks = chunkForSpeech(cleanText);
+      pausedRef.current = false;
 
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setIsPaused(false);
-    };
+      chunks.forEach((chunk, index) => {
+        const utterance = new SpeechSynthesisUtterance(chunk);
+        utterance.voice = voice;
+        // Match the tag the chosen engine actually advertises, rather than a
+        // tag nothing on the device can serve.
+        utterance.lang = voice.lang;
+        utterance.rate = 0.95; // Slightly slower for clarity
+        utterance.pitch = 1.0;
 
-    utterance.onerror = (e) => {
-      console.warn('Speech synthesis notice:', e);
-      setIsSpeaking(false);
-      setIsPaused(false);
-    };
+        if (index === 0) {
+          utterance.onstart = () => {
+            setIsSpeaking(true);
+            setIsPaused(false);
+          };
+        }
 
-    window.speechSynthesis.speak(utterance);
-  }, [voices]);
+        if (index === chunks.length - 1) {
+          utterance.onend = () => {
+            clearKeepAlive();
+            pausedRef.current = false;
+            setIsSpeaking(false);
+            setIsPaused(false);
+          };
+        }
+
+        utterance.onerror = (e) => {
+          // "interrupted"/"canceled" are the normal result of stop() or of
+          // starting a new read-aloud, not failures worth reporting.
+          if (e.error !== 'interrupted' && e.error !== 'canceled') {
+            console.warn('Speech synthesis notice:', e.error);
+          }
+          clearKeepAlive();
+          pausedRef.current = false;
+          setIsSpeaking(false);
+          setIsPaused(false);
+        };
+
+        window.speechSynthesis.speak(utterance);
+      });
+
+      // Chromium silently stops long queues after ~15s unless nudged.
+      keepAliveRef.current = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          clearKeepAlive();
+          return;
+        }
+        if (!pausedRef.current) window.speechSynthesis.resume();
+      }, 8000);
+
+      return true;
+    },
+    [voices, clearKeepAlive]
+  );
 
   const pause = useCallback(() => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && isSpeaking) {
-      window.speechSynthesis.pause();
-      setIsPaused(true);
-    }
+    if (!hasSpeech() || !isSpeaking) return;
+    window.speechSynthesis.pause();
+    pausedRef.current = true;
+    setIsPaused(true);
   }, [isSpeaking]);
 
   const resume = useCallback(() => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && isPaused) {
-      window.speechSynthesis.resume();
-      setIsPaused(false);
-    }
+    if (!hasSpeech() || !isPaused) return;
+    window.speechSynthesis.resume();
+    pausedRef.current = false;
+    setIsPaused(false);
   }, [isPaused]);
+
+  // Never leave speech running after the component that started it is gone.
+  useEffect(() => clearKeepAlive, [clearKeepAlive]);
 
   return {
     isSupported,
@@ -168,5 +360,6 @@ export function useSpeechSynthesis() {
     stop,
     pause,
     resume,
+    canSpeakLanguage,
   };
 }

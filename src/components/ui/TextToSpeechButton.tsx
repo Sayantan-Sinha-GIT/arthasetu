@@ -17,9 +17,16 @@ export default function TextToSpeechButton({
   label,
 }: TextToSpeechButtonProps) {
   const { language, t } = useLanguage();
-  const { isSupported, isSpeaking, speak, stop } = useSpeechSynthesis();
+  const { isSupported, isSpeaking, speak, stop, canSpeakLanguage } = useSpeechSynthesis();
+
+  const isSmall = size === 'sm';
 
   if (!isSupported) return null;
+
+  // The device may have no engine for this script — most Windows installs
+  // ship only English. Saying so beats the old behaviour, where the browser
+  // reported success, played nothing, and the button animated regardless.
+  const hasVoice = canSpeakLanguage(language);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -30,7 +37,41 @@ export default function TextToSpeechButton({
     }
   };
 
-  const isSmall = size === 'sm';
+  if (!hasVoice) {
+    const unavailable =
+      t.tts?.voiceUnavailable || 'Read-aloud needs a voice for this language installed on your device.';
+    return (
+      <span
+        title={unavailable}
+        aria-label={unavailable}
+        className={`
+          inline-flex items-center gap-1.5 rounded-xl font-bold cursor-not-allowed
+          bg-surface border border-border-subtle text-muted opacity-70
+          ${isSmall ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-2 text-sm'}
+          ${className}
+        `}
+      >
+        <svg
+          className={isSmall ? 'w-3.5 h-3.5' : 'w-4 h-4'}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.21-1.605.572-2.288.234-.847 1.058-1.354 1.938-1.354h2.24z"
+          />
+        </svg>
+        {/* Visible label stays the already-translated "Read Aloud" string;
+            the greyed styling and struck-through speaker carry the meaning in
+            every language, and the tooltip explains why. */}
+        <span>{t.tts?.readAloud || 'Read Aloud'}</span>
+      </span>
+    );
+  }
 
   return (
     <button

@@ -815,6 +815,7 @@ const bn: Translations = {
     "machineTranslated": "AI = মেশিন অনুবাদ"
   },
   "tts": {
+    "voiceUnavailable": "আপনার ডিভাইসে এই ভাষার জন্য কোনো কণ্ঠস্বর ইনস্টল করা নেই, তাই পড়ে শোনানোর সুবিধাটি ব্যবহার করা যাচ্ছে না।",
     "stopReadAloud": "পড়া বন্ধ করুন",
     "readAloudWithVoice": "ভয়েস দিয়ে উচ্চস্বরে পড়ুন",
     "stopVoice": "ভয়েস বন্ধ করুন",
