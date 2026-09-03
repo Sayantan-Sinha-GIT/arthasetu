@@ -27,12 +27,12 @@ export default function PageBackgroundVideo() {
     setMounted(true);
   }, []);
 
-  // The admin console is a dense administration tool — 369 scheme cards, audit
-  // tables, stat readouts. Drifting light behind that is noise competing with
-  // the data, not atmosphere, so the motion background stops at its door.
-  const isAdminRoute = pathname.split('/').includes('admin');
-
-  const active = mounted && pathname !== '/' && !isAdminRoute && quality === 'full';
+  // Every route except the landing page, which keeps its own hero treatment.
+  // The admin console is included: it was briefly excluded on the grounds that
+  // motion behind dense records competes with the data, but that also left the
+  // Data Saver toggle with nothing to switch off there, which made the setting
+  // look broken to an administrator testing it.
+  const active = mounted && pathname !== '/' && quality === 'full';
 
   // Signals the rest of the stylesheet that a video sits behind the page, so
   // <body> and the page shells go transparent and cards turn to frosted glass.
