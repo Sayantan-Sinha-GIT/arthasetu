@@ -174,64 +174,11 @@ export async function updateUserProfile(uid: string, updates: Partial<UserProfil
   }
 }
 
-/**
- * Calculate the profile completeness percentage and identify missing fields
- */
-export function calculateProfileCompleteness(profile: Partial<UserProfile> | null): {
-  percentage: number;
-  completedCount: number;
-  totalCount: number;
-  missingFields: string[];
-} {
-  if (!profile) {
-    return { percentage: 0, completedCount: 0, totalCount: 10, missingFields: ['All fields'] };
-  }
-
-  const checkpoints = [
-    { key: 'name', label: 'Full Name', check: () => !!profile.name && profile.name.trim().length > 0 },
-    { key: 'state', label: 'State', check: () => !!profile.state && profile.state.trim().length > 0 },
-    { key: 'district', label: 'District', check: () => !!profile.district && profile.district.trim().length > 0 },
-    { key: 'locality', label: 'Village / Town', check: () => !!profile.locality && profile.locality.trim().length > 0 },
-    { key: 'businessStatus', label: 'Business Status', check: () => !!profile.businessStatus && profile.businessStatus.length > 0 },
-    { key: 'businessCategory', label: 'Business Category', check: () => !!profile.businessCategory && profile.businessCategory.length > 0 },
-    { key: 'businessType', label: 'Business Type', check: () => !!profile.businessType && profile.businessType.trim().length > 0 },
-    { key: 'availableCapital', label: 'Available Capital', check: () => typeof profile.availableCapital === 'number' && profile.availableCapital >= 0 },
-    { key: 'desiredFunding', label: 'Desired Funding', check: () => typeof profile.desiredFunding === 'number' && profile.desiredFunding > 0 },
-    { key: 'dob', label: 'Date of Birth', check: () => !!profile.dob && profile.dob.length > 0 },
-    {
-      key: 'loanDetails',
-      label: 'Loan Details',
-      check: () => {
-        if (!profile.existingLoans) return true; // Not applicable / no debt
-        return (
-          Array.isArray(profile.loanDetails) &&
-          profile.loanDetails.length > 0 &&
-          profile.loanDetails.every((l) => (l.outstandingAmount > 0 || l.monthlyEmi > 0) && !!l.lenderType)
-        );
-      },
-    },
-  ];
-
-  const missingFields: string[] = [];
-  let completedCount = 0;
-
-  for (const checkpoint of checkpoints) {
-    if (checkpoint.check()) {
-      completedCount++;
-    } else {
-      missingFields.push(checkpoint.label);
-    }
-  }
-
-  const percentage = Math.round((completedCount / checkpoints.length) * 100);
-
-  return {
-    percentage,
-    completedCount,
-    totalCount: checkpoints.length,
-    missingFields,
-  };
-}
+// calculateProfileCompleteness moved to @/lib/profile/completeness so that the
+// advisor's system-prompt builder can use it without pulling the Firebase
+// client SDK in behind it. Re-exported here so existing importers are unchanged.
+export { calculateProfileCompleteness } from '@/lib/profile/completeness';
+export type { ProfileCompleteness } from '@/lib/profile/completeness';
 
 /**
  * Delete all Firestore documents associated with a user:

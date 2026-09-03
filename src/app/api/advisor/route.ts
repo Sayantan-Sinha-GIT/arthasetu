@@ -199,16 +199,24 @@ export async function POST(req: NextRequest) {
           },
           {
             name: 'updateProfile',
-            description: 'Updates the user\'s profile details automatically when they share new information like budget, business type, or experience.',
+            description:
+              'Saves details the user reveals about themselves or their business, whether volunteered or given in answer to your question. Call this immediately after they tell you something, so the profile fills in as the conversation goes and they are never asked twice. Pass only the fields they actually gave you.',
             parameters: {
               type: Type.OBJECT,
               properties: {
-                businessType: { type: Type.STRING },
-                businessCategory: { type: Type.STRING },
-                availableCapital: { type: Type.NUMBER },
-                desiredFunding: { type: Type.NUMBER },
-                businessExperience: { type: Type.STRING },
-                businessStatus: { type: Type.STRING, description: '"existing" or "planning"' }
+                businessType: { type: Type.STRING, description: 'Specific trade, e.g. "Poultry Broiler Unit", "Tailoring"' },
+                businessCategory: { type: Type.STRING, description: 'Broad sector, e.g. "Agro & Livestock", "Handicrafts", "Retail"' },
+                availableCapital: { type: Type.NUMBER, description: 'Own savings the user can put in, in INR' },
+                desiredFunding: { type: Type.NUMBER, description: 'External funding or loan the user wants, in INR' },
+                businessExperience: { type: Type.STRING, description: 'Years in the trade, e.g. "0-1 years", "1-3 years", "3-5 years", "5+ years"' },
+                businessStatus: { type: Type.STRING, description: '"existing" or "planning"' },
+                // Location drives scheme matching, and the profile checklist counts
+                // it, but the tool could not write it — so anything the advisor
+                // asked about location was lost the moment the chat ended.
+                state: { type: Type.STRING, description: 'Indian State or UT, e.g. "Assam"' },
+                district: { type: Type.STRING, description: 'Administrative district, e.g. "Nagaon"' },
+                locality: { type: Type.STRING, description: 'Village, town or post office' },
+                pinCode: { type: Type.STRING, description: '6-digit Indian postal code' }
               }
             }
           }
