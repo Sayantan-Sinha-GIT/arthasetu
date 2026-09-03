@@ -160,7 +160,7 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
         schemeId: formData.id,
         schemeName: formData.name,
         adminId: user.uid,
-        adminEmail: user.email || 'admin@arthasetu.gov.in',
+        adminEmail: user.email || 'admin@arthasetu.app',
         sourceUrl: sourceUrl || formData.officialUrl,
         proposedChanges: aiDraftResult.proposedChanges,
         status: 'pending',

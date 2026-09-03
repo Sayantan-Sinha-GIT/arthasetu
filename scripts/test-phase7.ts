@@ -60,7 +60,7 @@ async function runPhase7Tests() {
   const adminApp = getAdminApps().length === 0 ? initAdminApp({ credential: cert(serviceAccount) }, 'admin-p7-test') : getAdminApps()[0];
   const adminAuth = getAdminAuth(adminApp);
 
-  const testAdminEmail = `admin_test_${Date.now()}@arthasetu.gov.in`;
+  const testAdminEmail = `admin_test_${Date.now()}@arthasetu.app`;
   const testAdminPassword = 'AdminPassword123!';
   let adminUid = '';
 

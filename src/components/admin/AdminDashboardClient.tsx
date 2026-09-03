@@ -81,7 +81,7 @@ export default function AdminDashboardClient() {
       await approveSchemeUpdate(
         update.id,
         user.uid,
-        user.email || 'admin@arthasetu.gov.in'
+        user.email || 'admin@arthasetu.app'
       );
       await loadData();
     } catch (err) {

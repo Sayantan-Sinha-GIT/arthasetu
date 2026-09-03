@@ -137,7 +137,7 @@ async function testSecurityRules() {
       benefits: { maxSubsidyPercent: 0 },
       requiredDocuments: [],
       applicationProcess: 'Test',
-      officialUrl: 'https://arthasetu.gov.in',
+      officialUrl: 'https://arthasetu.app',
       sourceName: 'Admin System',
       lastVerifiedDate: '2026-08-29',
       isActive: true,

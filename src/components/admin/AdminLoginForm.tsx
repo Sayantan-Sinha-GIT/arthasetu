@@ -92,7 +92,7 @@ export default function AdminLoginForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@arthasetu.gov.in"
+              placeholder="admin@arthasetu.app"
               required
               autoComplete="email"
               icon={
