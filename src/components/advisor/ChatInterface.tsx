@@ -31,31 +31,26 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   const [toastMessage, setToastMessage] = useState('');
   const [activeSpeakingMessageId, setActiveSpeakingMessageId] = useState<string | null>(null);
 
-  // Default speech language derived from user's UI preference
-  const defaultSpeechLanguage = currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN');
+  // Dictation follows the language the site is displayed in — switch the UI to
+  // Hindi and the microphone listens in Hindi. Derived, not stored: this was
+  // previously a piece of state seeded from a localStorage preference, which
+  // only re-synced with the UI `if` no saved value existed. The writer for
+  // that key belonged to a voice-language picker removed in af1f337 as dead
+  // code, but its readers were left behind — so anyone who had used the picker
+  // kept a stale value that silently and permanently overrode the UI language,
+  // with no remaining way to change it. Hence a Hindi interface listening in
+  // bn-IN. There is no picker any more, so there is no preference to respect.
+  const speechLanguage = currentMeta?.speechCode || (isHindi ? 'hi-IN' : 'en-IN');
 
-  const SPEECH_LANG_KEY = 'arthasetu-speech-language';
-  const [speechLanguage, setSpeechLanguage] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(SPEECH_LANG_KEY);
-      if (saved) return saved;
+  // Clear the orphaned key so a future reader cannot resurrect the same bug
+  // from a value nothing has been able to write since af1f337.
+  useEffect(() => {
+    try {
+      localStorage.removeItem('arthasetu-speech-language');
+    } catch {
+      // Private mode or blocked storage: nothing to clean up.
     }
-    return defaultSpeechLanguage;
-  });
-
-  // Re-sync speechLanguage when the UI language's speech code changes (unless
-  // the user has an explicit saved preference). Adjusted during render
-  // (React's recommended pattern for "state derived from a prop") rather
-  // than in an effect — by the time `currentMeta.speechCode` first differs
-  // from its previous value this is always a post-mount, client-side render,
-  // so the localStorage read here is safe.
-  const [prevSpeechCode, setPrevSpeechCode] = useState(currentMeta?.speechCode);
-  if (currentMeta?.speechCode !== prevSpeechCode) {
-    setPrevSpeechCode(currentMeta?.speechCode);
-    if (typeof window !== 'undefined' && currentMeta?.speechCode && !localStorage.getItem(SPEECH_LANG_KEY)) {
-      setSpeechLanguage(currentMeta.speechCode);
-    }
-  }
+  }, []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
