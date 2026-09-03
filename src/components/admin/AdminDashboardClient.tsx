@@ -160,7 +160,7 @@ export default function AdminDashboardClient() {
   return (
     <AdminGuard>
       <Navbar />
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 pt-28 pb-8 space-y-8 animate-fade-in">
         {/* Admin Header */}
         <div className="relative overflow-hidden rounded-2xl p-6 bg-surface-elevated/60 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <AmbientBackground variant="subtle" />

@@ -40,7 +40,7 @@ export default function AdminHistoryClient() {
   return (
     <AdminGuard>
       <Navbar />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 animate-fade-in">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pt-28 pb-8 space-y-6 animate-fade-in">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
           <div>
