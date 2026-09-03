@@ -317,7 +317,8 @@
       "greetingNamed": "Namaste **{{userName}}**! Main **ArthaSetu** haan, tuhunda samarpit AI business salahkar.{{businessContext}}\n\nAj main tuhadi ki madad kar sakda haan? Tusi type kar sakde ho ya boln layi microphone te tap kar sakde ho.",
       "greetingAnon": "Namaste! Main **ArthaSetu** haan, tuhunda AI business salahkar.\n\nChhote udyam nu shuru karan, funding, ya vadhan bare kuch vi pucho. Aj main tuhunde karobar di ki sahayata kar sakda haan?",
       "businessPart": " Main dekh reha haan ke tusi apne **{{business}}**{{locationPart}} te kamm kar rehe ho.",
-      "locationPart": " **{{location}}** vich"
+      "locationPart": " **{{location}}** vich",
+      "profileNudge": "मेरे कोलें तुहाड़े पूरे ब्योरे नेईं न। गैल-बाति बक्ख तुस अप्पुर्णा थान्तां ते बजट दस्सो, तां जो मैं सरकार दियां योजनाएं दा मेल्च करी सकूं ते तुहाड़े आनी सटीक आंकड़े कड्ड सकूं।"
     },
     "bubble": {
       "spokenVoice": "Boli gaya voice message",

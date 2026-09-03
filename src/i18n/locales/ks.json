@@ -332,7 +332,8 @@
       "greetingNamed": "خوٗش آمَد **{{userName}}**! آءِ اَم **ArthaSetu**.{{businessContext}}\n\nکیٛاہ مَدَت کَروٗ?",
       "greetingAnon": "نَمَستے! آءِ اَم **ArthaSetu**.",
       "businessPart": " تِہُنٛد کاروبار چھُ **{{business}}**{{locationPart}}.",
-      "locationPart": " مَنٛز **{{location}}**"
+      "locationPart": " مَنٛز **{{location}}**",
+      "profileNudge": "مہٕ کڑنہٕ نہٕ تمہٕ سٕنٛدؠ پٔرٛوٲن پۆرٕ تفصِیلات ہٕنٛز۔ تِہُنٛد جایہٕ تہٕ بَجٹ چھُ وۄنٛء ووٲن واتناونٛدِ، تۄہِ ہٮ۪کوہِ سرکٲرؠ سکِیمہٕ تہٕ صِحِت حِساب حِتاب رَلٲوِتھ أکِس مُطٲبِق کَرِتھ۔"
     },
     "bubble": {
       "spokenVoice": "آواز پَیغام",

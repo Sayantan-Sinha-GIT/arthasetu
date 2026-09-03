@@ -28,12 +28,10 @@ const ai = new GoogleGenAI({ apiKey });
 
 /** The strings to translate, shaped exactly as they sit in the locale files. */
 const CHUNK = {
-  planner: {
-    whatif: {
-      marginalStatus: en.planner.whatif.marginalStatus,
-      atRiskStatus: en.planner.whatif.atRiskStatus,
+  advisor: {
+    chat: {
+      profileNudge: en.advisor.chat.profileNudge,
     },
-    pdfCapexTitle: en.planner.pdfCapexTitle,
   },
 };
 

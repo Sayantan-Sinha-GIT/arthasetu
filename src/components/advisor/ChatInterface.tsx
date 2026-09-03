@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { calculateProfileCompleteness } from '@/lib/profile/completeness';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MessageBubble from '@/components/advisor/MessageBubble';
 import SuggestedQuestions from '@/components/advisor/SuggestedQuestions';
@@ -122,7 +123,17 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       const businessContext = business ? t.advisor.chat.businessPart.replace('{{business}}', business).replace('{{locationPart}}', locationPart) : '';
       const greetingNamed = t.advisor.chat.greetingNamed.replace('{{userName}}', userName).replace('{{businessContext}}', businessContext);
 
-      const greeting = userName ? greetingNamed : t.advisor.chat.greetingAnon;
+      // The advisor gathers the profile conversationally rather than through a
+      // signup form, so when details are still missing the opening message says
+      // so. Without this the first thing the user sees is "How can I help you
+      // today?", which gives no hint that telling it where they are and what
+      // they can spend is what unlocks scheme matching and real numbers.
+      const { missingFields } = calculateProfileCompleteness(userProfile);
+      // The blank line is layout, so it belongs here rather than inside 23
+      // translated strings where a model can quietly drop it.
+      const profileNudge = missingFields.length > 0 ? `\n\n${t.advisor.chat.profileNudge}` : '';
+
+      const greeting = (userName ? greetingNamed : t.advisor.chat.greetingAnon) + profileNudge;
 
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages([

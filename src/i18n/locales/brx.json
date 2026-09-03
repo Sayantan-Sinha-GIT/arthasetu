@@ -317,7 +317,8 @@
       "greetingNamed": "Phwlainwi phwjw **{{userName}}**! Ang **ArthaSetu**, noni AI business advisor.{{businessContext}}\n\nBishabw khamna manw? Type khalam ba mic-ao kothha khalam.",
       "greetingAnon": "Namaste! Ang **ArthaSetu**, noni AI business advisor.\n\nMicro-enterprise suru khalami, funding, ba grow khalami bikhai kono.",
       "businessPart": " Nang **{{business}}**{{locationPart}} bisfar khamdwi nunangw.",
-      "locationPart": " **{{location}}**-ao"
+      "locationPart": " **{{location}}**-ao",
+      "profileNudge": "आंनिफ्राय नोंनि गासैबो गुबुं थि खौरां गैया। नों सावरायनाय समाव आंनो नोंनि थांनाय जायगा आरो बाजेत खौ बुं, होमब्ला आं सरकारि थुंखुंफोरजों मिलायनानै नोंनि थाखाय थि हिसाब खालामना होनो हागोन।"
     },
     "bubble": {
       "spokenVoice": "Spoken voice message",

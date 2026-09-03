@@ -356,6 +356,7 @@ const en = {
       voiceLangDesc: 'Change the language used when you click the microphone to speak.',
       micBlocked: '⚠️ Microphone access is blocked in your browser. You can type your questions in the box below anytime.',
       greetingNamed: 'Hello **{{userName}}**! I am **ArthaSetu**, your dedicated AI business advisor.{{businessContext}}\n\nHow can I help you today? You can type or tap the microphone to speak.',
+      profileNudge: 'I do not have your full details yet. Tell me your location and budget as we talk, and I can match government schemes and work out exact numbers for you.',
       greetingAnon: 'Namaste! I am **ArthaSetu**, your AI business advisor.\n\nAsk me anything about starting, funding, or growing your micro-enterprise. How can I assist your business today?',
       businessPart: ' I see you are working on your **{{business}}**{{locationPart}}.',
       locationPart: ' in **{{location}}**'

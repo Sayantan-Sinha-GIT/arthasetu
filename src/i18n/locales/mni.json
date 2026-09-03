@@ -317,7 +317,8 @@
       "greetingNamed": "Khubam Phre **{{userName}}**! Ngadi **ArthaSetu**, nanggi AI business advisor ni.{{businessContext}}\n\nNgadi karamna mateng pangge? Type tou nattra mic click touduna wa haiba yai.",
       "greetingAnon": "Namaste! Ngadi **ArthaSetu**, nanggi AI business advisor ni.\n\nMicro-enterprise houba, funding amadi chaothokpagi maramda karigi hangba yai. Ngadi nanggi business da karamna mateng pangge?",
       "businessPart": " Nangna **{{business}}**{{locationPart}} da thabak touribani khng-e.",
-      "locationPart": " **{{location}}** da"
+      "locationPart": " **{{location}}** da",
+      "profileNudge": "ঙসি ফাওবা অদোম্বগী অপুনবা মরোলশিং লৈতে। ঐখোয় পনবা মতমদা অদোম্বগী মফম অমসুং বজেৎ ফোংদোকউ, অদুগা লৈবাক্কগী থবক-থৌরমশিংগা চুনবা অমসুং চানা লুপা কুইথোকপগী মশিং থিরগা পীরকউ।"
     },
     "bubble": {
       "spokenVoice": "Wa haiba voice message",

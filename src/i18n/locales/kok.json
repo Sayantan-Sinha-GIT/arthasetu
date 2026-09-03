@@ -317,7 +317,8 @@
       "greetingNamed": "Namaskar **{{userName}}**! Mi **ArthaSetu**, tumcho AI byapar salahkar.{{businessContext}}\n\nAji mi kashi madad koru?",
       "greetingAnon": "Namaskar! Mi **ArthaSetu**, tumcho AI byapar salahkar.\n\nByapar shuru kornya vishay kahihi vichar.",
       "businessPart": " Mi paha tomi **{{business}}**{{locationPart}} madhe kam kortai.",
-      "locationPart": " **{{location}}** madhe"
+      "locationPart": " **{{location}}** madhe",
+      "profileNudge": "म्हाका अजून तुमची पुरी म्हायती मेळूंक ना. गजाली करतना तुमची सुवात आनी खर्चान पडपी मुस्ती सांगा, हांव सरकाराची येवजण जुळोवन तुंका अचूक आकडे काडून दितलों."
     },
     "bubble": {
       "spokenVoice": "Ulovun kele message",

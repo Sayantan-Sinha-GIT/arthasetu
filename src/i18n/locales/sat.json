@@ -332,7 +332,8 @@
       "greetingNamed": "Jharay ruray **{{userName}}**! Aniing **ArthaSetu**, apmapeya AI business advisor.{{businessContext}}\n\nChemen sahaoe aing? Roror ba type me.",
       "greetingAnon": "Namaste! Aing **ArthaSetu**, apmapeya AI business advisor.\n\nBura sruet, loan, ba barhao babad khuliyak me.",
       "businessPart": " Nel kaning apema **{{business}}**{{locationPart}} re kamiyaka.",
-      "locationPart": " **{{location}}** re"
+      "locationPart": " **{{location}}** re",
+      "profileNudge": "ᱤᱧ ᱴᱷᱮᱱ ᱟᱢᱟᱜ ᱯᱩᱨᱟᱹ ᱵᱤᱵᱚᱨᱚᱬ ᱵᱟᱹᱱᱩᱜᱼᱟ᱾ ᱨᱚᱲ ᱨᱚᱲ ᱛᱮ ᱟᱢᱟᱜ ᱴᱷᱟᱶ ᱟᱨ ᱵᱟᱡᱮᱴ ᱫᱚ ᱞᱟᱹᱭ ᱢᱮ, ᱤᱧ ᱫᱚ ᱥᱚᱨᱠᱟᱨᱟᱜ ᱡᱚᱡᱚᱱᱟ ᱠᱚ ᱥᱟᱶ ᱡᱚᱯᱲᱟᱣ ᱠᱟᱛᱮ ᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱹᱨᱤ ᱦᱤᱥᱟᱹᱵᱽ ᱤᱧ ᱚᱰᱚᱠ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾"
     },
     "bubble": {
       "spokenVoice": "Roror message",
