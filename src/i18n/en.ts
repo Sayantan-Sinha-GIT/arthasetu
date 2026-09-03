@@ -500,8 +500,6 @@ const en = {
       noDebtStatus: 'No Debt Service',
       marginalStatus: 'Marginal (DSCR 1.2-1.5x)',
       atRiskStatus: 'At Risk (DSCR < 1.2x)',
-      criticalRiskStatus: 'Critical Risk (DSCR < 1.0x)',
-      moderateRiskStatus: 'Moderate Risk (DSCR 1.0–1.3x)',
     },
     wizard: {
       step1Title: 'Step 1: Business Context & Planning Mode',

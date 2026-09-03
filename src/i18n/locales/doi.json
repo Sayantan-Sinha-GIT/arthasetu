@@ -451,8 +451,6 @@
       "liveSliders": "Live Sliders",
       "safeStatus": "Safe (DSCR > 1.5x)",
       "noDebtStatus": "Koyi Debt Service Nahi",
-      "criticalRiskStatus": "Critical Risk (DSCR < 1.0x)",
-      "moderateRiskStatus": "Madhyam Risk (DSCR 1.0–1.3x)",
       "marginalStatus": "सीमांत (DSCR 1.2-1.5x)",
       "atRiskStatus": "जोखिम च (DSCR < 1.2x)"
     },

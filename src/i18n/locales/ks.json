@@ -466,8 +466,6 @@
       "liveSliders": "لائیو سلایڈَر",
       "safeStatus": "مَحفوٗظ (DSCR > 1.5x)",
       "noDebtStatus": "قَرْضہٕ نانہٕ",
-      "criticalRiskStatus": "خَطرٕ (DSCR < 1.0x)",
-      "moderateRiskStatus": "دَرَمِیان خَطرٕ (DSCR 1.0–1.3x)",
       "marginalStatus": "حد پٮٛٹھٕ (DSCR 1.2-1.5x)",
       "atRiskStatus": "خطرس منٛز (DSCR < 1.2x)"
     },

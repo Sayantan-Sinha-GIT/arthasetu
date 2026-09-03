@@ -451,8 +451,6 @@
       "liveSliders": "ಲೈವ್ ಸ್ಲೈಡರ್‌ಗಳು",
       "safeStatus": "ಸುರಕ್ಷಿತ (DSCR > 1.5x)",
       "noDebtStatus": "ಯಾವುದೇ ಸಾಲ ಸೇವೆಯಿಲ್ಲ",
-      "criticalRiskStatus": "ನಿರ್ಣಾಯಕ ಅಪಾಯ (DSCR < 1.0x)",
-      "moderateRiskStatus": "ಮಧ್ಯಮ ಅಪಾಯ (DSCR 1.0–1.3x)",
       "marginalStatus": "ಅಂಚಿನಲ್ಲಿದೆ (DSCR 1.2-1.5x)",
       "atRiskStatus": "ಅಪಾಯದಲ್ಲಿದೆ (DSCR < 1.2x)"
     },

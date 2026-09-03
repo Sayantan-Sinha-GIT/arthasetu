@@ -451,8 +451,6 @@
       "liveSliders": "நேரலை ஸ்லைடர்கள்",
       "safeStatus": "பாதுகாப்பானது (DSCR > 1.5x)",
       "noDebtStatus": "கடன் சேவை இல்லை",
-      "criticalRiskStatus": "கட்டாய ஆபத்து (DSCR < 1.0x)",
-      "moderateRiskStatus": "மிதமான ஆபத்து (DSCR 1.0–1.3x)",
       "marginalStatus": "எல்லைக்குட்பட்டது (DSCR 1.2-1.5x)",
       "atRiskStatus": "ஆபத்தில் உள்ளது (DSCR < 1.2x)"
     },

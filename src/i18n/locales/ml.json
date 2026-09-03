@@ -466,8 +466,6 @@
       "liveSliders": "തത്സമയ സ്ലൈഡറുകൾ",
       "safeStatus": "സുരക്ഷിതം (DSCR > 1.5x)",
       "noDebtStatus": "വായ്പാ ബാധ്യതകളില്ല",
-      "criticalRiskStatus": "ഗുരുതരമായ അപകടസാധ്യത (DSCR < 1.0x)",
-      "moderateRiskStatus": "മിതമായ അപകടസാധ്യത (DSCR 1.0–1.3x)",
       "marginalStatus": "അരികെ (DSCR 1.2-1.5x)",
       "atRiskStatus": "അപകടസാധ്യതയിൽ (DSCR < 1.2x)"
     },

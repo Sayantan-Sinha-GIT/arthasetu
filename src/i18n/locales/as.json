@@ -451,8 +451,6 @@
       "liveSliders": "লাইভ স্লাইডাৰসমূহ",
       "safeStatus": "নিৰাপদ (DSCR > 1.5x)",
       "noDebtStatus": "কোনো ঋণ সেৱা নাই",
-      "criticalRiskStatus": "মাৰাত্মক সংকট (DSCR < 1.0x)",
-      "moderateRiskStatus": "মধ্যম সংকট (DSCR 1.0–1.3x)",
       "marginalStatus": "সীমান্তৱৰ্তী (DSCR 1.2-1.5x)",
       "atRiskStatus": "ঝুঁকিপূৰ্ণ (DSCR < 1.2x)"
     },

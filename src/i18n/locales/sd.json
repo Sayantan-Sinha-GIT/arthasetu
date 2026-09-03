@@ -466,8 +466,6 @@
       "liveSliders": "لائيو سلائيڊرز",
       "safeStatus": "محفوظ (DSCR > 1.5x)",
       "noDebtStatus": "ڪو به قرض سروس ناهي",
-      "criticalRiskStatus": "نازڪ خطرو (DSCR < 1.0x)",
-      "moderateRiskStatus": "معتدل خطرو (DSCR 1.0–1.3x)",
       "marginalStatus": "ڪناري تي (DSCR 1.2-1.5x)",
       "atRiskStatus": "خطري ۾ (DSCR < 1.2x)"
     },

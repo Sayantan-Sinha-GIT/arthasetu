@@ -466,8 +466,6 @@
       "liveSliders": "ਲਾਈਵ ਸਲਾਈਡਰ",
       "safeStatus": "ਸੁਰੱਖਿਅਤ (DSCR > 1.5x)",
       "noDebtStatus": "ਕੋਈ ਕਰਜ਼ਾ ਸੇਵਾ ਨਹੀਂ",
-      "criticalRiskStatus": "ਗੰਭੀਰ ਖਤਰਾ (DSCR < 1.0x)",
-      "moderateRiskStatus": "ਦਰਮਿਆਨਾ ਖਤਰਾ (DSCR 1.0–1.3x)",
       "marginalStatus": "ਸੀਮਾਂਤ (DSCR 1.2-1.5x)",
       "atRiskStatus": "ਖਤਰੇ ਵਿੱਚ (DSCR < 1.2x)"
     },

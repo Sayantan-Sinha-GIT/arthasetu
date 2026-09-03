@@ -457,8 +457,6 @@ const hi: Translations = {
       "liveSliders": "लाइव स्लाइडर",
       "safeStatus": "सुरक्षित (DSCR > 1.5x)",
       "noDebtStatus": "कोई ऋण सेवा नहीं",
-      "criticalRiskStatus": "गंभीर जोखिम (DSCR < 1.0x)",
-      "moderateRiskStatus": "मध्यम जोखिम (DSCR 1.0-1.3x)"
     },
     "wizard": {
       "step1Title": "चरण 1: व्यापार संदर्भ और योजना मोड",

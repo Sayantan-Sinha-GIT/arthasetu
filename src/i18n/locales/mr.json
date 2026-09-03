@@ -451,8 +451,6 @@
       "liveSliders": "लाइव्ह स्लायडर",
       "safeStatus": "सुरक्षित (DSCR > १.५x)",
       "noDebtStatus": "कर्ज सेवा नाही",
-      "criticalRiskStatus": "गंभीर जोखीम (DSCR < १.०x)",
-      "moderateRiskStatus": "मध्यम जोखीम (DSCR १.०–१.३x)",
       "marginalStatus": "मर्यादित (DSCR 1.2-1.5x)",
       "atRiskStatus": "जोखमीचे (DSCR < 1.2x)"
     },

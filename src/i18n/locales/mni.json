@@ -451,8 +451,6 @@
       "liveSliders": "Live Sliders",
       "safeStatus": "Safe (DSCR > 1.5x)",
       "noDebtStatus": "No Debt Service",
-      "criticalRiskStatus": "Critical Risk (DSCR < 1.0x)",
-      "moderateRiskStatus": "Moderate Risk (DSCR 1.0–1.3x)",
       "marginalStatus": "খুদ্রকপা (DSCR 1.2-1.5x)",
       "atRiskStatus": "অক্নবা মখা (DSCR < 1.2x)"
     },

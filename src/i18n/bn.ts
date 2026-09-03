@@ -445,8 +445,6 @@ const bn: Translations = {
       "liveSliders": "স্লাইডার দিয়ে দেখুন",
       "safeStatus": "নিরাপদ (DSCR > ১.৫x)",
       "noDebtStatus": "কোনো ঋণ নেই",
-      "criticalRiskStatus": "খুব বেশি ঝুঁকি (DSCR < ১.০x)",
-      "moderateRiskStatus": "মাঝারি ঝুঁকি (DSCR ১.০-১.৩x)"
     },
     "wizard": {
       "step1Title": "ধাপ ১: ব্যবসার ধরণ ও পরিকল্পনা মোড",
