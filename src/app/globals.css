@@ -193,16 +193,8 @@ body {
 }
 
 /* ─── Glassmorphism Utility ─── */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.dark .glass {
-  background: rgba(13, 27, 56, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
+/* Superseded by the definition further down this file, which does not rely on
+   backdrop-filter being available. */
 
 /* ─── Gradient Text ─── */
 .gradient-text {
@@ -558,15 +550,35 @@ html {
 
 /* ─── Refined glass (navbar, glass cards) ───
    The old value was a hard white wash that ignored the warm palette. */
+/* The navbar is fixed over scrolling content, so it has to actually occlude
+   what passes beneath it. At 78% the page text read straight through the bar
+   — headings and card copy were legible behind the logo and controls, which
+   looked like the bar was overlapping the layout.
+
+   The opacity does the whole job on purpose: backdrop-filter is unreliable
+   (it computes to none in some Chromium builds even where CSS.supports
+   reports true), so a design that leans on blur to hide what passes beneath
+   degrades into a plainly see-through bar. A hint of translucency remains for
+   depth, but legibility no longer depends on the filter landing. */
 .glass {
-  background: color-mix(in srgb, var(--color-surface-elevated) 78%, transparent);
-  backdrop-filter: blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
-  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  background: color-mix(in srgb, var(--color-surface-elevated) 97%, transparent);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
 }
 .dark .glass {
-  background: color-mix(in srgb, var(--color-surface) 74%, transparent);
-  border: 1px solid rgb(255 255 255 / 0.07);
+  background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+  border: 1px solid rgb(255 255 255 / 0.09);
+}
+
+/* No backdrop-filter support means no blur to hide anything behind it. */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass {
+    background: var(--color-surface-elevated);
+  }
+  .dark .glass {
+    background: var(--color-surface);
+  }
 }
 
 /* ─── Selection & scrollbar tuned to the brand ─── */

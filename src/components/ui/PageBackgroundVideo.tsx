@@ -27,7 +27,12 @@ export default function PageBackgroundVideo() {
     setMounted(true);
   }, []);
 
-  const active = mounted && pathname !== '/' && quality === 'full';
+  // The admin console is a dense administration tool — 369 scheme cards, audit
+  // tables, stat readouts. Drifting light behind that is noise competing with
+  // the data, not atmosphere, so the motion background stops at its door.
+  const isAdminRoute = pathname.split('/').includes('admin');
+
+  const active = mounted && pathname !== '/' && !isAdminRoute && quality === 'full';
 
   // Signals the rest of the stylesheet that a video sits behind the page, so
   // <body> and the page shells go transparent and cards turn to frosted glass.
