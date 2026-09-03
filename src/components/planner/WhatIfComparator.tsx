@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { classifyDscr, type DscrBand } from '@/lib/calculator';
 import Card from '@/components/ui/Card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { PlanInputs } from '@/types';
@@ -21,7 +22,16 @@ interface ScenarioResult {
   breakEvenMonths: number | null;
   dscr: number;
   dscrStatus: string;
+  dscrBand: DscrBand;
 }
+
+/** Teal for safe, saffron for marginal, red for at risk. */
+const DSCR_BAND_CLASSES: Record<DscrBand, string> = {
+  safe: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30',
+  marginal: 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30',
+  'at-risk': 'bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30',
+  'no-debt': 'bg-surface text-muted border border-border-subtle',
+};
 
 export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
   const { t } = useLanguage();
@@ -94,10 +104,14 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
     const operatingCashFlow = monthlyGrossRevenue - monthlyOperatingCosts;
     const dscr = monthlyLoanEmi > 0 ? Number((operatingCashFlow / monthlyLoanEmi).toFixed(2)) : 9.99;
 
-    let dscrStatus = t.planner.whatif.safeStatus;
-    if (monthlyLoanEmi === 0) dscrStatus = t.planner.whatif.noDebtStatus;
-    else if (dscr < 1.0) dscrStatus = t.planner.whatif.criticalRiskStatus;
-    else if (dscr < 1.3) dscrStatus = t.planner.whatif.moderateRiskStatus;
+    // Label and colour both derive from the deterministic band, so the badge
+    // can never contradict the number printed directly above it.
+    const dscrBand = classifyDscr(dscr, monthlyLoanEmi);
+    const dscrStatus =
+      dscrBand === 'no-debt' ? t.planner.whatif.noDebtStatus
+      : dscrBand === 'safe' ? t.planner.whatif.safeStatus
+      : dscrBand === 'marginal' ? t.planner.whatif.marginalStatus
+      : t.planner.whatif.atRiskStatus;
 
     return {
       title,
@@ -111,6 +125,7 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
       breakEvenMonths,
       dscr,
       dscrStatus,
+      dscrBand,
     };
   };
 
@@ -356,9 +371,12 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
                 </div>
               </div>
 
-              {/* Status Badge */}
+              {/* Status Badge — colour tracks the band, so a red verdict cannot
+                  be mistaken for a safe one at a glance. */}
               <div className="pt-2 border-t border-border-subtle">
-                <span className="text-[10px] font-bold text-muted block text-center">
+                <span
+                  className={`text-[10px] font-bold block text-center rounded-lg py-1 px-2 ${DSCR_BAND_CLASSES[sc.dscrBand]}`}
+                >
                   {sc.dscrStatus}
                 </span>
               </div>

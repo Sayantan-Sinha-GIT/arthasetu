@@ -209,3 +209,34 @@ export function calculateFinancialPlan(inputs: PlanInputs): CalculatedValues {
     annualNetProfit,
   };
 }
+
+// ─── Debt Service Coverage Ratio banding ───
+
+/**
+ * Which safety band a Debt Service Coverage Ratio falls into.
+ * `no-debt` is distinct from `safe`: an unleveraged plan has no debt to
+ * service at all, so a coverage ratio is not meaningful for it.
+ */
+export type DscrBand = 'no-debt' | 'safe' | 'marginal' | 'at-risk';
+
+/** Lower bound of each band, in the order they are tested. */
+export const DSCR_SAFE_THRESHOLD = 1.5;
+export const DSCR_MARGINAL_THRESHOLD = 1.2;
+
+/**
+ * Classify a DSCR deterministically.
+ *
+ * Kept here, beside the rest of the financial maths, rather than inline in the
+ * component: the banding is a lending judgement shown to entrepreneurs as a
+ * safety verdict, so it belongs in the deterministic engine and must never be
+ * AI-derived. It previously lived in WhatIfComparator with a 1.3 cut-off while
+ * the label it selected read "Safe (DSCR > 1.5x)", so anything from 1.30 to
+ * 1.49 was labelled safe on the strength of a threshold the label denied.
+ */
+export function classifyDscr(dscr: number, monthlyLoanEmi: number): DscrBand {
+  if (!Number.isFinite(monthlyLoanEmi) || monthlyLoanEmi <= 0) return 'no-debt';
+  if (!Number.isFinite(dscr)) return 'at-risk';
+  if (dscr >= DSCR_SAFE_THRESHOLD) return 'safe';
+  if (dscr >= DSCR_MARGINAL_THRESHOLD) return 'marginal';
+  return 'at-risk';
+}
