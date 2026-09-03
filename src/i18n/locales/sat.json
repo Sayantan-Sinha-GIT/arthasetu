@@ -467,7 +467,9 @@
       "safeStatus": "Safe (DSCR > 1.5x)",
       "noDebtStatus": "No Debt Service",
       "criticalRiskStatus": "Critical Risk (DSCR < 1.0x)",
-      "moderateRiskStatus": "Moderate Risk (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "Moderate Risk (DSCR 1.0–1.3x)",
+      "marginalStatus": "ᱵᱟᱭ ᱵᱷᱟᱜᱮᱭᱟ (DSCR 1.2-1.5x)",
+      "atRiskStatus": "ᱵᱤᱯᱚᱫᱽ ᱨᱮ ᱢᱮᱱᱟᱜᱼᱟ (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "Step 1: Business Context & Planning Mode",
@@ -636,7 +638,8 @@
     "pdfNextSteps": "Key Recommended Next Steps:",
     "pdfDisclaimerTitle": "IMPORTANT DISCLAIMER:",
     "pdfDisclaimerText": "This project report is generated deterministically by ArthaSetu for preliminary feasibility. All figures are based on user self-reported inputs. Final sanction is subject to the lending institution’s standard due diligence.",
-    "pdfSignature": "Applicant Signature"
+    "pdfSignature": "Applicant Signature",
+    "pdfCapexTitle": "2. ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱢᱟᱨᱟᱝ ᱯᱨᱚᱡᱮᱠᱴ ᱠᱟᱹᱣᱰᱤ ᱠᱷᱚᱨᱚᱪ"
   },
   "schemes": {
     "title": "Sorkari Yojana",

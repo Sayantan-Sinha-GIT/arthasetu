@@ -452,7 +452,9 @@
       "safeStatus": "सुरक्षित (DSCR > १.५x)",
       "noDebtStatus": "कर्ज सेवा नाही",
       "criticalRiskStatus": "गंभीर जोखीम (DSCR < १.०x)",
-      "moderateRiskStatus": "मध्यम जोखीम (DSCR १.०–१.३x)"
+      "moderateRiskStatus": "मध्यम जोखीम (DSCR १.०–१.३x)",
+      "marginalStatus": "मर्यादित (DSCR 1.2-1.5x)",
+      "atRiskStatus": "जोखमीचे (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "पायरी १: व्यवसाय संदर्भ आणि नियोजन मोड",
@@ -621,7 +623,8 @@
     "pdfNextSteps": "प्रमुख शिफारस केलेली पुढील पावले:",
     "pdfDisclaimerTitle": "महत्त्वाची टीप:",
     "pdfDisclaimerText": "हा प्रकल्प अहवाल प्रारंभिक व्यवहार्यतेसाठी ArthaSetu द्वारे गणितानुसार तयार केला जातो. सर्व आकडेवारी वापरकर्त्याच्या स्व-नोंदवलेल्या इनपुटवर आधारित आहे. अंतिम मंजुरी वित्तीय संस्थेच्या मानक छाननीच्या अधीन आहे.",
-    "pdfSignature": "अर्जदाराची स्वाक्षरी"
+    "pdfSignature": "अर्जदाराची स्वाक्षरी",
+    "pdfCapexTitle": "2. एकूण प्रकल्प भांडवली खर्च"
   },
   "schemes": {
     "title": "सरकारी योजना",

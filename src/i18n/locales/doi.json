@@ -452,7 +452,9 @@
       "safeStatus": "Safe (DSCR > 1.5x)",
       "noDebtStatus": "Koyi Debt Service Nahi",
       "criticalRiskStatus": "Critical Risk (DSCR < 1.0x)",
-      "moderateRiskStatus": "Madhyam Risk (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "Madhyam Risk (DSCR 1.0–1.3x)",
+      "marginalStatus": "सीमांत (DSCR 1.2-1.5x)",
+      "atRiskStatus": "जोखिम च (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "Step 1: Karobar Sandarbh & Planning Mode",
@@ -621,7 +623,8 @@
     "pdfNextSteps": "Mukhya Sujhavit Agle Kadam:",
     "pdfDisclaimerTitle": "MAHATPURN DISCLAIMER:",
     "pdfDisclaimerText": "Eh project report prarambhik feasibility layi ArthaSetu dwara deterministically banayi gayi hai. Sare ank user dwara self-reported inputs te adharit han. Antim manjoori lending institution di standard due diligence te nirbhar kardi hai.",
-    "pdfSignature": "Aavedak Ke Hastakshar"
+    "pdfSignature": "Aavedak Ke Hastakshar",
+    "pdfCapexTitle": "2. कुल परियोजना पूंजी परिव्यय"
   },
   "schemes": {
     "title": "Sarkari Yojnawan",

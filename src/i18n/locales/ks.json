@@ -467,7 +467,9 @@
       "safeStatus": "مَحفوٗظ (DSCR > 1.5x)",
       "noDebtStatus": "قَرْضہٕ نانہٕ",
       "criticalRiskStatus": "خَطرٕ (DSCR < 1.0x)",
-      "moderateRiskStatus": "دَرَمِیان خَطرٕ (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "دَرَمِیان خَطرٕ (DSCR 1.0–1.3x)",
+      "marginalStatus": "حد پٮٛٹھٕ (DSCR 1.2-1.5x)",
+      "atRiskStatus": "خطرس منٛز (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "سٹیپ 1: کاروبار حَوَالہٕ",
@@ -636,7 +638,8 @@
     "pdfNextSteps": "آہِ قَدَم:",
     "pdfDisclaimerTitle": "اَہَم نوٹس:",
     "pdfDisclaimerText": "یِہ رِپۆرٹ چھِ تخمینہٕ.",
-    "pdfSignature": "دِرخواست دِنیٚوُول دستخط"
+    "pdfSignature": "دِرخواست دِنیٚوُول دستخط",
+    "pdfCapexTitle": "2. کل پروجیکٹ سرمای کس خرچ"
   },
   "schemes": {
     "title": "سَرکٲری سکیمہٕ",

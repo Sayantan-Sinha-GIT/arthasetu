@@ -467,7 +467,9 @@
       "safeStatus": "محفوظ (DSCR > 1.5x)",
       "noDebtStatus": "ڪو به قرض سروس ناهي",
       "criticalRiskStatus": "نازڪ خطرو (DSCR < 1.0x)",
-      "moderateRiskStatus": "معتدل خطرو (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "معتدل خطرو (DSCR 1.0–1.3x)",
+      "marginalStatus": "ڪناري تي (DSCR 1.2-1.5x)",
+      "atRiskStatus": "خطري ۾ (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "قدم 1: ڪاروباري حوالي ۽ منصوبابندي جو طريقو",
@@ -636,7 +638,8 @@
     "pdfNextSteps": "مکيه تجويز ڪيل ايندڙ قدم:",
     "pdfDisclaimerTitle": "اهم نوٽيس:",
     "pdfDisclaimerText": "هي پروجيڪٽ رپورٽ ابتدائي موافقت لاءِ ArthaSetu پاران تيار ڪئي وئي آهي. سڀئي انگ اکر استعمال ڪندڙ جي پنهنجي خود رپورٽ ٿيل انپٽس تي ٻڌل آهن. حتمي منظوري قرض ڏيندڙ اداري جي معياري جانچ پڑتال جي تابع آهي.",
-    "pdfSignature": "درخواستگذار جي صحيح"
+    "pdfSignature": "درخواستگذار جي صحيح",
+    "pdfCapexTitle": "2. ڪُل پروجيڪٽ سرمائي جو خرچ"
   },
   "schemes": {
     "title": "سرڪاري اسڪيمون",

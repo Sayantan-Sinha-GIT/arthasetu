@@ -452,7 +452,9 @@
       "safeStatus": "Safe (DSCR > 1.5x)",
       "noDebtStatus": "No Debt Service",
       "criticalRiskStatus": "Critical Risk (DSCR < 1.0x)",
-      "moderateRiskStatus": "Moderate Risk (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "Moderate Risk (DSCR 1.0–1.3x)",
+      "marginalStatus": "असुरक्षित (DSCR 1.2-1.5x)",
+      "atRiskStatus": "जोखीम आशिल्लो (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "Step 1: Business Context & Planning Mode",
@@ -621,7 +623,8 @@
     "pdfNextSteps": "Key Recommended Next Steps:",
     "pdfDisclaimerTitle": "IMPORTANT DISCLAIMER:",
     "pdfDisclaimerText": "He report ArthaSetu thun tayar kela. Final loan bank due diligence var adharit asa.",
-    "pdfSignature": "Applicant Signature"
+    "pdfSignature": "Applicant Signature",
+    "pdfCapexTitle": "2. प्रकल्पाचो एकूण भांडवली खर्च"
   },
   "schemes": {
     "title": "Sorkari Yojana",

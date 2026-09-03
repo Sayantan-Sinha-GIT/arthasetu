@@ -467,7 +467,9 @@
       "safeStatus": "ਸੁਰੱਖਿਅਤ (DSCR > 1.5x)",
       "noDebtStatus": "ਕੋਈ ਕਰਜ਼ਾ ਸੇਵਾ ਨਹੀਂ",
       "criticalRiskStatus": "ਗੰਭੀਰ ਖਤਰਾ (DSCR < 1.0x)",
-      "moderateRiskStatus": "ਦਰਮਿਆਨਾ ਖਤਰਾ (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "ਦਰਮਿਆਨਾ ਖਤਰਾ (DSCR 1.0–1.3x)",
+      "marginalStatus": "ਸੀਮਾਂਤ (DSCR 1.2-1.5x)",
+      "atRiskStatus": "ਖਤਰੇ ਵਿੱਚ (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "ਕਦਮ 1: Business Context ਅਤੇ ਯੋਜਨਾਬੰਦੀ ਮੋਡ",
@@ -636,7 +638,8 @@
     "pdfNextSteps": "ਮੁੱਖ ਸਿਫਾਰਸ਼ ਕੀਤੇ ਅਗਲੇ ਕਦਮ:",
     "pdfDisclaimerTitle": "ਮਹੱਤਵਪੂਰਨ ਬੇਦਾਵਾ:",
     "pdfDisclaimerText": "ਇਹ ਪ੍ਰੋਜੈਕਟ ਰਿਪੋਰਟ ArthaSetu ਦੁਆਰਾ ਮੁੱਢਲੀ ਤਿਆਰੀ ਲਈ ਤਿਆਰ ਕੀਤੀ ਗਈ ਹੈ। ਸਾਰੇ ਅੰਕ ਉਪਭੋਗਤਾ ਦੁਆਰਾ ਦਰਜ ਕੀਤੇ ਗਏ ਡੇਟਾ 'ਤੇ ਆਧਾਰਿਤ ਹਨ। ਅੰਤਿਮ ਕਰਜ਼ਾ ਮਨਜ਼ੂਰੀ ਉਧਾਰ ਦੇਣ ਵਾਲੀ ਸੰਸਥਾ ਦੇ ਨਿਯਮਾਂ ਅਧੀਨ ਹੈ।",
-    "pdfSignature": "ਬਿਨੈਕਾਰ ਦੇ ਹਸਤਾਖਰ"
+    "pdfSignature": "ਬਿਨੈਕਾਰ ਦੇ ਹਸਤਾਖਰ",
+    "pdfCapexTitle": "2. ਕੁੱਲ ਪ੍ਰੋਜੈਕਟ ਪੂੰਜੀ ਲਾਗਤ"
   },
   "schemes": {
     "title": "ਸਰਕਾਰੀ ਸਕੀਮਾਂ",

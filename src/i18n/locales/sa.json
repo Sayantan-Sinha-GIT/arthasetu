@@ -452,7 +452,9 @@
       "safeStatus": "सुरक्षितम् (DSCR > 1.5x)",
       "noDebtStatus": "ऋणसेवारहितम्",
       "criticalRiskStatus": "सङ्कटापन्नो जोखिमः (DSCR < 1.0x)",
-      "moderateRiskStatus": "मध्यमो जोखिमः (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "मध्यमो जोखिमः (DSCR 1.0–1.3x)",
+      "marginalStatus": "सीमास्थम् (DSCR 1.2-1.5x)",
+      "atRiskStatus": "संकटापन्नम् (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "चरणं १: व्यापारसन्दर्भः नियोजनमोडश्च",
@@ -621,7 +623,8 @@
     "pdfNextSteps": "मुख्याः शिफारिशकृताः अग्रेतरपादानि:",
     "pdfDisclaimerTitle": "महत्त्वपूर्णं प्रकटीकरणम्:",
     "pdfDisclaimerText": "एषः परियोजनाप्रतिवेदनः प्रारंभिकव्यवहार्यतायाः कृते अर्थसेतुना निश्चयात्मकं जनितः अस्ति। सर्वाणि वस्तूनि स्व-सूचितानि सन्ति।",
-    "pdfSignature": "आवेदकस्य हस्ताक्षरम्"
+    "pdfSignature": "आवेदकस्य हस्ताक्षरम्",
+    "pdfCapexTitle": "2. समग्रपरियोजनायाः पूंजीव्ययः"
   },
   "schemes": {
     "title": "शासकीययोजनाः",

@@ -353,6 +353,7 @@ const bn: Translations = {
     "english": "ইংরেজি"
   },
   "planner": {
+    "pdfCapexTitle": "2. মোট প্রকল্পের মূলধন ব্যয়",
     "title": "আর্থিক পরিকল্পনা",
     "subtitle": "আপনার ব্যবসার জন্য একটি সুসংগঠিত আর্থিক পরিকল্পনা তৈরি করুন",
     "planType": "পরিকল্পনার ধরন",
@@ -432,6 +433,8 @@ const bn: Translations = {
       "bridgeGapDesc": "{{location}}-এ আপনার প্রোফাইলের সাথে মিলে যায় এমন কেন্দ্রীয় ও রাজ্য সরকারের ভর্তুকি যোজনাগুলি (যেমন PMEGP, MUDRA, NLM) খুঁজে নিন।"
     },
     "whatif": {
+    "atRiskStatus": "ঝুঁকিপূর্ণ (DSCR < 1.2x)",
+    "marginalStatus": "সীমান্তিক (DSCR 1.2-1.5x)",
       "baseProjection": "মূল অনুমান",
       "standardModel": "সাধারণ মডেল",
       "conservativeStress": "সতর্কতামূলক চাপ",

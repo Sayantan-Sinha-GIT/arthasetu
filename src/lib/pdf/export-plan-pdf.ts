@@ -378,7 +378,7 @@ export async function generateBankReadyPlanPdf({
   checkPageBreak(50);
   doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
   fontStyle = 'bold';
-  drawTextWrapped(getT('planner.stepInvestment', '2. Total Project Capital Outlay'), margin, y, contentWidth, 'left', fontName, 11);
+  drawTextWrapped(getT('planner.pdfCapexTitle', '2. Total Project Capital Outlay'), margin, y, contentWidth, 'left', fontName, 11);
   y += 4;
 
   const capexNameW = 66, capexDescW = 74, capexAmtW = 44;

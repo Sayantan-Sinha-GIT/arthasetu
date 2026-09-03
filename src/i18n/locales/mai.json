@@ -452,7 +452,9 @@
       "safeStatus": "सुरक्षित (DSCR > 1.5x)",
       "noDebtStatus": "कोनो ऋण सेवा नहि",
       "criticalRiskStatus": "गंभीर जोखिम (DSCR < 1.0x)",
-      "moderateRiskStatus": "मध्यम जोखिम (DSCR 1.0–1.3x)"
+      "moderateRiskStatus": "मध्यम जोखिम (DSCR 1.0–1.3x)",
+      "marginalStatus": "सीमांत (DSCR 1.2-1.5x)",
+      "atRiskStatus": "जोखिम में (DSCR < 1.2x)"
     },
     "wizard": {
       "step1Title": "चरण 1: बिजनेस संदर्भ आ योजना मोड",
@@ -621,7 +623,8 @@
     "pdfNextSteps": "मुख्य अनुशंसित अगला कदम:",
     "pdfDisclaimerTitle": "महत्वपूर्ण अस्वीकरण:",
     "pdfDisclaimerText": "ई प्रोजेक्ट रिपोर्ट प्रारंभिक व्यवहार्यता लेल ArthaSetu द्वारा deterministically उत्पन्न कएल गेल अछि। सबटा आँकड़ा प्रयोक्ता स्व-रिपोर्टेड इनपुट पर आधारित अछि। अंतिम मंजूरी ऋणदाता संस्थान के मानक उचित परिश्रम के अधीन अछि।",
-    "pdfSignature": "आवेदक हस्ताक्षर"
+    "pdfSignature": "आवेदक हस्ताक्षर",
+    "pdfCapexTitle": "2. कुल परियोजना पूँजी परिव्यय"
   },
   "schemes": {
     "title": "सरकारी योजना",

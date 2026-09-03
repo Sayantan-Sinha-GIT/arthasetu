@@ -28,18 +28,40 @@ const LOCALE_SCRIPT = {
 };
 // Danda / double danda / ZWNJ / ZWJ / abbreviation sign are shared across Indic.
 const SHARED = new Set([0x0964, 0x0965, 0x200C, 0x200D, 0x0970, 0x00A0]);
-const ASCII_OK = /[\s.,:;!?()\-–—'"%₹0-9]/;
+// Punctuation, currency and the comparison/maths symbols that appear verbatim
+// in every locale — a band label such as "DSCR < 1.2x" keeps its operator.
+const ASCII_OK = /[\s.,:;!?()[\]{}\-–—'"%₹0-9<>=+/*&@#]/;
 
 function inBlocks(cp, names) {
   return names.some((n) => BLOCKS[n].some(([a, b]) => cp >= a && cp <= b));
 }
 
-function checkOne(code, text) {
+/**
+ * Latin tokens that legitimately survive translation: brand names, and the
+ * financial acronyms the glossary keeps in Roman script across all locales.
+ * Matches the rule the translation prompts already state.
+ */
+const DEFAULT_ALLOWED_TOKENS = [
+  'ArthaSetu', 'DSCR', 'PAT', 'EMI', 'CAPEX', 'OPEX', 'PMEGP', 'MUDRA',
+  'PMFME', 'NLM', 'CGTMSE', 'SHG', 'MSME', 'AI', 'PDF', 'PM',
+];
+
+function checkOne(code, text, options) {
   const allowed = LOCALE_SCRIPT[code];
   if (!allowed) throw new Error('unknown locale ' + code);
+  const allowTokens = (options && options.allow) || DEFAULT_ALLOWED_TOKENS;
+  // Strip permitted Latin tokens before counting, longest first so that a
+  // token containing another is not partially consumed.
+  let scanned = String(text);
+  // "1.5x" is a ratio suffix, not English — the multiplier reads the same in
+  // every script the app supports.
+  scanned = scanned.replace(/\d+(?:\.\d+)?\s*x\b/gi, ' ');
+  for (const token of [...allowTokens].sort((a, b) => b.length - a.length)) {
+    scanned = scanned.split(token).join(' ');
+  }
   const foreign = new Set();
   let latin = 0;
-  for (const ch of text) {
+  for (const ch of scanned) {
     const cp = ch.codePointAt(0);
     if (SHARED.has(cp)) continue;
     if (cp < 0x0250) {
@@ -54,4 +76,4 @@ function checkOne(code, text) {
   return { foreign: [...foreign], latin };
 }
 
-module.exports = { checkOne, LOCALE_SCRIPT };
+module.exports = { checkOne, LOCALE_SCRIPT, DEFAULT_ALLOWED_TOKENS };

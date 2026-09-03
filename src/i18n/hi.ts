@@ -365,6 +365,7 @@ const hi: Translations = {
     "readAloud": "ज़ोर से पढ़ें"
   },
   "planner": {
+    "pdfCapexTitle": "2. कुल परियोजना पूँजी परिव्यय",
     "title": "वित्तीय योजना",
     "subtitle": "अपने व्यवसाय के लिए एक संरचित वित्तीय योजना बनाएं",
     "planType": "योजना का प्रकार",
@@ -444,6 +445,8 @@ const hi: Translations = {
       "bridgeGapDesc": "{{location}} में आपकी प्रोफ़ाइल से मेल खाने वाली केंद्रीय और राज्य सब्सिडी योजनाओं (PMEGP, MUDRA, NLM) की खोज करें।"
     },
     "whatif": {
+    "atRiskStatus": "जोखिम में (DSCR < 1.2x)",
+    "marginalStatus": "सीमांत (DSCR 1.2-1.5x)",
       "baseProjection": "आधार अनुमान",
       "standardModel": "मानक मॉडल",
       "conservativeStress": "रूढ़िवादी तनाव",
