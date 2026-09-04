@@ -29,6 +29,39 @@ interface GroqOptions {
   maxOutputTokens?: number;
 }
 
+/**
+ * Groq meters tokens per minute on a rolling window, so a 429 here means "too
+ * much in the last sixty seconds", not "out of quota" — unlike Gemini's daily
+ * cap, waiting a few seconds genuinely clears it. The advisor's requests are
+ * 2,500-3,800 tokens against an 8,000 TPM budget, which is only two or three
+ * questions in quick succession; without this a user asking a third question
+ * straight away was simply refused.
+ *
+ * The wait is deliberately bounded. The whole request lives inside a 60s
+ * serverless ceiling, and burning that budget waiting would trade a visible
+ * error for an invisible timeout, which is worse.
+ */
+const TPM_RETRY_DELAYS_MS = [4000, 7000];
+
+async function groqFetch(apiKey: string, body: unknown): Promise<Response> {
+  let res = await fetch(GROQ_ENDPOINT, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  for (const delay of TPM_RETRY_DELAYS_MS) {
+    if (res.status !== 429) return res;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    res = await fetch(GROQ_ENDPOINT, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+  return res;
+}
+
 async function callGroq(
   model: string,
   systemInstruction: string,
@@ -38,21 +71,14 @@ async function callGroq(
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY is not set');
 
-  const res = await fetch(GROQ_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemInstruction },
-        { role: 'user', content: userMessage },
-      ],
-      temperature: options?.temperature ?? 0.7,
-      max_tokens: options?.maxOutputTokens ?? 4096,
-    }),
+  const res = await groqFetch(apiKey, {
+    model,
+    messages: [
+      { role: 'system', content: systemInstruction },
+      { role: 'user', content: userMessage },
+    ],
+    temperature: options?.temperature ?? 0.7,
+    max_tokens: options?.maxOutputTokens ?? 4096,
   });
 
   const json = await res.json();
@@ -176,7 +202,7 @@ export async function* groqAgentStream(
     }))
   );
 
-  const messages: OpenAiMessage[] = [
+  const baseMessages: OpenAiMessage[] = [
     { role: 'system', content: systemInstruction },
     ...history.map((c) => ({
       // Gemini calls the assistant turn "model"; OpenAI calls it "assistant".
@@ -185,21 +211,51 @@ export async function* groqAgentStream(
     })),
   ];
 
-  const model = GROQ_MODELS[0];
+  // Every model in turn, not just the first.
+  //
+  // This loop used to be pinned to GROQ_MODELS[0]. Groq meters by tokens per
+  // minute per model — 8,000 for this account, against advisor requests of
+  // 2,500-3,800 tokens each — so the primary saturates after two or three
+  // questions in quick succession, and the advisor then failed outright while
+  // the second model sat at zero usage with its own separate budget. The
+  // text-only helper in this file already tried both; the advisor's tool loop,
+  // which is the path that actually matters, did not.
+  //
+  // Switching models is only safe before any text has been yielded — once the
+  // user is reading an answer it must not be replaced by a different one — so
+  // the guard below stops at the first token, exactly like the Gemini path.
+  let lastError: unknown;
+  for (const model of GROQ_MODELS) {
+    let yieldedText = false;
+    try {
+      yield* runGroqAgent(model, () => { yieldedText = true; });
+      return;
+    } catch (err) {
+      lastError = err;
+      if (yieldedText) throw err;
+      console.warn(`Groq agent model ${model} unavailable: ${getErrorMessage(err, 'unknown')}`);
+    }
+  }
+  throw new Error(getErrorMessage(lastError, 'All Groq agent models failed'));
+
+  async function* runGroqAgent(model: string, noteYield: () => void): AsyncGenerator<string> {
+  // Re-narrowed locally: the guard above is outside this generator, so the
+  // compiler treats the captured value as possibly undefined in here.
+  const key = apiKey as string;
+  // Each attempt starts from the original conversation: a failed run may have
+  // appended assistant and tool turns before dying, and replaying those into a
+  // different model would corrupt the exchange.
+  const messages = baseMessages.map((m) => ({ ...m }));
 
   // Same ceiling as the Gemini agent loop, so a model that keeps asking for
   // tools cannot spin forever.
   for (let iteration = 0; iteration < 5; iteration++) {
-    const res = await fetch(GROQ_ENDPOINT, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model,
-        messages,
-        tools: openAiTools.length ? openAiTools : undefined,
-        temperature: options?.temperature ?? 0.7,
-        max_tokens: options?.maxOutputTokens ?? 4096,
-      }),
+    const res = await groqFetch(key, {
+      model,
+      messages,
+      tools: openAiTools.length ? openAiTools : undefined,
+      temperature: options?.temperature ?? 0.7,
+      max_tokens: options?.maxOutputTokens ?? 4096,
     });
 
     const json = await res.json();
@@ -214,7 +270,7 @@ export async function* groqAgentStream(
 
     if (!toolCalls?.length) {
       const text = (message?.content || '').trim();
-      if (text) yield text;
+      if (text) { noteYield(); yield text; }
       return;
     }
 
@@ -238,4 +294,5 @@ export async function* groqAgentStream(
 
   // Ran out of iterations with the model still asking for tools.
   throw new Error('Groq agent exceeded its tool-call budget');
+  }
 }

@@ -70,13 +70,29 @@ export async function generateContent(
     return text;
   };
 
+  // A recent 429 means Gemini is out of quota for the moment. Going through it
+  // again only to fail is what made the advisor feel intermittent: the answer
+  // eventually arrived from Groq, or the function was killed first. Route
+  // straight there while the cool-off lasts.
+  if (isGeminiCoolingOff() && !options?.disableFallback && isGroqConfigured()) {
+    try {
+      return await groqGenerateContent(systemInstruction, userMessage, options);
+    } catch {
+      // Groq is down too — fall through and give Gemini a chance after all,
+      // in case its quota reset early.
+    }
+  }
+
   try {
     return await executeGeneration(model);
   } catch (primaryError) {
     if (options?.disableFallback) throw primaryError;
 
-    // Tier 2: the lighter Gemini model, which has its own separate quota.
-    if (model !== GEMINI_MODELS.FLASH_LITE) {
+    // Tier 2: the lighter Gemini model. Skipped entirely on a rate limit —
+    // both models draw on the same project quota, so trying the sibling can
+    // only re-confirm the exhaustion, and every second spent doing so is taken
+    // from the budget the working provider needs.
+    if (model !== GEMINI_MODELS.FLASH_LITE && !isRateLimitError(primaryError)) {
       console.warn(`⚠️ Primary Gemini model (${model}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, primaryError);
       try {
         return await executeGeneration(GEMINI_MODELS.FLASH_LITE);
@@ -163,6 +179,74 @@ export async function* generateContentStream(
 }
 
 // ─── Helper: Agent loop for tool execution ───
+/**
+ * How long Gemini may produce nothing at all before we give the request to
+ * another provider.
+ *
+ * The advisor runs on a serverless function with a 60s ceiling, and Gemini's
+ * observed latency here — 40s to 120s for one answer, tool calls included —
+ * regularly exceeds it. When that happens the platform kills the function
+ * before a single byte has been streamed, and the user gets the blank
+ * "AI assistance is temporarily unavailable" message. Nothing in the old code
+ * was watching the clock: it would wait on Gemini indefinitely and lose the
+ * whole request rather than spend two seconds asking a provider that was
+ * configured, healthy and idle.
+ *
+ * Only the time to the FIRST token is bounded. Once text is flowing the user
+ * is reading it and the answer must not be swapped underneath them.
+ */
+const FIRST_TOKEN_TIMEOUT_MS = 22000;
+
+/** Marks the give-up above, so the caller can tell it from a real API failure. */
+const FIRST_TOKEN_TIMEOUT = 'ARTHASETU_FIRST_TOKEN_TIMEOUT';
+
+function isFirstTokenTimeout(error: unknown): boolean {
+  return error instanceof Error && error.message.includes(FIRST_TOKEN_TIMEOUT);
+}
+
+/**
+ * Passes a stream through untouched, but abandons it if the first chunk does
+ * not arrive in time. The underlying generator is closed on the way out so the
+ * abandoned request does not keep running.
+ */
+async function* withFirstTokenDeadline(
+  source: AsyncGenerator<string>,
+  ms: number
+): AsyncGenerator<string> {
+  const iterator = source[Symbol.asyncIterator]();
+  let awaitingFirst = true;
+
+  while (true) {
+    let step: IteratorResult<string>;
+
+    if (awaitingFirst) {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        step = await Promise.race([
+          iterator.next(),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(
+              () => reject(new Error(`${FIRST_TOKEN_TIMEOUT}: no output in ${ms}ms`)),
+              ms
+            );
+          }),
+        ]);
+      } catch (err) {
+        try { await iterator.return?.(undefined as never); } catch { /* already closed */ }
+        throw err;
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    } else {
+      step = await iterator.next();
+    }
+
+    if (step.done) return;
+    awaitingFirst = false;
+    yield step.value;
+  }
+}
+
 export async function* generateAgentStream(
   model: string,
   systemInstruction: string,
@@ -247,15 +331,36 @@ export async function* generateAgentStream(
     }
   };
 
+  // See generateContent: skip a provider already known to be out of quota.
+  if (isGeminiCoolingOff() && !options?.disableFallback && isGroqConfigured()) {
+    let servedByGroq = false;
+    try {
+      for await (const chunk of groqAgentStream(systemInstruction, history, tools, toolHandler, options)) {
+        servedByGroq = true;
+        yield chunk;
+      }
+      return;
+    } catch (groqError) {
+      // Only safe to retry on Gemini if Groq produced nothing; otherwise the
+      // user would see the first half of one answer followed by all of another.
+      if (servedByGroq) throw groqError;
+      console.warn('Groq unavailable during Gemini cool-off; retrying Gemini.', getErrorMessage(groqError, 'unknown'));
+    }
+  }
+
   try {
-    for await (const chunk of runAgent(model)) {
+    for await (const chunk of withFirstTokenDeadline(runAgent(model), FIRST_TOKEN_TIMEOUT_MS)) {
       yield chunk;
     }
     return;
   } catch (primaryError) {
     if (options?.disableFallback) throw primaryError;
 
-    if (model !== GEMINI_MODELS.FLASH_LITE) {
+    // As above: on a rate limit the sibling model shares the spent quota, so it
+    // is skipped and the request goes straight to a different provider.
+    if (model !== GEMINI_MODELS.FLASH_LITE
+        && !isRateLimitError(primaryError)
+        && !isFirstTokenTimeout(primaryError)) {
       console.warn(`⚠️ Primary Gemini agent (${model}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, primaryError);
       try {
         for await (const chunk of runAgent(GEMINI_MODELS.FLASH_LITE)) {
@@ -330,15 +435,45 @@ ${ADVISOR_SCOPE_RULES}
 Classification Rules:
 - If the user asks about starting a business, raising poultry, tailoring, dairy, grocery, tea stall, handicrafts, government schemes, loans, profit, pricing, marketing, suppliers, or gives a polite greeting/thanks -> output strictly "ON_TOPIC".
 - If the user asks for programming code, algorithms (e.g., linked list, binary tree), homework, essays, general trivia, movies, sports, or non-business topics -> output strictly "OFF_TOPIC".
-- Output ONLY the single word "ON_TOPIC" or "OFF_TOPIC" with no markdown, punctuation, or explanation.`;
+- When the query is short, vague or ambiguous — a bare mention of money, prices, "kitna", "how much", an unclear
+  fragment, or anything you are not confident about — output "ON_TOPIC".
+- Output ONLY the single word "ON_TOPIC" or "OFF_TOPIC" with no markdown, punctuation, or explanation.
+
+Bias: only answer "OFF_TOPIC" when the query is CLEARLY unrelated to business, money or livelihood. Our users are
+rural micro-entrepreneurs, many with limited literacy, who ask short and imprecise questions; turning one of them
+away is far more damaging than letting a borderline question through, and the advisor itself declines off-topic
+requests anyway. When in doubt, answer "ON_TOPIC".`;
+
+  // This guard runs before the answer does, so its latency lands on every single
+  // reply's time-to-first-word — and it only redirects off-topic questions. It
+  // was the dominant cost in the advisor: sharing the main chain meant sharing
+  // its retries and its slow model, and measured end to end it accounted for
+  // most of the wait before the user saw any text at all.
+  //
+  // A ten-token yes/no question does not need the strongest available model, it
+  // needs the quickest one. Groq answers it in well under a second, so it is
+  // asked first when configured and Gemini is kept as the fallback. The hard
+  // ceiling stays as a backstop: this check must never be the reason a
+  // legitimate question times out, so overrunning it fails open.
+  const CLASSIFIER_TIMEOUT_MS = 6000;
+  const prompt = `User query: "${trimmed}"`;
+  const classifyOnce = () =>
+    isGroqConfigured()
+      // Not 10 tokens, despite the answer being one word: Groq's gpt-oss models
+      // spend output tokens on reasoning before they emit any content, so a
+      // tight cap yields an empty completion and the check silently fails open.
+      // The budget is headroom for that, not a longer answer.
+      ? groqGenerateContent(systemInstruction, prompt, { temperature: 0.0, maxOutputTokens: 512 })
+      : generateContent(GEMINI_MODELS.FLASH_LITE, systemInstruction, prompt,
+          { temperature: 0.0, maxOutputTokens: 10, disableFallback: true });
 
   try {
-    const classification = await generateContent(
-      GEMINI_MODELS.FLASH_LITE,
-      systemInstruction,
-      `User query: "${trimmed}"`,
-      { temperature: 0.0, maxOutputTokens: 10, disableFallback: true }
-    );
+    const classification = await Promise.race([
+      classifyOnce(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('scope classification timed out')), CLASSIFIER_TIMEOUT_MS)
+      ),
+    ]);
     const cleaned = classification.trim().toUpperCase();
     if (cleaned.includes('OFF_TOPIC')) {
       return 'OFF_TOPIC';
@@ -366,9 +501,66 @@ export function getAdvisorOffTopicRedirect(language = 'en'): string {
   }
 }
 
-// ─── Exponential Backoff on 429 / 503 (rate limit / service availability) ───
+// ─── Retry policy, and why a rate limit is not a retryable error ───
+//
+// These two failures look alike and must be treated as opposites.
+//
+// A 503 is genuinely transient: the model is momentarily busy and the same
+// request will very likely succeed a second later, so backing off and retrying
+// is exactly right.
+//
+// A 429 is not. It means the free-tier quota is spent, and no amount of waiting
+// a few seconds brings it back. Retrying it was actively harmful: each attempt
+// re-confirmed the same exhaustion while the clock ran down, and because the
+// retry ladder sits *in front of* the provider failover, the request spent its
+// entire time budget proving Gemini was unavailable and was killed by the
+// serverless duration limit before Groq — which was configured, healthy, and
+// idle the whole time — was ever asked. Measured end to end, that was 72s, 85s
+// and 102s against a 60s ceiling: the advisor failed while a working provider
+// sat unused. A rate limit now fails over instantly instead.
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
+
+/** Quota spent. Waiting will not help; another provider will. */
+export function isRateLimitError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return (
+    message.includes('429') ||
+    message.includes('RESOURCE_EXHAUSTED') ||
+    message.includes('Too Many Requests') ||
+    message.toLowerCase().includes('quota') ||
+    (error as { status?: number })?.status === 429
+  );
+}
+
+/** Momentary unavailability. Waiting probably will help. */
+function isTransientError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return (
+    message.includes('503') ||
+    message.includes('Service Unavailable') ||
+    message.includes('high demand') ||
+    (error as { status?: number })?.status === 503
+  );
+}
+
+/**
+ * Once Gemini reports exhausted quota, every later call in that window will hit
+ * the same wall. Remembering it lets subsequent requests skip Gemini and answer
+ * from Groq immediately, instead of each one paying the discovery cost again.
+ * Short enough that a quota reset or a raised limit is picked up on its own.
+ */
+const RATE_LIMIT_COOLOFF_MS = 60_000;
+let geminiCoolingOffUntil = 0;
+
+function noteGeminiRateLimited(): void {
+  geminiCoolingOffUntil = Date.now() + RATE_LIMIT_COOLOFF_MS;
+}
+
+/** True while Gemini is known to be out of quota. */
+export function isGeminiCoolingOff(): boolean {
+  return Date.now() < geminiCoolingOffUntil;
+}
 
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -378,20 +570,16 @@ async function retryWithBackoff<T>(
     try {
       return await fn();
     } catch (error: unknown) {
-      const isTransient =
-        error instanceof Error &&
-        (error.message.includes('429') ||
-         error.message.includes('503') ||
-         error.message.includes('Service Unavailable') ||
-         error.message.includes('RESOURCE_EXHAUSTED') ||
-         error.message.includes('Too Many Requests') ||
-         error.message.includes('high demand') ||
-         (error as { status?: number })?.status === 429 ||
-         (error as { status?: number })?.status === 503);
+      if (isRateLimitError(error)) {
+        // Do not retry, and record it so the next request goes straight to the
+        // other provider rather than rediscovering this.
+        noteGeminiRateLimited();
+        throw error;
+      }
 
-      if (isTransient && attempt < retries) {
+      if (isTransientError(error) && attempt < retries) {
         const delay = BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 500;
-        console.warn(`Gemini API transient error (429/503). Retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${retries})...`);
+        console.warn(`Gemini API transient error (503). Retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${retries})...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
