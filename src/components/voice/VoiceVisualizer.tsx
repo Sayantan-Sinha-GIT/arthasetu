@@ -42,7 +42,11 @@ export default function VoiceVisualizer({
                 {t.voice.listening} ({isEnglish ? t.voice.english : speechLanguage.toUpperCase()})
               </span>
             </div>
-            <p className="text-xs text-foreground font-medium truncate mt-0.5">
+            {/* The running transcript now spans pauses, so it can grow past one
+                line. Clamping to two (rather than truncating to one) lets a
+                speaker see enough of what was captured to trust it, without the
+                bar reflowing the page as they talk. */}
+            <p className="text-xs text-foreground font-medium mt-0.5 line-clamp-2 break-words">
               {interimTranscript ? `"${interimTranscript}"` : t.voice.tapToSpeak + '...'}
             </p>
           </div>
