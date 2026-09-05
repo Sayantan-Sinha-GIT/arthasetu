@@ -152,11 +152,10 @@ export async function generateBankReadyPlanPdf({
   const borderGray = [203, 213, 225];
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    const numberPart = new Intl.NumberFormat('en-IN', {
       maximumFractionDigits: 0,
     }).format(val);
+    return `Rs. ${numberPart}`;
   };
 
   const getT = (key: string, fallback: string) => {
@@ -213,8 +212,8 @@ export async function generateBankReadyPlanPdf({
   // than "just letters" — testing found these subset fonts are missing not
   // only A-Z/a-z but also some ASCII punctuation (e.g. "@"), and there is no
   // reliable way to know in advance which symbols a given subset omits.
-  // Routing all ASCII to helvetica sidesteps that guesswork entirely; ₹ and
-  // the script's own glyphs are non-ASCII and stay on the native font.
+  // Routing all ASCII to helvetica sidesteps that guesswork entirely; Rs. is
+  // ASCII and routes to helvetica, while the script's own glyphs stay on the native font.
   const isLatinLetter = (ch: string) => ch.charCodeAt(0) < 128;
 
   const splitRuns = (line: string): Array<{ text: string; latin: boolean }> => {
