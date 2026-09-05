@@ -29,9 +29,7 @@ const ai = new GoogleGenAI({ apiKey });
 /** The strings to translate, shaped exactly as they sit in the locale files. */
 const CHUNK = {
   advisor: {
-    chat: {
-      profileNudge: en.advisor.chat.profileNudge,
-    },
+    micPermissionDenied: en.advisor.micPermissionDenied,
   },
 };
 

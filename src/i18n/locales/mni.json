@@ -334,7 +334,8 @@
       "copyClipboard": "Clipboard da Copy tou",
       "translateTooltip": "Message asi translate tou",
       "failedTranslate": "Message translate touba ngamde."
-    }
+    },
+    "micPermissionDenied": "মাইক্রোফোন ফংদবা যাদে। ব্রাউজরগী মায়ক্রেফোণ পামিন্নবা অমসুং অয়াবা পীরকউ।"
   },
   "voice": {
     "listening": "Yengli...",

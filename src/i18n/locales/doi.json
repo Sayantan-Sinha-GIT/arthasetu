@@ -334,7 +334,8 @@
       "copyClipboard": "Clipboard te copy karo",
       "translateTooltip": "Is message da anuvad karo",
       "failedTranslate": "Message da anuvad asafal."
-    }
+    },
+    "micPermissionDenied": "माइक्रोफोन दी पहुँच नांजर करी दित्ती गेइ ऐ। कृपया अपने ब्राउज़र च माइक्रोफोन दी पहुँच दी अनुमति दियो।"
   },
   "voice": {
     "listening": "Sun reha hai...",
@@ -646,7 +647,6 @@
     "lastVerifiedTooltip": "Prashasnik team dwara akhiri baar satyapit",
     "whyMatches": "Eh tuhunde profile naal kyon mel khanda hai",
     "verified": "Satyapit",
-    "collateral-free": "Collateral-Free Loan",
     "upTo": "Tak",
     "subsidy": "Subsidy",
     "lakhs": "Lakh",

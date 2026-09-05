@@ -349,7 +349,8 @@
       "copyClipboard": "Copy to clipboard",
       "translateTooltip": "Translate this message",
       "failedTranslate": "Failed to translate message."
-    }
+    },
+    "micPermissionDenied": "ᱢᱟᱭᱠᱨᱳᱯᱷᱳᱱ ᱮᱠᱥᱮᱥ ᱵᱟᱹᱛᱤᱞ ᱮᱱᱟ᱾ ᱫᱟᱭᱟᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱡᱟᱨ ᱨᱮ ᱢᱟᱭᱠᱨᱳᱯᱷᱳᱱ ᱪᱷᱟᱹᱲ ᱮᱢ ᱢᱮ᱾"
   },
   "voice": {
     "listening": "Ainganj kana...",

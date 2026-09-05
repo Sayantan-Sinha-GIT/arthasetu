@@ -339,6 +339,7 @@ const en = {
     advisorSaved: 'Advice saved successfully!',
     suggestedQuestions: 'Try asking:',
     voiceHint: 'Click the mic to speak',
+    micPermissionDenied: 'Microphone access was denied. Please allow microphone permissions in your browser.',
     errorMessage: 'I apologize, but I am having trouble connecting right now. Please try again in a moment.',
     adviceTitle: 'Advice Title',
     adviceTitlePlaceholder: 'e.g. Poultry Farm Setup & Capital Allocation',

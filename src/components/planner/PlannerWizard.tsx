@@ -705,6 +705,7 @@ export default function PlannerWizard({
                 size="lg"
                 onClick={handleGenerate}
                 isLoading={isLoading}
+                data-testid="generate-plan-button"
                 className="px-8 shadow-lg font-bold"
               >
                 {t.planner.wizard.generatePlanBtn}

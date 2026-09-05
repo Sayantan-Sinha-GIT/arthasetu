@@ -18,6 +18,7 @@ export const PINCODE_MASTER_RECORDS: Record<string, PincodeInfo> = {
   '700091': { state: 'West Bengal', district: 'North 24 Parganas', areas: ['Salt Lake Sector V', 'Bidhannagar', 'Mahisbathan', 'Techno City'] },
   '711101': { state: 'West Bengal', district: 'Howrah', areas: ['Howrah Station', 'Golabari', 'Salkia', 'Pilkhana'] },
   '713201': { state: 'West Bengal', district: 'Paschim Bardhaman', areas: ['Durgapur Steel City', 'City Centre', 'Benachity'] },
+  '731224': { state: 'West Bengal', district: 'Birbhum', areas: ['Rampurhat', 'Tarapith', 'Mallarpur', 'Nalhati'] },
   '734001': { state: 'West Bengal', district: 'Darjeeling', areas: ['Siliguri Town', 'Hill Cart Road', 'Sevoke Road', 'Hakimpara'] },
   '734101': { state: 'West Bengal', district: 'Darjeeling', areas: ['Darjeeling Mall', 'Chauk Bazaar', 'Ghoom', 'Jalapahar'] },
 
@@ -376,19 +377,24 @@ export function validateAddressConsistency(
     };
   }
 
-  // Normalize district comparison (fuzzy: "Bengaluru Urban" should match "Bengaluru", etc.)
-  const cleanDistrict = district.trim().toLowerCase();
-  const infoDistrict = info.district.trim().toLowerCase();
-  if (
-    cleanDistrict &&
-    cleanDistrict !== infoDistrict &&
-    !cleanDistrict.includes(infoDistrict) &&
-    !infoDistrict.includes(cleanDistrict)
-  ) {
-    return {
-      valid: false,
-      reason: `PIN code ${pincode} belongs to ${info.district}, but ${district} was specified.`,
-    };
+  // If we have an exact master record or cached record, validate district strictly.
+  // Otherwise (prefix fallback), prefix defines the state/zone, but not an exclusive single district.
+  const cleanPin = pincode.replace(/[^0-9]/g, '');
+  const hasExactMaster = !!PINCODE_MASTER_RECORDS[cleanPin] || PINCODE_CACHE.has(cleanPin);
+  if (hasExactMaster) {
+    const cleanDistrict = district.trim().toLowerCase();
+    const infoDistrict = info.district.trim().toLowerCase();
+    if (
+      cleanDistrict &&
+      cleanDistrict !== infoDistrict &&
+      !cleanDistrict.includes(infoDistrict) &&
+      !infoDistrict.includes(cleanDistrict)
+    ) {
+      return {
+        valid: false,
+        reason: `PIN code ${pincode} belongs to ${info.district}, but ${district} was specified.`,
+      };
+    }
   }
 
   return { valid: true };

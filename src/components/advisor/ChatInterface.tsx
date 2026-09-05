@@ -75,6 +75,11 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
     abortListening,
   } = useSpeechRecognition({
     defaultLanguage: speechLanguage,
+    errorMessages: {
+      permissionDenied: t.advisor.micPermissionDenied,
+      languageNotSupported: t.voice.notSupported,
+      notSupported: t.voice.notSupported,
+    },
     onResult: (finalTranscript) => {
       if (finalTranscript.trim()) {
         handleSendMessage(finalTranscript, true);

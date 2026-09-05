@@ -23,6 +23,31 @@ console.log('==================================================');
 console.log('       I18N LOCALE KEYS COMPLETENESS AUDIT        ');
 console.log('==================================================');
 
+import hiData from '../src/i18n/hi';
+import bnData from '../src/i18n/bn';
+
+const tsLocales: { code: string; label: string; data: any }[] = [
+  { code: 'HI', label: 'hi.ts', data: hiData },
+  { code: 'BN', label: 'bn.ts', data: bnData },
+];
+
+for (const { code, label, data } of tsLocales) {
+  const localeKeys = new Set(flattenObject(data));
+  const missingKeys: string[] = [];
+  for (const key of enKeys) {
+    if (!localeKeys.has(key)) {
+      missingKeys.push(key);
+    }
+  }
+  if (missingKeys.length === 0) {
+    console.log(`✅ [100% COMPLETE] ${code} (${label}): 0 missing keys (Total: ${localeKeys.size}/${enKeys.size})`);
+  } else {
+    console.log(`⚠️ [MISSING ${missingKeys.length} KEYS] ${code} (${label}):`);
+    missingKeys.forEach((k) => console.log(`   - ${k}`));
+    totalMissingAcrossLocales += missingKeys.length;
+  }
+}
+
 const files = fs.readdirSync(localesDir).filter((f) => f.endsWith('.json') && f !== 'en.json');
 let totalMissingAcrossLocales = 0;
 

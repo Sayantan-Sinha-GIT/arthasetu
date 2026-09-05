@@ -103,10 +103,19 @@ const STT_FALLBACKS: Record<string, string[]> = {
   ur: ['hi-IN'],
 };
 
+export interface SpeechRecognitionErrorMessages {
+  permissionDenied?: string;
+  languageNotSupported?: string;
+  noSpeech?: string;
+  notSupported?: string;
+  startFailed?: string;
+}
+
 interface UseSpeechRecognitionOptions {
   onResult?: (transcript: string) => void;
   onError?: (error: string) => void;
   defaultLanguage?: string;
+  errorMessages?: SpeechRecognitionErrorMessages;
 }
 
 /** Joins accumulated speech without doubling the spaces around segments. */
@@ -122,6 +131,7 @@ export function useSpeechRecognition({
   onResult,
   onError,
   defaultLanguage = 'hi-IN',
+  errorMessages,
 }: UseSpeechRecognitionOptions = {}) {
   const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -133,6 +143,11 @@ export function useSpeechRecognition({
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const onResultRef = useRef(onResult);
   const onErrorRef = useRef(onError);
+  const errorMessagesRef = useRef(errorMessages);
+
+  useEffect(() => {
+    errorMessagesRef.current = errorMessages;
+  }, [errorMessages]);
 
   // A dictation is a state machine spanning several browser-driven restarts,
   // so its state lives in refs: the event handlers below are installed once per
@@ -306,7 +321,7 @@ export function useSpeechRecognition({
     recognition.onerror = (event: ISpeechRecognitionErrorEvent) => {
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
         setIsPermissionDenied(true);
-        const msg = 'Microphone access was denied. Please allow microphone permissions in your browser.';
+        const msg = errorMessagesRef.current?.permissionDenied || 'Microphone access was denied. Please allow microphone permissions in your browser.';
         finish(false);
         setError(msg);
         onErrorRef.current?.(msg);
@@ -324,7 +339,7 @@ export function useSpeechRecognition({
           return;
         }
         finish(false);
-        const msg = 'Voice input is not available for this language in your browser.';
+        const msg = errorMessagesRef.current?.languageNotSupported || 'Voice input is not available for this language in your browser.';
         setError(msg);
         onErrorRef.current?.(msg);
         return;
@@ -349,7 +364,7 @@ export function useSpeechRecognition({
 
       if (!heardSpeechRef.current && ++barrenRestartsRef.current > MAX_BARREN_RESTARTS) {
         finish(false);
-        const msg = 'No speech detected. Please tap the mic and speak clearly.';
+        const msg = errorMessagesRef.current?.noSpeech || 'No speech detected. Please tap the mic and speak clearly.';
         setError(msg);
         onErrorRef.current?.(msg);
         return;
@@ -379,7 +394,7 @@ export function useSpeechRecognition({
     const SpeechRecognitionClass = win.SpeechRecognition || win.webkitSpeechRecognition;
 
     if (!SpeechRecognitionClass) {
-      const msg = 'Speech recognition is not supported in this browser.';
+      const msg = errorMessagesRef.current?.notSupported || 'Speech recognition is not supported in this browser.';
       setError(msg);
       onErrorRef.current?.(msg);
       return;
@@ -412,7 +427,7 @@ export function useSpeechRecognition({
     } catch (err) {
       console.error('Failed to start speech recognition:', err);
       finish(false);
-      const msg = 'Could not start speech recognition. Please check your microphone settings.';
+      const msg = errorMessagesRef.current?.startFailed || 'Could not start speech recognition. Please check your microphone settings.';
       setError(msg);
       onErrorRef.current?.(msg);
     }

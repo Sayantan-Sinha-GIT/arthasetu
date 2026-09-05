@@ -150,6 +150,7 @@ export default function Navbar() {
                 )}
                 <button
                   onClick={handleLogout}
+                  data-testid="desktop-logout-button"
                   className="px-3 py-1.5 text-sm text-muted hover:text-danger transition-colors rounded-lg hover:bg-surface cursor-pointer font-medium"
                 >
                   {t.nav.logout}
@@ -259,6 +260,7 @@ export default function Navbar() {
                     </Link>
                     <button
                       onClick={handleLogout}
+                      data-testid="mobile-logout-button"
                       className="w-full text-left px-3 py-2.5 text-sm text-danger hover:bg-danger-light rounded-lg transition-colors"
                     >
                       {t.nav.logout}

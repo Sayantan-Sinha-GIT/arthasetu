@@ -150,6 +150,7 @@ export default function PlanResultView({
             size="sm"
             onClick={handleSavePlan}
             disabled={saving || !!savedId}
+            data-testid="save-plan-button"
             className="text-xs"
           >
             {savedId ? t.planner.result.savedState : `💾 ${t.planner.savePlan}`}
@@ -159,6 +160,7 @@ export default function PlanResultView({
             size="sm"
             onClick={handleDownloadPdf}
             isLoading={isExportingPdf}
+            data-testid="export-pdf-button"
             className="text-xs bg-saffron-600 hover:bg-saffron-500 text-white font-bold"
           >
             {t.planner.result.exportPdf}

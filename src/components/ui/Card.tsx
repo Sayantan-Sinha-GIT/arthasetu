@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import { useTilt } from '@/hooks/useTilt';
 
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   className?: string;
   glass?: boolean;
@@ -22,12 +22,14 @@ export default function Card({
   tilt = true,
   padding = 'md',
   onClick,
+  ...restProps
 }: CardProps) {
   const { ref, style, handleMouseMove, handleMouseLeave } = useTilt(6);
   const useTiltEffect = hover && tilt;
 
   return (
     <div
+      {...restProps}
       ref={useTiltEffect ? ref : undefined}
       onMouseMove={useTiltEffect ? handleMouseMove : undefined}
       onMouseLeave={useTiltEffect ? handleMouseLeave : undefined}

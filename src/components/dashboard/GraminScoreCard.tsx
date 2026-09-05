@@ -87,7 +87,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
   const scorePercentage = Math.round(((scoreResult.score - 300) / 600) * 100);
 
   return (
-    <Card padding="lg" className="space-y-8 glass border-border/40 shadow-2xl rounded-3xl relative overflow-hidden">
+    <Card data-testid="gramin-score-card" padding="lg" className="space-y-8 glass border-border/40 shadow-2xl rounded-3xl relative overflow-hidden">
       {/* Background flair */}
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none" />
 

@@ -334,7 +334,8 @@
       "copyClipboard": "Copy to clipboard",
       "translateTooltip": "He message translate kor",
       "failedTranslate": "Message translate zale na."
-    }
+    },
+    "micPermissionDenied": "मायक्रोफोनाचो प्रवेश नाकारला. कृपया तुमच्या ब्राउझराॅंत मायक्रोफोनाचे प्रवेश सुरू करा."
   },
   "voice": {
     "listening": "Aikat aso...",

@@ -334,7 +334,8 @@
       "copyClipboard": "Copy to clipboard",
       "translateTooltip": "Message translate khalam",
       "failedTranslate": "Message translate khamnaingwijwak."
-    }
+    },
+    "micPermissionDenied": "माइक्रिफ्रोननि अनुमति नागिरनाय जायासै। अननानै नोंथांनि ब्राउपाराव माइक्रिफ्रोन अनुमति हो।"
   },
   "voice": {
     "listening": "Nonwi...",

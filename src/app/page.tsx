@@ -56,6 +56,11 @@ export default function LandingPage() {
               <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[140px] font-display font-black text-foreground tracking-tighter leading-[0.85] uppercase">
                 Artha<br/>Setu
               </h1>
+              {t.appName && t.appName !== 'ArthaSetu' && (
+                <div className="mt-4 text-3xl sm:text-4xl md:text-5xl font-bold text-primary animate-fade-in">
+                  {t.appName}
+                </div>
+              )}
               
               <div className="mt-8 sm:mt-12 flex items-center gap-6">
                 <div className="w-16 h-[2px] bg-primary" />
