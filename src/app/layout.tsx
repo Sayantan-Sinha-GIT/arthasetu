@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -38,6 +38,12 @@ export const metadata: Metadata = {
     "MUDRA",
     "micro-entrepreneurs",
   ],
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1E3A6E",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
