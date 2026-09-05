@@ -50,8 +50,13 @@ const bnMissing = enKeys.filter(k => {
 });
 report['bn (bn.ts)'] = { present: enKeys.length - bnMissing.length, total: enKeys.length, missing: bnMissing };
 
+report['en'] = { present: enKeys.length, total: enKeys.length, missing: [] };
+report['hi'] = { present: enKeys.length - hiMissing.length, total: enKeys.length, missing: hiMissing };
+report['bn'] = { present: enKeys.length - bnMissing.length, total: enKeys.length, missing: bnMissing };
+
 // Check all locale JSON files
 for (const lang of SUPPORTED_LANGUAGES) {
+  if (lang.code === 'en' || lang.code === 'hi' || lang.code === 'bn') continue;
   const filePath = resolve(localesDir, `${lang.code}.json`);
   if (!fs.existsSync(filePath)) {
     report[lang.code] = { present: 0, total: enKeys.length, missing: enKeys };

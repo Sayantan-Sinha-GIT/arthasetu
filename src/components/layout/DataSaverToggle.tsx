@@ -4,14 +4,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export function DataSaverToggle() {
   const { t } = useLanguage();
-  const { quality, manualOverride, setManualOverride } = useNetworkQuality();
-  const isOn = manualOverride || quality === 'minimal';
+  const { quality, setPreference } = useNetworkQuality();
+  const isOn = quality !== 'full';
 
   return (
     <button
       type="button"
-      onClick={() => setManualOverride(!isOn)}
+      onClick={() => setPreference(isOn ? 'off' : 'on')}
       aria-pressed={isOn}
+      aria-label={`${t.common.dataSaver}: ${isOn ? t.common.on : t.common.off}`}
       title={t.common.dataSaverDesc}
       className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-elevated cursor-pointer active:scale-95 shadow-xs"
     >

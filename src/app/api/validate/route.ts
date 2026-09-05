@@ -53,6 +53,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<V
         const consistency = validateAddressConsistency(pinCode.trim(), state.trim(), district.trim());
         if (!consistency.valid) {
           errors.pinCode = consistency.reason || 'PIN code does not match selected state';
+        } else if (consistency.warning) {
+          warnings.push(consistency.warning);
         }
       }
     }

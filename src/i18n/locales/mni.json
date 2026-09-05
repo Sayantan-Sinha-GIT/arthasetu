@@ -152,7 +152,8 @@
     "outstandingBalance": "Outstanding Balance (₹)",
     "monthlyEmi": "Thagi EMI (₹)",
     "existingBusinessDesc": "হৌজিক থবক চত্থরিবা দোকান, হস্তশিল্প, লৌমীগী লম বা মহৈ-মরোংগী থবক, নত্রগা অপিকপা বাণিজ‍্য",
-    "planningBusinessDesc": "অনৌবা পান্থেল, স্তার্তঅপ, নত্রগা অনৌবা থবক অমদা শিংনবা"
+    "planningBusinessDesc": "অনৌবা পান্থেল, স্তার্তঅপ, নত্রগা অনৌবা থবক অমদা শিংনবা",
+    "pinDistrictHint": "পিন কোড অসি চাউনা {district}গা মরী লৈনৈ। মসি চঙবা নত্ত্রবা য়াগনি, অমুক হন্না নিজবা জেলা অদু চেক মরিক চাবা য়াই।"
   },
   "dashboard": {
     "welcome": "Khubam Phre,",
@@ -334,7 +335,8 @@
       "copyClipboard": "Clipboard da Copy tou",
       "translateTooltip": "Message asi translate tou",
       "failedTranslate": "Message translate touba ngamde."
-    }
+    },
+    "micPermissionDenied": "মাইক্রোফোন ফংদবা যাদে। ব্রাউজরগী মায়ক্রেফোণ পামিন্নবা অমসুং অয়াবা পীরকউ।"
   },
   "voice": {
     "listening": "Yengli...",

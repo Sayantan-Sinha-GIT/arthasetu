@@ -167,7 +167,8 @@
     "remove": "ہٹائیں",
     "lenderType": "قرض دینے والے کی قسم",
     "outstandingBalance": "بقايا بیلنس (₹)",
-    "monthlyEmi": "ماہانہ EMI (₹)"
+    "monthlyEmi": "ماہانہ EMI (₹)",
+    "pinDistrictHint": "یہ پن کوڈ عام طور پر {district} سے منسلک ہے۔ اگر یہ درست معلوم نہ ہو تو براہ کرم اپنے ضلع کی دوبارہ تصدیق کریں۔"
   },
   "dashboard": {
     "welcome": "خوش آمدید،",
@@ -349,7 +350,8 @@
       "copyClipboard": "کلپ بورڈ پر کاپی کریں",
       "translateTooltip": "اس پیغام کا ترجمہ کریں",
       "failedTranslate": "پیغام کا ترجمہ کرنے میں ناکامی۔"
-    }
+    },
+    "micPermissionDenied": "مائیکروفون تک رسائی مسترد کر دی گئی۔ براہ کرم اپنے براؤزر میں مائیکروفون کی اجازت دیں۔"
   },
   "voice": {
     "listening": "سن رہا ہے...",

@@ -28,17 +28,13 @@ const ai = new GoogleGenAI({ apiKey });
 
 /** The strings to translate, shaped exactly as they sit in the locale files. */
 const CHUNK = {
-  advisor: {
-    chat: {
-      profileNudge: en.advisor.chat.profileNudge,
-    },
+  onboarding: {
+    pinDistrictHint: en.onboarding.pinDistrictHint,
   },
 };
 
 const languagesMeta = [
-  { code: 'hi', name: 'Hindi', script: 'Devanagari' },
   { code: 'as', name: 'Assamese', script: 'Assamese/Bengali script (অসমীয়া)' },
-  { code: 'bn', name: 'Bengali', script: 'Bengali script (বাংলা)' },
   { code: 'brx', name: 'Bodo', script: 'Devanagari script (बर’/बोडो)' },
   { code: 'doi', name: 'Dogri', script: 'Devanagari script (डोगरी)' },
   { code: 'gu', name: 'Gujarati', script: 'Gujarati script (ગુજરાતી)' },
@@ -87,19 +83,10 @@ async function translate(lang: { code: string; name: string; script: string }) {
 Translate these UI strings for a financial advisory app used by Indian rural micro-entrepreneurs.
 
 RULES:
-1. Every character must be in ${lang.script}. Not one character from any other
-   writing system, and no Latin/English words.
-2. TRANSLATE the meaning. Do NOT transliterate — writing the English words in
-   ${lang.script} letters is wrong. "Total Project Capital Outlay" must use
-   real ${lang.name} vocabulary for total / project / capital / expenditure,
-   not the English words spelled phonetically.
-3. KEEP these exactly as they are, in Roman script: the acronym "DSCR", any
-   numbers, and ratio suffixes such as "1.5x". Keep the leading section number
-   "2." in Western digits exactly where it is.
-4. "Marginal" and "At Risk" are loan-safety verdicts a bank would use about
-   repayment capacity. "Total Project Capital Outlay" is a section heading in
-   a bank project report, meaning the total up-front capital the project needs.
-5. Return ONLY JSON with exactly the same key structure as the input.
+1. Every character must be in ${lang.script}, EXCEPT the allowed placeholder tokens specified in rule 3.
+2. TRANSLATE the meaning naturally for rural micro-entrepreneurs.
+3. KEEP these exactly as they are, in Roman script: the template variable "{district}", the brand "ArthaSetu", the acronym "DSCR", any numbers. Do NOT translate or transliterate "{district}".
+4. Return ONLY JSON with exactly the same key structure as the input.
 
 Input JSON:
 ${JSON.stringify(CHUNK, null, 2)}`;

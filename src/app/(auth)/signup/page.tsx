@@ -10,6 +10,7 @@ import { db } from '@/lib/firebase';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Navbar from '@/components/layout/Navbar';
+import Logo from '@/components/ui/Logo';
 
 import Image from 'next/image';
 import AmbientBackground from '@/components/ui/AmbientBackground';
@@ -27,16 +28,34 @@ export default function SignupPage() {
   const { quality } = useNetworkQuality();
   const router = useRouter();
 
+  const getSignupError = (key: 'mismatch' | 'length' | 'inUse' | 'weak', lang: string) => {
+    const isHi = lang === 'hi';
+    const isBn = lang === 'bn';
+    if (key === 'mismatch') {
+      return isHi ? 'पासवर्ड मेल नहीं खाते।' : isBn ? 'পাসওয়ার্ড দুটি মিলছে না।' : 'Passwords do not match.';
+    }
+    if (key === 'length') {
+      return isHi ? 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।' : isBn ? 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে होगा।' : 'Password must be at least 6 characters.';
+    }
+    if (key === 'inUse') {
+      return isHi ? 'इस ईमेल से पहले से एक खाता मौजूद है।' : isBn ? 'এই ইমেল দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট রয়েছে।' : 'An account with this email already exists.';
+    }
+    if (key === 'weak') {
+      return isHi ? 'पासवर्ड बहुत कमज़ोर है। कम से कम 6 अक्षरों का उपयोग करें।' : isBn ? 'পাসওয়ার্ডটি খুব দুর্বল। কমপক্ষে ৬টি অক্ষর ব্যবহার করুন।' : 'Password is too weak. Use at least 6 characters.';
+    }
+    return '';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(getSignupError('mismatch', language));
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(getSignupError('length', language));
       return;
     }
 
@@ -79,11 +98,11 @@ export default function SignupPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Signup failed';
       if (msg.includes('email-already-in-use')) {
-        setError('An account with this email already exists.');
+        setError(getSignupError('inUse', language));
       } else if (msg.includes('weak-password')) {
-        setError('Password is too weak. Use at least 6 characters.');
+        setError(getSignupError('weak', language));
       } else {
-        setError(msg);
+        setError(t.errors?.invalidInput || msg);
       }
     } finally {
       setLoading(false);
@@ -99,9 +118,7 @@ export default function SignupPage() {
           <div className="w-full max-w-md animate-slide-up">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-saffron-500/20">
-                <span className="text-white font-bold text-xl">अ</span>
-              </div>
+              <Logo size={56} className="mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-foreground">{t.auth.signupTitle}</h1>
               <p className="text-muted mt-2">{t.auth.signupSubtitle}</p>
             </div>
@@ -110,6 +127,7 @@ export default function SignupPage() {
             <div className="bg-surface-elevated border border-border rounded-2xl p-6 shadow-lg">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
+                  id="full-name"
                   label={t.auth.name}
                   type="text"
                   value={name}
@@ -125,6 +143,7 @@ export default function SignupPage() {
                 />
 
                 <Input
+                  id="email"
                   label={t.auth.email}
                   type="email"
                   value={email}
@@ -140,6 +159,7 @@ export default function SignupPage() {
                 />
 
                 <Input
+                  id="password"
                   label={t.auth.password}
                   type="password"
                   value={password}
@@ -156,6 +176,7 @@ export default function SignupPage() {
                 />
 
                 <Input
+                  id="confirm-password"
                   label={t.auth.confirmPassword}
                   type="password"
                   value={confirmPassword}

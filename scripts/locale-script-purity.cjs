@@ -26,8 +26,8 @@ const LOCALE_SCRIPT = {
   or: ['odia'], sat: ['olchiki'], ks: ['arabic'], sd: ['arabic'], ur: ['arabic'],
   ta: ['tamil'], te: ['telugu'],
 };
-// Danda / double danda / ZWNJ / ZWJ / abbreviation sign are shared across Indic.
-const SHARED = new Set([0x0964, 0x0965, 0x200C, 0x200D, 0x0970, 0x00A0]);
+// Danda / double danda / ZWNJ / ZWJ / abbreviation sign and dashes are shared across Indic.
+const SHARED = new Set([0x0964, 0x0965, 0x200C, 0x200D, 0x0970, 0x00A0, 0x2013, 0x2014]);
 // Punctuation, currency and the comparison/maths symbols that appear verbatim
 // in every locale — a band label such as "DSCR < 1.2x" keeps its operator.
 const ASCII_OK = /[\s.,:;!?()[\]{}\-–—'"%₹0-9<>=+/*&@#]/;
@@ -44,6 +44,7 @@ function inBlocks(cp, names) {
 const DEFAULT_ALLOWED_TOKENS = [
   'ArthaSetu', 'DSCR', 'PAT', 'EMI', 'CAPEX', 'OPEX', 'PMEGP', 'MUDRA',
   'PMFME', 'NLM', 'CGTMSE', 'SHG', 'MSME', 'AI', 'PDF', 'PM',
+  '{district}', 'district',
 ];
 
 function checkOne(code, text, options) {

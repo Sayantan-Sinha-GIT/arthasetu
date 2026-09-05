@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Navbar from '@/components/layout/Navbar';
+import Logo from '@/components/ui/Logo';
 
 import Image from 'next/image';
 import AmbientBackground from '@/components/ui/AmbientBackground';
@@ -81,9 +82,7 @@ export default function ForgotPasswordPage() {
           <div className="w-full max-w-md animate-slide-up">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-saffron-500/20">
-                <span className="text-white font-bold text-xl">अ</span>
-              </div>
+              <Logo size={56} className="mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-foreground">
                 {success ? (t.auth.checkEmailTitle || 'Check Your Email') : t.auth.forgotTitle}
               </h1>

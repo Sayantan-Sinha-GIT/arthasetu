@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.arthasetu.app",
+    "sha256_cert_fingerprints": ["49:10:1C:92:49:AF:E3:64:9D:D9:93:B8:ED:FF:F0:F5:27:B1:8B:BC:27:4D:B4:08:E8:C2:F9:70:A6:DB:06:98"]
+  }
+}]

@@ -143,6 +143,7 @@ const en = {
     roadNameHint: 'You can manually enter the road name or house number here.',
     pinCode: 'PIN Code (Required)',
     pinCodePlaceholder: 'e.g. 781001',
+    pinDistrictHint: 'This PIN code is commonly associated with {district}. Please double check your district if this does not look right.',
     // Business
     businessStatus: 'Business Status',
     existingBusiness: 'I have an existing business',
@@ -339,6 +340,7 @@ const en = {
     advisorSaved: 'Advice saved successfully!',
     suggestedQuestions: 'Try asking:',
     voiceHint: 'Click the mic to speak',
+    micPermissionDenied: 'Microphone access was denied. Please allow microphone permissions in your browser.',
     errorMessage: 'I apologize, but I am having trouble connecting right now. Please try again in a moment.',
     adviceTitle: 'Advice Title',
     adviceTitlePlaceholder: 'e.g. Poultry Farm Setup & Capital Allocation',

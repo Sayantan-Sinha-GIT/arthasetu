@@ -8,6 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/ui/LanguageSelector';
 import { DataSaverToggle } from '@/components/layout/DataSaverToggle';
+import Logo from '@/components/ui/Logo';
 
 const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').toLowerCase().trim();
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -15,6 +16,7 @@ const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const isHome = pathname === '/';
   const { user, logout } = useAuth();
   const isAdmin = !!user && !!ADMIN_EMAIL && user.email?.toLowerCase().trim() === ADMIN_EMAIL;
   const { theme, toggleTheme } = useTheme();
@@ -50,15 +52,19 @@ export default function Navbar() {
     : '/';
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300 ${pathname === '/' ? 'bg-gradient-to-b from-black/60 to-transparent' : 'glass border-b border-border/40 shadow-sm'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300 ${isHome ? 'bg-gradient-to-b from-black/60 to-transparent' : 'glass border-b border-border/40 shadow-sm'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href={logoHref} className="flex items-center gap-2 shrink-0 group transition-transform hover:scale-[1.02] active:scale-[0.98]">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center shadow-md group-hover:shadow-saffron-500/30 transition-shadow">
-              <span className="text-white font-bold text-sm">अ</span>
-            </div>
-            <span className="font-bold text-lg gradient-text hidden sm:block">
+            <Logo size={32} />
+            <span
+              className={`font-bold text-lg hidden sm:block ${
+                isHome
+                  ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]'
+                  : 'gradient-text'
+              }`}
+            >
               {t.appName}
             </span>
             {isAdmin && (
@@ -107,6 +113,7 @@ export default function Navbar() {
               className="p-2 rounded-xl border border-border hover:border-primary/40 hover:bg-surface
                          transition-all duration-200 text-muted hover:text-foreground cursor-pointer active:scale-95 shadow-xs"
               title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+              aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             >
               {theme === 'light' ? (
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -144,6 +151,7 @@ export default function Navbar() {
                 )}
                 <button
                   onClick={handleLogout}
+                  data-testid="desktop-logout-button"
                   className="px-3 py-1.5 text-sm text-muted hover:text-danger transition-colors rounded-lg hover:bg-surface cursor-pointer font-medium"
                 >
                   {t.nav.logout}
@@ -253,6 +261,7 @@ export default function Navbar() {
                     </Link>
                     <button
                       onClick={handleLogout}
+                      data-testid="mobile-logout-button"
                       className="w-full text-left px-3 py-2.5 text-sm text-danger hover:bg-danger-light rounded-lg transition-colors"
                     >
                       {t.nav.logout}

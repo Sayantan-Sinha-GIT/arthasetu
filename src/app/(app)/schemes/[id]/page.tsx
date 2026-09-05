@@ -53,9 +53,12 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
     loadScheme();
   }, [id, user]);
 
+  const [explainError, setExplainError] = useState<string | null>(null);
+
   const handleGenerateExplanation = async () => {
     if (!scheme || explaining) return;
     setExplaining(true);
+    setExplainError(null);
     try {
       const response = await fetch('/api/schemes/explain', {
         method: 'POST',
@@ -69,9 +72,12 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
       const data = await response.json();
       if (data.success && data.explanation) {
         setAiExplanation(data.explanation);
+      } else {
+        setExplainError(data.error || 'Failed to generate explanation. Please try again.');
       }
     } catch (err) {
       console.error('Error fetching AI scheme explanation:', err);
+      setExplainError('Network error while generating scheme breakdown. Please check your connection and try again.');
     } finally {
       setExplaining(false);
     }
@@ -215,6 +221,12 @@ export default function SchemeDetailPage({ params }: SchemeDetailPageProps) {
             <p className="text-xs text-muted leading-relaxed">
               Click &ldquo;Explain For My Business&rdquo; to get a customized subsidy breakdown and step-by-step application guidance tailored to your location and enterprise.
             </p>
+          )}
+
+          {explainError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-600 dark:text-red-400 animate-fade-in" role="alert">
+              ⚠️ {explainError}
+            </div>
           )}
         </Card>
 

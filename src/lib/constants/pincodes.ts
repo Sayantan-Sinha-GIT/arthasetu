@@ -18,6 +18,7 @@ export const PINCODE_MASTER_RECORDS: Record<string, PincodeInfo> = {
   '700091': { state: 'West Bengal', district: 'North 24 Parganas', areas: ['Salt Lake Sector V', 'Bidhannagar', 'Mahisbathan', 'Techno City'] },
   '711101': { state: 'West Bengal', district: 'Howrah', areas: ['Howrah Station', 'Golabari', 'Salkia', 'Pilkhana'] },
   '713201': { state: 'West Bengal', district: 'Paschim Bardhaman', areas: ['Durgapur Steel City', 'City Centre', 'Benachity'] },
+  '731224': { state: 'West Bengal', district: 'Birbhum', areas: ['Rampurhat', 'Tarapith', 'Mallarpur', 'Nalhati'] },
   '734001': { state: 'West Bengal', district: 'Darjeeling', areas: ['Siliguri Town', 'Hill Cart Road', 'Sevoke Road', 'Hakimpara'] },
   '734101': { state: 'West Bengal', district: 'Darjeeling', areas: ['Darjeeling Mall', 'Chauk Bazaar', 'Ghoom', 'Jalapahar'] },
 
@@ -352,15 +353,38 @@ export function isValidPincode(pincode: string): boolean {
   return /^[1-9][0-9]{5}$/.test(clean) && lookupPincode(clean) !== null;
 }
 
+export interface AddressConsistencyResult {
+  valid: boolean;
+  reason?: string;
+  warning?: string;
+  suggestedDistrict?: string;
+  hasExactMaster?: boolean;
+}
+
 /**
  * Validates whether an entered PIN code matches the provided State & District.
+ *
+ * ARCHITECTURAL RULE:
+ * 1. Hard rejection (blocking form submission / error) is ONLY allowed when there
+ *    is an EXACT entry in PINCODE_MASTER_RECORDS for that specific 6-digit PIN
+ *    that explicitly contradicts the user's entered district.
+ * 2. If the PIN is not in PINCODE_MASTER_RECORDS and the system is falling back
+ *    to the approximate PINCODE_PREFIX_MAPPING guess, it NEVER hard-rejects the
+ *    user's self-declared district — instead downgrading to a soft, non-blocking
+ *    informational warning/hint.
+ * 3. State mismatch remains strict because postal circles strictly define state boundaries.
  */
 export function validateAddressConsistency(
   pincode: string,
   state: string,
   district: string
-): { valid: boolean; reason?: string } {
-  const info = lookupPincode(pincode);
+): AddressConsistencyResult {
+  const cleanPin = pincode.replace(/[^0-9]/g, '');
+  if (!/^[1-9][0-9]{5}$/.test(cleanPin)) {
+    return { valid: false, reason: 'Invalid or unresolvable PIN code.' };
+  }
+
+  const info = lookupPincode(cleanPin);
   if (!info) {
     return { valid: false, reason: 'Invalid or unresolvable PIN code.' };
   }
@@ -368,28 +392,51 @@ export function validateAddressConsistency(
   const cleanState = state.trim().toLowerCase();
   const infoState = info.state.trim().toLowerCase();
 
-  // Normalize state comparison
-  if (cleanState !== infoState && !cleanState.includes(infoState) && !infoState.includes(cleanState)) {
+  // Normalize state comparison: Prefix strictly maps to State / Circle
+  if (cleanState && infoState && cleanState !== infoState && !cleanState.includes(infoState) && !infoState.includes(cleanState)) {
     return {
       valid: false,
-      reason: `PIN code ${pincode} belongs to ${info.state}, but ${state} was specified.`,
+      reason: `PIN code ${cleanPin} belongs to ${info.state}, but ${state} was specified.`,
     };
   }
 
-  // Normalize district comparison (fuzzy: "Bengaluru Urban" should match "Bengaluru", etc.)
+  // Exact Master Record Validation
+  const master = PINCODE_MASTER_RECORDS[cleanPin];
   const cleanDistrict = district.trim().toLowerCase();
-  const infoDistrict = info.district.trim().toLowerCase();
-  if (
-    cleanDistrict &&
-    cleanDistrict !== infoDistrict &&
-    !cleanDistrict.includes(infoDistrict) &&
-    !infoDistrict.includes(cleanDistrict)
-  ) {
-    return {
-      valid: false,
-      reason: `PIN code ${pincode} belongs to ${info.district}, but ${district} was specified.`,
-    };
+
+  if (master && cleanDistrict) {
+    const masterDistrict = master.district.trim().toLowerCase();
+    if (
+      cleanDistrict !== masterDistrict &&
+      !cleanDistrict.includes(masterDistrict) &&
+      !masterDistrict.includes(cleanDistrict)
+    ) {
+      return {
+        valid: false,
+        reason: `PIN code ${cleanPin} belongs to ${master.district}, but ${district} was specified.`,
+        hasExactMaster: true,
+      };
+    }
+    return { valid: true, hasExactMaster: true };
   }
 
-  return { valid: true };
+  // Prefix fallback: NEVER hard-reject user's self-declared district.
+  // Instead, emit an informational hint if the user-selected district differs from prefix default.
+  if (cleanDistrict && info.district) {
+    const approxDistrict = info.district.trim().toLowerCase();
+    if (
+      cleanDistrict !== approxDistrict &&
+      !cleanDistrict.includes(approxDistrict) &&
+      !approxDistrict.includes(cleanDistrict)
+    ) {
+      return {
+        valid: true,
+        warning: `This PIN code is commonly associated with ${info.district} — please double check your district if this doesn't look right.`,
+        suggestedDistrict: info.district,
+        hasExactMaster: false,
+      };
+    }
+  }
+
+  return { valid: true, hasExactMaster: false };
 }
