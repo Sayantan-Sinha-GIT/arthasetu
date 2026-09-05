@@ -167,7 +167,8 @@
     "remove": "ہٹائیں",
     "lenderType": "قرض دینے والے کی قسم",
     "outstandingBalance": "بقايا بیلنس (₹)",
-    "monthlyEmi": "ماہانہ EMI (₹)"
+    "monthlyEmi": "ماہانہ EMI (₹)",
+    "pinDistrictHint": "یہ پن کوڈ عام طور پر {district} سے منسلک ہے۔ اگر یہ درست معلوم نہ ہو تو براہ کرم اپنے ضلع کی دوبارہ تصدیق کریں۔"
   },
   "dashboard": {
     "welcome": "خوش آمدید،",

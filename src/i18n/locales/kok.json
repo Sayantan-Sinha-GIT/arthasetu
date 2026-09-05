@@ -152,7 +152,8 @@
     "outstandingBalance": "Baki Rakkam (₹)",
     "monthlyEmi": "Mahina EMI (₹)",
     "existingBusinessDesc": "सद्या चलपी दुकान, हस्तकला, शेतकी प्रकल्प वा ल्हान उदीम",
-    "planningBusinessDesc": "नवो विचार, स्टार्ट-अप, वा नव्या वेपारात हात घालप"
+    "planningBusinessDesc": "नवो विचार, स्टार्ट-अप, वा नव्या वेपारात हात घालप",
+    "pinDistrictHint": "हो पिन कोड सामान्यपणान {district} कडेन जोडिल्लो आसा. तुमच्या जिल्ह्यांत हें चुकसार दिसल्यार कृपया परत तपासून पळयात."
   },
   "dashboard": {
     "welcome": "Swagat, ",

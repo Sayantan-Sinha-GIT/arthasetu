@@ -83,6 +83,13 @@ function extractArrayByRegex(raw: string, fieldName: string): string[] | null {
   return null;
 }
 
+export interface PlanNarrative {
+  executiveSummary: string;
+  keyAssumptions: string[];
+  riskAnalysis: string[];
+  actionableNextSteps: string[];
+}
+
 export const PLANNER_NARRATIVE_SCHEMA = {
   type: 'object',
   properties: {
@@ -124,7 +131,7 @@ export async function POST(req: NextRequest) {
     }
 
     const systemPrompt = buildPlannerPrompt(inputs, calculatedValues, userProfile, language);
-    const userQuery = 'Please analyze these exact business figures and respond with a JSON object containing the structured narrative.';
+    const userQuery = `Generate the comprehensive financial plan narrative for this ${inputs.businessScale} ${inputs.businessType} enterprise in ${inputs.location}. Ensure all 4 required sections are thoroughly detailed.`;
 
     // Generate narrative using fast Gemini Flash model with structured JSON enforcement
     const rawResult = await generateContent(
@@ -142,7 +149,7 @@ export async function POST(req: NextRequest) {
     // Clean JSON markdown wrapper and conversational fluff if present
     const cleanJsonStr = cleanMarkdownFences(rawResult);
 
-    let parsedNarrative: any = null;
+    let parsedNarrative: Partial<PlanNarrative> | null = null;
     let parseSucceeded = false;
 
     try {

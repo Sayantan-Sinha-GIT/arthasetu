@@ -24,7 +24,14 @@ import {
   GENDERS,
 } from '@/lib/firestore/users';
 import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
-import { lookupPincode, fetchPincodeInfo, validateAddressConsistency, isValidPincode, type PincodeInfo } from '@/lib/constants/pincodes';
+import {
+  lookupPincode,
+  fetchPincodeInfo,
+  validateAddressConsistency,
+  isValidPincode,
+  PINCODE_MASTER_RECORDS,
+  type PincodeInfo,
+} from '@/lib/constants/pincodes';
 import { useNetworkQuality } from '@/contexts/NetworkQualityContext';
 import { getErrorCode, getErrorMessage } from '@/lib/utils/errors';
 import type { UserProfile, LoanDetail } from '@/types';
@@ -62,6 +69,7 @@ export default function ProfilePage() {
 
   const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
   const [isResolving, setIsResolving] = useState(false);
+  const [dismissedDistrictHint, setDismissedDistrictHint] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -390,20 +398,44 @@ export default function ProfilePage() {
                         value={formData.state || ''}
                         onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                         options={stateOptions}
-                        disabled={true}
                         required
-                        hint="🔒 Auto-populated based on PIN Code"
+                        hint={resolvedInfo ? "📍 Auto-suggested from PIN Code" : undefined}
                       />
                       <Select
                         label={`${t.onboarding.district}`}
                         value={formData.district || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, district: e.target.value }));
+                          setDismissedDistrictHint(false);
+                        }}
                         options={districtOptions}
-                        disabled={true}
+                        disabled={!formData.state}
                         required
-                        hint="🔒 Auto-populated based on PIN Code"
+                        hint={resolvedInfo ? "📍 Select your verified district" : undefined}
                       />
                     </div>
+
+                    {/* Soft non-blocking hint if district differs from prefix default */}
+                    {resolvedInfo && formData.district && !PINCODE_MASTER_RECORDS[formData.pinCode || ''] &&
+                     formData.district.trim().toLowerCase() !== resolvedInfo.district.trim().toLowerCase() &&
+                     !dismissedDistrictHint && (
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start justify-between gap-2 text-xs text-amber-800 dark:text-amber-200 animate-fade-in" role="status">
+                        <div className="flex items-start gap-2">
+                          <span className="text-base leading-none">💡</span>
+                          <span>
+                            {(t.onboarding.pinDistrictHint || 'This PIN code is commonly associated with {district}. Please double check your district if this does not look right.').replace('{district}', resolvedInfo.district)}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setDismissedDistrictHint(true)}
+                          className="text-amber-700 dark:text-amber-300 hover:opacity-70 p-1 text-sm font-bold"
+                          aria-label="Dismiss district suggestion hint"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
 
                     <div>
                       <Select

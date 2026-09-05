@@ -167,7 +167,8 @@
     "remove": "Sabi Miti",
     "lenderType": "Lender Type",
     "outstandingBalance": "Baki Taka (₹)",
-    "monthlyEmi": "Mahina EMI (₹)"
+    "monthlyEmi": "Mahina EMI (₹)",
+    "pinDistrictHint": "ᱱᱚᱣᱟ ᱯᱤᱱ ᱠᱳᱰ ᱫᱚ {district} ᱥᱟᱶ ᱡᱚᱲᱟᱣ ᱢᱮᱱᱟᱜᱼᱟ᱾ ᱡᱩᱫᱤ ᱱᱚᱣᱟ ᱴᱷᱤᱠ ᱵᱟᱝ ᱧᱮᱞᱚᱜ ᱠᱟᱱᱟ ᱮᱱᱠᱷᱟᱱ ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱦᱚᱱᱚᱛ ᱟᱨᱦᱚᱸ ᱯᱚᱨᱠᱷᱟᱣ ᱢᱮ᱾"
   },
   "dashboard": {
     "welcome": "Jharay ruray menpe,",

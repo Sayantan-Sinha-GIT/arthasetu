@@ -167,7 +167,8 @@
     "remove": "తొలగించు",
     "lenderType": "రుణదాత రకం",
     "outstandingBalance": "చెల్లించవలసిన బ్యాలెన్స్ (₹)",
-    "monthlyEmi": "నెలవారీ EMI (₹)"
+    "monthlyEmi": "నెలవారీ EMI (₹)",
+    "pinDistrictHint": "ఈ పిన్ కోడ్ సాధారణంగా {district} ప్రాంతానికి చెందినది. ఇది సరైనది కాకపోతే దయచేసి మీ జిల్లాను మళ్లీ తనిఖీ చేయండి."
   },
   "dashboard": {
     "welcome": "స్వాగతం,",

@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
+Allow: /schemes
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /advisor
+Disallow: /planner
+Disallow: /profile
+Disallow: /onboarding
+Disallow: /saved-plans
+Disallow: /saved-advice
+Disallow: /*/admin
 
-Sitemap: https://arthasetu.vercel.app/sitemap.xml
+Sitemap: https://arthasetu-sigma.vercel.app/sitemap.xml

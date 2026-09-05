@@ -25,7 +25,10 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
-  title: "ArthaSetu — Your Business. Your Language. Your Plan.",
+  title: {
+    default: "ArthaSetu — Your Business. Your Language. Your Plan.",
+    template: "%s | ArthaSetu",
+  },
   description:
     "AI-powered multilingual business advisor for rural micro-entrepreneurs. Get personalized business guidance, financial planning, and government scheme matching in your language.",
   keywords: [

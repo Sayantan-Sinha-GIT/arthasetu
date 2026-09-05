@@ -167,7 +167,8 @@
     "remove": "हटाउनुहोस्",
     "lenderType": "ऋणदाताको प्रकार",
     "outstandingBalance": "बाँकी बक्यौता (₹)",
-    "monthlyEmi": "मासिक EMI (₹)"
+    "monthlyEmi": "मासिक EMI (₹)",
+    "pinDistrictHint": "यो पिन कोड सामान्यतया {district} सँग सम्बन्धित छ। यदि यो सही देखिएन भने कृपया आफ्नो जिल्ला पुन: जाँच गर्नुहोस्।"
   },
   "dashboard": {
     "welcome": "पुनः स्वागत छ,",

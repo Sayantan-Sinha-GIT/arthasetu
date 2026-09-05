@@ -152,7 +152,8 @@
     "outstandingBalance": "Baki Loan (₹)",
     "monthlyEmi": "Maikunni EMI (₹)",
     "existingBusinessDesc": "Provmotsi arjakhna dokhol, karigiri, haorabari, ba bilai bilai bepari",
-    "planningBusinessDesc": "Gothom sindhi, arjakhna, ba gubun beparni somdhoro gaoni"
+    "planningBusinessDesc": "Gothom sindhi, arjakhna, ba gubun beparni somdhoro gaoni",
+    "pinDistrictHint": "बे पिन कोडआ सरासनस्रायै {district} जों सोमोन्दो गोनां। जुदि बेयो थिक नङा अननानै गावनि जिल्लाखौ फिन नायफिन।"
   },
   "dashboard": {
     "welcome": "Phwlainwi phwjw,",

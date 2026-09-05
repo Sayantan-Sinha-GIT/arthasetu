@@ -34,6 +34,15 @@ export default function VoiceButton({
             ? t.voice.notSupported
             : t.voice.tapToSpeak
         }
+        aria-label={
+          state === 'listening'
+            ? `${t.voice.listening} ${t.voice.stop}`
+            : state === 'speaking'
+            ? `${t.voice.speaking} ${t.voice.stop}`
+            : state === 'disconnected'
+            ? t.voice.notSupported
+            : t.voice.tapToSpeak
+        }
         className={`
           relative p-3 rounded-2xl border transition-all duration-300 active:scale-95 shadow-sm
           ${state === 'listening'

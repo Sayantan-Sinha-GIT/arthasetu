@@ -113,6 +113,7 @@ export default function Navbar() {
               className="p-2 rounded-xl border border-border hover:border-primary/40 hover:bg-surface
                          transition-all duration-200 text-muted hover:text-foreground cursor-pointer active:scale-95 shadow-xs"
               title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+              aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             >
               {theme === 'light' ? (
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

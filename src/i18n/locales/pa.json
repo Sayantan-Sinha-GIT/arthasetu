@@ -167,7 +167,8 @@
     "remove": "ਹਟਾਓ",
     "lenderType": "ਉਧਾਰ ਦੇਣ ਵਾਲੇ ਦੀ ਕਿਸਮ",
     "outstandingBalance": "ਬਾਕੀ ਬਕਾਇਆ (₹)",
-    "monthlyEmi": "ਮਾਸਿਕ EMI (₹)"
+    "monthlyEmi": "ਮਾਸਿਕ EMI (₹)",
+    "pinDistrictHint": "ਇਹ ਪਿੰਨ ਕੋਡ ਆਮ ਤੌਰ ਤੇ {district} ਨਾਲ ਸੰਬੰਧਿਤ ਹੈ। ਜੇਕਰ ਇਹ ਠੀਕ ਨਹੀਂ ਲੱਗਦਾ ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਜ਼ਿਲ੍ਹੇ ਦੀ ਮੁੜ ਜਾਂਚ ਕਰੋ।"
   },
   "dashboard": {
     "welcome": "ਜੀ ਆਇਆਂ ਨੂੰ,",

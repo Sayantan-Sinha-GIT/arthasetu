@@ -116,6 +116,7 @@ const hi: Translations = {
     "roadNameHint": "आप यहाँ मैन्युअल रूप से सड़क का नाम या मकान नंबर दर्ज कर सकते हैं।",
     "pinCode": "पिन कोड (अनिवार्य)",
     "pinCodePlaceholder": "उदा. 781001",
+    "pinDistrictHint": "यह पिन कोड आमतौर पर {district} से जुड़ा है। यदि यह सही नहीं लगता है तो कृपया अपने जिले की दोबारा जांच करें।",
     "businessStatus": "व्यवसाय की स्थिति",
     "existingBusiness": "मेरा मौजूदा व्यवसाय है",
     "planningBusiness": "मैं व्यवसाय शुरू करने की योजना बना रहा/रही हूं",

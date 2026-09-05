@@ -167,7 +167,8 @@
     "remove": "مِٹٲوِو",
     "lenderType": "قَرْضہٕ دِنٛہٕ وول",
     "outstandingBalance": "باقِیٲتی رقم (₹)",
-    "monthlyEmi": "رؠتہٕ وار EMI (₹)"
+    "monthlyEmi": "رؠتہٕ وار EMI (₹)",
+    "pinDistrictHint": "یہِ پِن کۆڑ چھُ عام طور {district} سٟتؠ وابستہٕ۔ مہربٲنی کٔرِتھ کۆڑِو پؠٹھ پِروٲن کۆرِو پانہٕ زِ توٛہُنٛد ضِلٕ چھُ صحیح۔"
   },
   "dashboard": {
     "welcome": "خوٗش آمَد,",

@@ -85,10 +85,14 @@ export function getTranslations(language: string): Translations {
 export function t(language: string, path: string): string {
   const trans = getTranslations(language);
   const keys = path.split('.');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let result: any = trans;
+  // Traverses arbitrary nested translation object paths at runtime safely
+  let result: unknown = trans;
   for (const key of keys) {
-    result = result?.[key];
+    if (result && typeof result === 'object' && key in (result as Record<string, unknown>)) {
+      result = (result as Record<string, unknown>)[key];
+    } else {
+      return path;
+    }
   }
   return typeof result === 'string' ? result : path;
 }

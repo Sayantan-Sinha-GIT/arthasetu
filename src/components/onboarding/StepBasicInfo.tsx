@@ -5,7 +5,7 @@ import Input, { Select } from '@/components/ui/Input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ALL_INDIAN_REGIONS } from '@/lib/firestore/users';
 import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
-import { lookupPincode, fetchPincodeInfo, type PincodeInfo } from '@/lib/constants/pincodes';
+import { lookupPincode, fetchPincodeInfo, PINCODE_MASTER_RECORDS, type PincodeInfo } from '@/lib/constants/pincodes';
 import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { UserProfile } from '@/types';
 
@@ -23,6 +23,7 @@ export default function StepBasicInfo({
   const { t, setLanguage, language } = useLanguage();
   const [resolvedInfo, setResolvedInfo] = useState<PincodeInfo | null>(null);
   const [isResolving, setIsResolving] = useState(false);
+  const [dismissedDistrictHint, setDismissedDistrictHint] = useState(false);
 
   // Sync initial PIN code resolution on mount or data load. Needs an effect:
   // `fetchPincodeInfo` is an async network call.
@@ -161,14 +162,14 @@ export default function StepBasicInfo({
             maxLength={6}
             required
             hint={
-              isAddressLocked
-                ? `🔒 Auto-resolved & Locked: ${resolvedInfo.district}, ${resolvedInfo.state}`
-                : 'Enter your 6-digit postal PIN code to automatically resolve and lock your State & District.'
+              resolvedInfo
+                ? `📍 Auto-suggested State: ${resolvedInfo.state} (Suggested District: ${resolvedInfo.district})`
+                : 'Enter your 6-digit postal PIN code to automatically suggest State & District.'
             }
           />
         </div>
 
-        {/* State & District (Auto-locked when PIN matches) */}
+        {/* State & District (Auto-suggested, freely selectable) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select
             label={t.onboarding.state}
@@ -176,21 +177,45 @@ export default function StepBasicInfo({
             onChange={(e) => handleStateChange(e.target.value)}
             options={stateOptions}
             error={errors.state}
-            disabled={true}
             required
-            hint="🔒 Auto-populated based on PIN Code"
+            hint={resolvedInfo ? "📍 Auto-suggested from PIN Code" : undefined}
           />
           <Select
             label={t.onboarding.district}
             value={data.district || ''}
-            onChange={(e) => handleDistrictChange(e.target.value)}
+            onChange={(e) => {
+              handleDistrictChange(e.target.value);
+              setDismissedDistrictHint(false);
+            }}
             options={districtOptions}
-            disabled={true}
+            disabled={!data.state}
             required
             error={errors.district}
-            hint="🔒 Auto-populated based on PIN Code"
+            hint={resolvedInfo ? "📍 Select your verified district" : undefined}
           />
         </div>
+
+        {/* Soft non-blocking hint if district differs from prefix default */}
+        {resolvedInfo && data.district && !PINCODE_MASTER_RECORDS[data.pinCode || ''] &&
+         data.district.trim().toLowerCase() !== resolvedInfo.district.trim().toLowerCase() &&
+         !dismissedDistrictHint && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start justify-between gap-2 text-xs text-amber-800 dark:text-amber-200 animate-fade-in" role="status">
+            <div className="flex items-start gap-2">
+              <span className="text-base leading-none">💡</span>
+              <span>
+                {(t.onboarding.pinDistrictHint || 'This PIN code is commonly associated with {district}. Please double check your district if this does not look right.').replace('{district}', resolvedInfo.district)}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDismissedDistrictHint(true)}
+              className="text-amber-700 dark:text-amber-300 hover:opacity-70 p-1 text-sm font-bold"
+              aria-label="Dismiss district suggestion hint"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Post Office / Area (Dropdown) */}
         <Select

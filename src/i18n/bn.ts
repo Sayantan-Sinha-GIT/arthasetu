@@ -113,6 +113,7 @@ const bn: Translations = {
     "localityPlaceholder": "যেমন: গুয়াহাটি / কলকাতা",
     "pinCode": "পিন কোড (ঐচ্ছিক)",
     "pinCodePlaceholder": "যেমন: ৭০০০০১",
+    "pinDistrictHint": "এই পিন কোডটি সাধারণত {district} এর সাথে যুক্ত। এটি সঠিক মনে না হলে অনুগ্রহ করে আপনার জেলা পুনরায় যাচাই করুন।",
     "businessStatus": "ব্যবসায়ের স্থিতি",
     "existingBusiness": "আমার একটি চলমান ব্যবসা আছে",
     "planningBusiness": "আমি নতুন ব্যবসা শুরু করার পরিকল্পনা করছি",
