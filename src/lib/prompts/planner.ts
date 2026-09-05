@@ -56,7 +56,7 @@ ${languageInstruction}
 ### 🎯 Your Task:
 Provide the qualitative narrative, critical business assumptions, risk analysis, and immediate execution steps.
 SPECIAL INSTRUCTION: If the businessType is ambiguous, vague, or unrecognizable, politely ask the entrepreneur for clarification in the executiveSummary (e.g. "Could you clarify if you produce dairy, poultry, tailoring, or retail goods?") while providing conservative baseline micro-enterprise guidance.
-Respond strictly in JSON format as follows (remember: string VALUES in ${langMeta.name}, JSON keys unchanged):
+Respond strictly with a valid JSON object matching this structure (remember: string VALUES in ${langMeta.name}, JSON keys unchanged):
 
 \`\`\`json
 {

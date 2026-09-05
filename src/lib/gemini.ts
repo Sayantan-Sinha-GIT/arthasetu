@@ -37,29 +37,42 @@ function getClient(): GoogleGenAI {
   return clientInstance;
 }
 
+export interface GenerateContentOptions {
+  temperature?: number;
+  maxOutputTokens?: number;
+  disableFallback?: boolean;
+  responseMimeType?: string;
+  responseSchema?: Record<string, unknown>;
+  responseFormatJson?: boolean;
+}
+
 // ─── Helper: Generate with a specific model with automatic fallback ───
 export async function generateContent(
   model: string,
   systemInstruction: string,
   userMessage: string,
-  options?: {
-    temperature?: number;
-    maxOutputTokens?: number;
-    disableFallback?: boolean;
-  }
+  options?: GenerateContentOptions
 ): Promise<string> {
   const client = getClient();
   
   const executeGeneration = async (targetModel: string) => {
+    const config: Record<string, unknown> = {
+      systemInstruction,
+      temperature: options?.temperature ?? 0.7,
+      maxOutputTokens: options?.maxOutputTokens ?? 4096,
+    };
+    if (options?.responseMimeType) {
+      config.responseMimeType = options.responseMimeType;
+    }
+    if (options?.responseSchema) {
+      config.responseSchema = options.responseSchema;
+    }
+
     const response = await retryWithBackoff(() =>
         client.models.generateContent({
           model: targetModel,
           contents: userMessage,
-          config: {
-            systemInstruction,
-            temperature: options?.temperature ?? 0.7,
-            maxOutputTokens: options?.maxOutputTokens ?? 4096,
-          },
+          config,
         })
     );
 
@@ -76,7 +89,11 @@ export async function generateContent(
   // straight there while the cool-off lasts.
   if (isGeminiCoolingOff() && !options?.disableFallback && isGroqConfigured()) {
     try {
-      return await groqGenerateContent(systemInstruction, userMessage, options);
+      return await groqGenerateContent(systemInstruction, userMessage, {
+        temperature: options?.temperature,
+        maxOutputTokens: options?.maxOutputTokens,
+        responseFormatJson: Boolean(options?.responseFormatJson || options?.responseMimeType === 'application/json'),
+      });
     } catch {
       // Groq is down too — fall through and give Gemini a chance after all,
       // in case its quota reset early.
@@ -117,13 +134,17 @@ export async function generateContent(
 async function tryGroqFallback(
   systemInstruction: string,
   userMessage: string,
-  options: { temperature?: number; maxOutputTokens?: number } | undefined,
+  options: GenerateContentOptions | undefined,
   geminiError: unknown
 ): Promise<string> {
   if (!isGroqConfigured()) throw geminiError;
   console.warn('⚠️ Gemini exhausted. Failing over to Groq...', getErrorMessage(geminiError, 'unknown'));
   try {
-    return await groqGenerateContent(systemInstruction, userMessage, options);
+    return await groqGenerateContent(systemInstruction, userMessage, {
+      temperature: options?.temperature,
+      maxOutputTokens: options?.maxOutputTokens,
+      responseFormatJson: Boolean(options?.responseFormatJson || options?.responseMimeType === 'application/json'),
+    });
   } catch (groqError) {
     console.error('All providers failed. Groq:', getErrorMessage(groqError, 'unknown'));
     // Surface the original Gemini failure: it is the more informative one, and

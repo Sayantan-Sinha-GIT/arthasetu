@@ -83,6 +83,17 @@ function extractArrayByRegex(raw: string, fieldName: string): string[] | null {
   return null;
 }
 
+export const PLANNER_NARRATIVE_SCHEMA = {
+  type: 'object',
+  properties: {
+    executiveSummary: { type: 'string' },
+    keyAssumptions: { type: 'array', items: { type: 'string' } },
+    riskAnalysis: { type: 'array', items: { type: 'string' } },
+    actionableNextSteps: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['executiveSummary', 'keyAssumptions', 'riskAnalysis', 'actionableNextSteps'],
+};
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -113,25 +124,84 @@ export async function POST(req: NextRequest) {
     }
 
     const systemPrompt = buildPlannerPrompt(inputs, calculatedValues, userProfile, language);
-    const userQuery = 'Please analyze these exact business figures and generate the structured JSON narrative.';
+    const userQuery = 'Please analyze these exact business figures and respond with a JSON object containing the structured narrative.';
 
-    // Generate narrative using fast Gemini Flash model with at least 2048 tokens
+    // Generate narrative using fast Gemini Flash model with structured JSON enforcement
     const rawResult = await generateContent(
       GEMINI_MODELS.FLASH,
       systemPrompt,
       userQuery,
-      { temperature: 0.3, maxOutputTokens: 2048 }
+      {
+        temperature: 0.3,
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json',
+        responseSchema: PLANNER_NARRATIVE_SCHEMA,
+      }
     );
 
     // Clean JSON markdown wrapper and conversational fluff if present
     const cleanJsonStr = cleanMarkdownFences(rawResult);
 
-    let parsedNarrative;
+    let parsedNarrative: any = null;
+    let parseSucceeded = false;
+
     try {
       parsedNarrative = JSON.parse(cleanJsonStr);
-    } catch (parseErr) {
-      console.warn('JSON parsing fallback for planner narrative:', parseErr);
+      if (parsedNarrative && typeof parsedNarrative === 'object') {
+        parseSucceeded = true;
+      }
+    } catch {
+      // First parse attempt failed — attempt ONE corrective retry before falling back
+      try {
+        const correctiveQuery = `${userQuery}\n\nYour previous response could not be parsed as valid JSON. Respond with ONLY a valid JSON object matching this exact structure, with no markdown formatting, no code fences, and no text outside the JSON: { "executiveSummary": string, "keyAssumptions": string[], "riskAnalysis": string[], "actionableNextSteps": string[] }`;
+        const retryResult = await generateContent(
+          GEMINI_MODELS.FLASH,
+          systemPrompt,
+          correctiveQuery,
+          {
+            temperature: 0.2,
+            maxOutputTokens: 2048,
+            responseMimeType: 'application/json',
+            responseSchema: PLANNER_NARRATIVE_SCHEMA,
+          }
+        );
+        const cleanRetryJsonStr = cleanMarkdownFences(retryResult);
+        parsedNarrative = JSON.parse(cleanRetryJsonStr);
+        if (parsedNarrative && typeof parsedNarrative === 'object') {
+          parseSucceeded = true;
+          console.warn('Planner narrative: first parse failed, retry succeeded');
+        }
+      } catch {
+        console.warn('Planner narrative: retry also failed, using regex/sentence-safe fallback');
+      }
+    }
 
+    if (parseSucceeded && parsedNarrative && typeof parsedNarrative === 'object') {
+      if (!parsedNarrative.executiveSummary || typeof parsedNarrative.executiveSummary !== 'string') {
+        parsedNarrative.executiveSummary = extractFieldByRegex(rawResult, 'executiveSummary') || 'Business plan viability evaluated based on operational figures.';
+      }
+      if (!Array.isArray(parsedNarrative.keyAssumptions)) {
+        parsedNarrative.keyAssumptions = extractArrayByRegex(rawResult, 'keyAssumptions') || [
+          'Estimated demand reflects standard local rural micro-market capacity.',
+          'Operating costs assume regular raw material availability.',
+          'Loan calculations assume timely monthly servicing.',
+        ];
+      }
+      if (!Array.isArray(parsedNarrative.riskAnalysis)) {
+        parsedNarrative.riskAnalysis = extractArrayByRegex(rawResult, 'riskAnalysis') || [
+          'Initial revenue ramp-up delay — maintain 1-2 months working capital buffer.',
+          'Local market price fluctuations — secure advance vendor agreements.',
+        ];
+      }
+      if (!Array.isArray(parsedNarrative.actionableNextSteps)) {
+        parsedNarrative.actionableNextSteps = extractArrayByRegex(rawResult, 'actionableNextSteps') || [
+          'Prepare project summary report for bank loan or PMEGP application.',
+          'Collect competitive quotations from local equipment suppliers.',
+          'Finalize customer supply contracts.',
+        ];
+      }
+    } else {
+      // Fall through to regex extraction & sentence-safe fallback
       // 1. Try extracting executiveSummary field value directly via regex
       let summary = extractFieldByRegex(rawResult, 'executiveSummary');
 

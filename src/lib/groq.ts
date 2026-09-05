@@ -24,9 +24,10 @@ export function isGroqConfigured(): boolean {
   return Boolean(process.env.GROQ_API_KEY);
 }
 
-interface GroqOptions {
+export interface GroqOptions {
   temperature?: number;
   maxOutputTokens?: number;
+  responseFormatJson?: boolean;
 }
 
 /**
@@ -71,7 +72,7 @@ async function callGroq(
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY is not set');
 
-  const res = await groqFetch(apiKey, {
+  const requestBody: Record<string, unknown> = {
     model,
     messages: [
       { role: 'system', content: systemInstruction },
@@ -79,7 +80,13 @@ async function callGroq(
     ],
     temperature: options?.temperature ?? 0.7,
     max_tokens: options?.maxOutputTokens ?? 4096,
-  });
+  };
+
+  if (options?.responseFormatJson) {
+    requestBody.response_format = { type: 'json_object' };
+  }
+
+  const res = await groqFetch(apiKey, requestBody);
 
   const json = await res.json();
 
