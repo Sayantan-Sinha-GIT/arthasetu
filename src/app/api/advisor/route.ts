@@ -200,7 +200,7 @@ export async function POST(req: NextRequest) {
           {
             name: 'updateProfile',
             description:
-              'Saves details the user reveals about themselves or their business, whether volunteered or given in answer to your question. Call this immediately after they tell you something, so the profile fills in as the conversation goes and they are never asked twice. Pass only the fields they actually gave you.',
+              'Saves details the user reveals about themselves or their business, whether volunteered or given in answer to your question. Call this immediately after they tell you something, so the profile fills in as the conversation goes and they are never asked twice. This includes corrections — if the user changes a value they already gave you earlier in the conversation (or that was already on their profile), call this again with the new value. Never continue using an old value after the user has told you it changed. Pass only the fields they actually gave you.',
             parameters: {
               type: Type.OBJECT,
               properties: {

@@ -69,6 +69,9 @@ check('names the missing capital field', /Available Capital/i.test(bare));
 check('marks absent fields as not provided', bare.includes('NOT PROVIDED'));
 check('caps how much it asks at once', /AT MOST TWO/i.test(bare));
 check('tells it to save answers via updateProfile', bare.includes('updateProfile'));
+check('instructs first-message pacing before asking questions', /practical advice on their stated business idea FIRST/i.test(bare));
+check('instructs that corrections trigger updateProfile in missing branch', /corrections always trigger `?updateProfile`?/i.test(bare));
+check('forbids silently using outdated values in missing branch', /never silently\s+keep using an outdated value/i.test(bare));
 
 // The defaults that hid the problem must not come back.
 check('no fake location default', !bare.includes('Village/Town, District, India'),
@@ -86,12 +89,28 @@ const full = buildAdvisorSystemPrompt(complete, 'en');
 check('reports the profile as complete', full.includes('PROFILE COMPLETE'));
 check('does not list missing fields', !full.includes('MISSING PROFILE INFORMATION — STILL NEEDED'));
 check('tells it to stop asking', /Do NOT ask the user for\s*\nprofile details again|Do NOT ask/i.test(full));
+check('clarifies stopping proactive questions does not mean ignore corrections', /does NOT mean ignore corrections/i.test(full));
+check('instructs model MUST call updateProfile on correction in complete branch', /you MUST call `?updateProfile`? again with the corrected value/i.test(full));
+check('forbids silently using outdated values in complete branch', /never silently\s+keep using an outdated value/i.test(full));
 check('renders real values', full.includes('Nagaon') && full.includes('Poultry Broiler Unit'));
 check('no NOT PROVIDED markers remain', !full.includes('NOT PROVIDED'));
+
+console.log('\n— fine-tuning instructions & guardrails —');
+check('guardrail instructs updateProfile on reveal or correct', /reveal or correct/i.test(full));
+check('includes concrete negative-feedback pushback example', /Example of constructive pushback:/i.test(full));
+
+console.log('\n— api route tool description —');
+const routePath = path.resolve(process.cwd(), 'src/app/api/advisor/route.ts');
+const routeContent = fs.readFileSync(routePath, 'utf8');
+check('updateProfile tool description explicitly instructs on corrections',
+  routeContent.includes('This includes corrections') &&
+  routeContent.includes('Never continue using an old value'));
 
 console.log('\n— no profile at all —');
 const none = buildAdvisorSystemPrompt(null, 'en');
 check('still asks clarifying questions', /clarifying questions/i.test(none));
+check('instructs practical guidance first for null profile', /guidance on their business idea first/i.test(none));
 
 console.log(`\n${failed === 0 ? 'All advisor profile-prompt assertions passed.' : `${failed} assertion(s) FAILED.`}`);
 process.exit(failed === 0 ? 0 : 1);
+
