@@ -3,12 +3,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export type NetworkQuality = 'full' | 'reduced' | 'minimal';
+export type Preference = 'auto' | 'on' | 'off';
 
 interface NetworkQualityContextType {
   quality: NetworkQuality;
   detectedQuality: NetworkQuality;
-  manualOverride: boolean;
-  setManualOverride: (v: boolean) => void;
+  preference: Preference;
+  setPreference: (p: Preference) => void;
 }
 
 const NetworkQualityContext = createContext<NetworkQualityContextType | undefined>(undefined);
@@ -31,23 +32,25 @@ function classify(
   if (saveData) return 'minimal';
   if (effectiveType === 'slow-2g' || effectiveType === '2g') return 'minimal';
   if (effectiveType === '3g') return 'reduced';
-  if (typeof downlink === 'number' && downlink > 0 && downlink < 1.5) return 'reduced';
+  if (typeof downlink === 'number' && downlink > 0 && downlink < 0.5) return 'reduced';
   return 'full';
 }
 
 export function NetworkQualityProvider({ children }: { children: ReactNode }) {
   const [detected, setDetected] = useState<NetworkQuality>('full');
-  const [manualOverride, setManualOverrideState] = useState(false);
+  const [preference, setPreferenceState] = useState<Preference>('auto');
   const [showAutoToast, setShowAutoToast] = useState(false);
 
   // Reads localStorage/the Network Information API and (in the fallback
   // branch) fetches a probe request — all client-only, and `detected`/
-  // `manualOverride` gate UI behavior across the app, so this has to stay an
+  // `preference` gate UI behavior across the app, so this has to stay an
   // effect rather than a lazy initializer to avoid a hydration mismatch.
   useEffect(() => {
-    const saved = localStorage.getItem('arthasetu-data-saver');
+    const saved = localStorage.getItem('arthasetu-data-saver-pref');
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (saved === 'true') setManualOverrideState(true);
+    if (saved === 'auto' || saved === 'on' || saved === 'off') {
+      setPreferenceState(saved);
+    }
 
     const nav = navigator as Navigator & {
       connection?: INetworkInformation;
@@ -78,8 +81,8 @@ export function NetworkQualityProvider({ children }: { children: ReactNode }) {
       fetch('/favicon.ico', { cache: 'no-store' })
         .then(() => {
           const elapsed = performance.now() - start;
-          if (elapsed > 1200) evaluate('minimal');
-          else if (elapsed > 500) evaluate('reduced');
+          if (elapsed > 2500) evaluate('minimal');
+          else if (elapsed > 1200) evaluate('reduced');
           else evaluate('full');
         })
         .catch(() => {});
@@ -95,21 +98,24 @@ export function NetworkQualityProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [showAutoToast]);
 
-  const setManualOverride = (v: boolean) => {
-    setManualOverrideState(v);
+  const setPreference = (p: Preference) => {
+    setPreferenceState(p);
     // Only ever called from a user-triggered browser event, so window/localStorage are always available here.
-    localStorage.setItem('arthasetu-data-saver', String(v));
+    localStorage.setItem('arthasetu-data-saver-pref', p);
   };
 
-  const quality: NetworkQuality = manualOverride ? 'minimal' : detected;
+  const quality: NetworkQuality =
+    preference === 'auto' ? detected :
+    preference === 'on' ? 'minimal' :
+    'full';
 
   return (
     <NetworkQualityContext.Provider
       value={{
         quality,
         detectedQuality: detected,
-        manualOverride,
-        setManualOverride,
+        preference,
+        setPreference,
       }}
     >
       {children}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
 import type { ChatMessage } from '@/types';
+import Logo from '@/components/ui/Logo';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -173,9 +174,7 @@ export default function MessageBubble({ message, onSave, onSpeak, isSpeaking = f
     >
       <div className="flex items-end gap-2 max-w-[88%] sm:max-w-[78%]">
         {!isUser && (
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm mb-1">
-            अ
-          </div>
+          <Logo size={32} className="shrink-0 mb-1" />
         )}
 
         <div

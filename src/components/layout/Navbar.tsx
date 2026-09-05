@@ -8,6 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/ui/LanguageSelector';
 import { DataSaverToggle } from '@/components/layout/DataSaverToggle';
+import Logo from '@/components/ui/Logo';
 
 const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').toLowerCase().trim();
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
@@ -15,6 +16,7 @@ const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const isHome = pathname === '/';
   const { user, logout } = useAuth();
   const isAdmin = !!user && !!ADMIN_EMAIL && user.email?.toLowerCase().trim() === ADMIN_EMAIL;
   const { theme, toggleTheme } = useTheme();
@@ -50,15 +52,19 @@ export default function Navbar() {
     : '/';
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300 ${pathname === '/' ? 'bg-gradient-to-b from-black/60 to-transparent' : 'glass border-b border-border/40 shadow-sm'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300 ${isHome ? 'bg-gradient-to-b from-black/60 to-transparent' : 'glass border-b border-border/40 shadow-sm'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href={logoHref} className="flex items-center gap-2 shrink-0 group transition-transform hover:scale-[1.02] active:scale-[0.98]">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center shadow-md group-hover:shadow-saffron-500/30 transition-shadow">
-              <span className="text-white font-bold text-sm">अ</span>
-            </div>
-            <span className="font-bold text-lg gradient-text hidden sm:block">
+            <Logo size={32} />
+            <span
+              className={`font-bold text-lg hidden sm:block ${
+                isHome
+                  ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]'
+                  : 'gradient-text'
+              }`}
+            >
               {t.appName}
             </span>
             {isAdmin && (

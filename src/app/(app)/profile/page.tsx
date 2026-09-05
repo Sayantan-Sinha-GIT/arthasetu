@@ -33,7 +33,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { t, language, setLanguage } = useLanguage();
-  const { manualOverride, setManualOverride } = useNetworkQuality();
+  const { quality, setPreference } = useNetworkQuality();
+  const isDataSaverOn = quality !== 'full';
 
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     name: '',
@@ -556,8 +557,8 @@ export default function ProfilePage() {
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={manualOverride}
-                    onChange={(e) => setManualOverride(e.target.checked)}
+                    checked={isDataSaverOn}
+                    onChange={(e) => setPreference(e.target.checked ? 'on' : 'off')}
                     className="sr-only peer"
                     aria-label="Toggle Data Saver mode"
                   />

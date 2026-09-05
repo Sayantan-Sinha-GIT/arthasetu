@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import AmbientBackground from '@/components/ui/AmbientBackground';
+import Logo from '@/components/ui/Logo';
 import StepBasicInfo from '@/components/onboarding/StepBasicInfo';
 import { getUserProfile, createUserProfile } from '@/lib/firestore/users';
 import { getDistrictsByState } from '@/lib/constants/districts';
@@ -177,9 +178,7 @@ export default function OnboardingPage() {
         <AmbientBackground variant="subtle" />
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center mx-auto mb-3 shadow-md shadow-saffron-500/20">
-            <span className="text-white font-bold text-lg">अ</span>
-          </div>
+          <Logo size={48} className="mx-auto mb-3" />
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {t.onboarding.title}
           </h1>

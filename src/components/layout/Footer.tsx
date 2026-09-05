@@ -1,6 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
+import Logo from '@/components/ui/Logo';
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -11,9 +12,7 @@ export default function Footer() {
         {/* Top Row: App Branding & Mission Note */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-border-subtle pb-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-saffron-500 to-saffron-600 flex items-center justify-center shadow-xs">
-              <span className="text-white font-bold text-xs">अ</span>
-            </div>
+            <Logo size={28} />
             <div>
               <span className="text-sm font-black text-foreground tracking-tight">{t.appName}</span>
               <span className="text-xs text-muted ml-2">— {t.footer.prototype}</span>

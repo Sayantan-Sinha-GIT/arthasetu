@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Logo from '@/components/ui/Logo';
 
 const INTRO_STORAGE_KEY = 'as-intro-shown';
 
@@ -79,9 +80,7 @@ export default function IntroSplash() {
     >
       <div className="flex flex-col items-center justify-center text-center p-6 space-y-4 animate-slide-up">
         {/* Emblem */}
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-saffron-400 to-saffron-600 flex items-center justify-center shadow-2xl shadow-saffron-500/30">
-          <span className="text-white font-bold text-3xl sm:text-4xl">अ</span>
-        </div>
+        <Logo size={80} className="w-16 h-16 sm:w-20 sm:h-20" />
 
         {/* Brand Name & Tagline */}
         <div className="space-y-1">
