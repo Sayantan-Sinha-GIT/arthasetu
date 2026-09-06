@@ -118,12 +118,67 @@ interface UseSpeechRecognitionOptions {
   errorMessages?: SpeechRecognitionErrorMessages;
 }
 
-/** Joins accumulated speech without doubling the spaces around segments. */
-function joinSegments(a: string, b: string): string {
+/**
+ * How many words either side of a segment boundary we will compare when
+ * looking for the recognizer's overlap. Long enough to catch a repeated
+ * phrase, short enough that it can never swallow a real clause.
+ */
+const MAX_BOUNDARY_OVERLAP_WORDS = 8;
+
+/** Punctuation the recognizer sprinkles inconsistently, including the Devanagari danda. */
+const OVERLAP_PUNCTUATION = /[.,!?;:'"()।॥،؟]/g;
+
+function overlapKey(word: string): string {
+  return word.toLowerCase().replace(OVERLAP_PUNCTUATION, '');
+}
+
+/**
+ * Joins accumulated speech, dropping the overlap the recognizer leaves at
+ * segment boundaries.
+ *
+ * Chrome's streaming recognizer does not cut cleanly between results. Its
+ * decode window overlaps the previous one, so a new final segment routinely
+ * re-reports the last word or two of the segment before it. Concatenating
+ * naively produced visible doubling — "আমার কাছে ৫০০০০ টাকা আছে" came back as
+ * "আমার আমার কাছে ৫০০০০ টাকা টাকা আছে", the tail of each segment repeated as
+ * the head of the next. It is worst in the Indic locales, whose weaker acoustic
+ * models emit shorter, burstier segments and therefore more boundaries.
+ *
+ * So before joining, find the longest run of words that ends `left` and begins
+ * `right`, and keep only one copy of it.
+ *
+ * THE TRADE-OFF, DELIBERATELY TAKEN: a speaker who genuinely repeats a word
+ * across a segment boundary ("টাকা। টাকা কম পড়ছে") loses one copy. That is a
+ * rare sentence and a small loss. The doubling it replaces was happening on
+ * essentially every dictation, in front of the user, in their own language.
+ * Note this only ever applies AT a boundary between two recognizer results —
+ * repetition inside one result is left exactly as spoken.
+ */
+export function joinSegments(a: string, b: string): string {
   const left = a.trim();
   const right = b.trim();
   if (!left) return right;
   if (!right) return left;
+
+  const leftWords = left.split(/\s+/);
+  const rightWords = right.split(/\s+/);
+  const maxOverlap = Math.min(MAX_BOUNDARY_OVERLAP_WORDS, leftWords.length, rightWords.length);
+
+  // Longest first: prefer collapsing a repeated phrase over a repeated word.
+  for (let k = maxOverlap; k >= 1; k--) {
+    let matches = true;
+    for (let i = 0; i < k; i++) {
+      if (overlapKey(leftWords[leftWords.length - k + i]) !== overlapKey(rightWords[i])) {
+        matches = false;
+        break;
+      }
+    }
+    if (matches) {
+      const remainder = rightWords.slice(k).join(' ');
+      return remainder ? `${left} ${remainder}` : left;
+    }
+  }
+
   return `${left} ${right}`;
 }
 
