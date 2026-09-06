@@ -125,11 +125,47 @@ interface UseSpeechRecognitionOptions {
  */
 const MAX_BOUNDARY_OVERLAP_WORDS = 8;
 
-/** Punctuation the recognizer sprinkles inconsistently, including the Devanagari danda. */
-const OVERLAP_PUNCTUATION = /[.,!?;:'"()।॥،؟]/g;
+/**
+ * Sentence marks the recognizer sprinkles inconsistently, across every script
+ * we render. ASCII, then: danda and double danda (Devanagari, and borrowed by
+ * Bengali, Assamese, Odia, Punjabi, Nepali, Maithili, Manipuri, Sanskrit),
+ * the Devanagari and Gujarati abbreviation signs, the Arabic comma, question
+ * mark, semicolon and full stop (Urdu, Sindhi, Kashmiri), the Ol Chiki mucaad
+ * and double mucaad (Santali), and the Meetei Mayek cheikhei (Manipuri).
+ *
+ * All of these appear in our own locale files, so all of them can arrive
+ * mid-transcript.
+ */
+const OVERLAP_PUNCTUATION =
+  /[.,!?;:'"()।॥॰૰،؛؟۔᱾᱿꯫]/g;
 
+/**
+ * Zero-width joiner and non-joiner sit INSIDE words in Kannada, Konkani,
+ * Malayalam, Manipuri, Marathi, Odia, Sindhi and Telugu — our locale files
+ * contain them today. Two recognizer segments can spell the same word with and
+ * without one, which would defeat a plain string comparison.
+ */
+const ZERO_WIDTH = /[\u200B-\u200D\uFEFF]/g;
+
+/**
+ * Reduces a word to something two recognizer segments can be compared on.
+ *
+ * NFC first: eight of our locales carry text that is not already normalised,
+ * and a composed क़ / ড় / ଡ଼ is a different string from its decomposed twin
+ * even though it is the same word on screen. Then drop zero-width marks and
+ * sentence punctuation, then case-fold — a no-op for every Indic script, and
+ * still needed for English.
+ *
+ * A comparison that fails here is not dangerous: the two segments simply join
+ * without collapsing, which is the behaviour we had before. Every entry above
+ * buys back a boundary that would otherwise show a doubled word.
+ */
 function overlapKey(word: string): string {
-  return word.toLowerCase().replace(OVERLAP_PUNCTUATION, '');
+  return word
+    .normalize('NFC')
+    .replace(ZERO_WIDTH, '')
+    .replace(OVERLAP_PUNCTUATION, '')
+    .toLowerCase();
 }
 
 /**
