@@ -1,97 +1,85 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Logo from '@/components/ui/Logo';
+import { useEffect } from 'react';
 
 const INTRO_STORAGE_KEY = 'as-intro-shown';
 
+/** Kept in step with the `transition` on #as-boot in BootScreen. */
+const FADE_MS = 400;
+
 /**
- * Branded Intro Animation Component
+ * How long the brand screen stays up when the app was already warm. Long
+ * enough to register as an intro, short enough not to feel like a toll gate.
+ */
+const MIN_VISIBLE_MS = 650;
+
+/**
+ * Takes down the server-rendered boot screen (see `BootScreen`).
  *
- * Displays a non-blocking, session-only brand introduction on fresh app loads.
- * - Checks `sessionStorage` on mount; never plays more than once per tab session.
- * - Bypassed immediately if `prefers-reduced-motion` is active.
- * - Fades out smoothly after ~1000ms total and unmounts from the DOM.
+ * This used to be the splash itself — a client component that mounted, waited
+ * 750ms and faded. That put the branding AFTER hydration, which is the one
+ * moment it was not needed: by then the app is ready to draw. Everything before
+ * it, the part the user actually waits through, was blank. The splash now ships
+ * in the HTML and this only decides when it goes away.
+ *
+ * The hold is measured from the start of the navigation rather than from mount,
+ * so a slow connection is never charged twice. If hydration took two seconds the
+ * user has already served the wait and the screen is dismissed immediately; the
+ * minimum only applies when the app came back fast enough that dropping the
+ * splash instantly would read as a flicker.
  */
 export default function IntroSplash() {
-  const [showSplash, setShowSplash] = useState(false);
-  const [isFadingOut, setIsFadingOut] = useState(false);
-
-  // Deferred to an effect (rather than a lazy useState initializer) so server
-  // and first client render both start with the splash hidden, avoiding a
-  // hydration mismatch — it only ever appears after mount.
   useEffect(() => {
-    try {
-      // 1. If already shown in this tab session, do not render
-      const alreadyShown = sessionStorage.getItem(INTRO_STORAGE_KEY);
-      if (alreadyShown) {
-        return;
-      }
+    // Flags on <html>, not a removal: the boot screen is server-rendered inside
+    // the root layout, so React owns that node and deleting it out from under
+    // React risks a reconciliation error on the next render. This is the same
+    // mechanism the inline theme script and the Data Saver class already use.
+    const root = document.documentElement;
+    if (root.classList.contains('as-boot-done')) return;
 
-      // 2. If user prefers reduced motion, set flag and do not render animation
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReducedMotion) {
+    const settle = () => {
+      try {
         sessionStorage.setItem(INTRO_STORAGE_KEY, 'true');
-        return;
+      } catch {
+        // Private browsing can refuse storage; the splash still works, it just
+        // does not remember that it has played.
       }
+    };
 
-      // 3. Trigger initial display
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShowSplash(true);
-
-      // 4. Begin fade out after 750ms
-      const fadeTimer = setTimeout(() => {
-        setIsFadingOut(true);
-      }, 750);
-
-      // 5. Complete removal and persist flag after 1050ms total
-      const hideTimer = setTimeout(() => {
-        setShowSplash(false);
-        try {
-          sessionStorage.setItem(INTRO_STORAGE_KEY, 'true');
-        } catch {
-          // Ignore storage quota/security errors in incognito edge cases
-        }
-      }, 1050);
-
-      return () => {
-        clearTimeout(fadeTimer);
-        clearTimeout(hideTimer);
-      };
+    let alreadyPlayed = false;
+    try {
+      alreadyPlayed = sessionStorage.getItem(INTRO_STORAGE_KEY) === 'true';
     } catch {
-      // Fail safely if sessionStorage is unavailable
-      setShowSplash(false);
+      // Treat an unreadable store as a first run.
     }
+
+    let reducedMotion = false;
+    try {
+      reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      // matchMedia is universally available; the guard is only for exotic embeds.
+    }
+
+    // performance.now() is milliseconds since the navigation started, which is
+    // the same clock the user has been watching the boot screen on.
+    const onScreenFor = performance.now();
+    const hold =
+      alreadyPlayed || reducedMotion ? 0 : Math.max(0, MIN_VISIBLE_MS - onScreenFor);
+
+    let doneTimer: ReturnType<typeof setTimeout>;
+    const fadeTimer = setTimeout(() => {
+      root.classList.add('as-boot-out');
+      doneTimer = setTimeout(() => {
+        root.classList.add('as-boot-done');
+        settle();
+      }, FADE_MS);
+    }, hold);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(doneTimer);
+    };
   }, []);
 
-  if (!showSplash) {
-    return null;
-  }
-
-  return (
-    <div
-      aria-hidden="true"
-      className={`
-        fixed inset-0 z-50 flex items-center justify-center bg-background
-        pointer-events-none transition-opacity duration-300
-        ${isFadingOut ? 'opacity-0' : 'opacity-100'}
-      `}
-      style={{ transitionTimingFunction: 'var(--ease-smooth)' }}
-    >
-      <div className="flex flex-col items-center justify-center text-center p-6 space-y-4 animate-slide-up">
-        {/* Emblem */}
-        <Logo size={80} className="w-16 h-16 sm:w-20 sm:h-20" />
-
-        {/* Brand Name & Tagline */}
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            ArthaSetu <span className="text-saffron-400 text-xl sm:text-2xl font-bold font-sans">| अर्थसेतु</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-300 font-medium tracking-wide">
-            Your Business • Your Language • Your Plan
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }

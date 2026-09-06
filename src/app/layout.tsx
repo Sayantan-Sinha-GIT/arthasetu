@@ -3,6 +3,8 @@ import { Space_Grotesk, Inter, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import IntroSplash from "@/components/layout/IntroSplash";
+import BootScreen from "@/components/layout/BootScreen";
+import ServiceWorkerRegistrar from "@/components/system/ServiceWorkerRegistrar";
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 
 const spaceGrotesk = Space_Grotesk({
@@ -73,9 +75,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               "document.documentElement.classList.add(t);}catch(e){}",
           }}
         />
+        {/*
+          Rendered here, above the providers, so it is part of the HTML response
+          rather than something React draws after it has hydrated. It is the only
+          thing on screen while the bundle is still in flight — which on a rural
+          connection is most of the wait. IntroSplash takes it back down.
+        */}
+        <BootScreen />
         <SmoothScrollProvider>
           <Providers>
             <IntroSplash />
+            <ServiceWorkerRegistrar />
             {children}
           </Providers>
         </SmoothScrollProvider>
