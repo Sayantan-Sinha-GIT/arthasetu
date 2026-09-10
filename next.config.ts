@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['firebase-admin'],
+  env: {
+    // A per-deployment marker for the offline worker, so phones know when their
+    // saved screens belong to an older version and must be saved again. Vercel's
+    // deployment ID changes even when the same commit is redeployed; a local
+    // build falls back to its build time.
+    ARTHASETU_BUILD_ID:
+      process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_GIT_COMMIT_SHA || String(Date.now()),
+  },
   async headers() {
     return [
       {

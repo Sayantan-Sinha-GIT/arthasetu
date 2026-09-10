@@ -828,6 +828,7 @@
   "errors": {
     "aiUnavailable": "AI samay lagit bani menaeya. Thora samay par kosis me.",
     "networkError": "Network bhul. Connection check me ar kosis me.",
+    "offlineBanner": "Am offline menama. Saved khobor udugok kana.",
     "saveFailed": "Sanjaw bani ho lena. Kosis me.",
     "loadFailed": "Data load bani ho lena. Kosis me.",
     "authRequired": "Maren lagit login me.",

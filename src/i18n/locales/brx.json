@@ -813,6 +813,7 @@
   "errors": {
     "aiUnavailable": "AI assistance temporarily unavailable.",
     "networkError": "Network error. Check connection.",
+    "offlineBanner": "Nong offline dong. Saved information dinthidong.",
     "saveFailed": "Save failed.",
     "loadFailed": "Load failed.",
     "authRequired": "Log in to continue.",

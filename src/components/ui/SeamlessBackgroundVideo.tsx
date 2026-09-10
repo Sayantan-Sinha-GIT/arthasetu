@@ -4,6 +4,8 @@ import { useRef, useState, useEffect } from 'react';
 
 interface Props {
   src: string;
+  /** Called if the clip cannot play — offline before it was ever saved, say. */
+  onUnavailable?: () => void;
 }
 
 /**
@@ -11,11 +13,16 @@ interface Props {
  * Uses native looping with watchdog event listeners (onPause, onEnded)
  * for maximum reliability.
  */
-export default function SeamlessBackgroundVideo({ src }: Props) {
+export default function SeamlessBackgroundVideo({ src, onUnavailable }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+
+  const fail = () => {
+    setFailed(true);
+    onUnavailable?.();
+  };
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -68,9 +75,12 @@ export default function SeamlessBackgroundVideo({ src }: Props) {
           e.currentTarget.currentTime = 0;
           e.currentTarget.play().catch(() => {});
         }}
-        onError={() => setFailed(true)}
+        onError={fail}
       >
-        <source src={src} type="video/mp4" />
+        {/* A failing <source> reports the error on itself, not on the <video>,
+            so without this an unplayable clip was never noticed and the page
+            stayed styled for a video that was not there. */}
+        <source src={src} type="video/mp4" onError={fail} />
       </video>
       <div className="bg-video-scrim" />
       <div className="bg-video-grain" />

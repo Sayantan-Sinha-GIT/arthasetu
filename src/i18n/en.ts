@@ -883,6 +883,7 @@ const en = {
   errors: {
     aiUnavailable: 'AI assistance is temporarily unavailable. Please try again shortly.',
     networkError: 'Network error. Please check your connection and try again.',
+    offlineBanner: 'You are offline. Showing your saved information.',
     saveFailed: 'Failed to save. Please try again.',
     loadFailed: 'Failed to load data. Please try again.',
     authRequired: 'Please log in to continue.',

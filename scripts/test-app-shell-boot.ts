@@ -23,21 +23,34 @@ const read = (p: string) => readFileSync(p, 'utf8');
 
 const CACHED = 'FROM-CACHE';
 const NETWORK = 'FROM-NETWORK';
-const ASSETS = 'arthasetu-assets-v1';
-const PAGES = 'arthasetu-pages-v1';
-const SHELL = 'arthasetu-shell-v1';
+const ASSETS = 'arthasetu-assets-v2';
+const PAGES = 'arthasetu-pages-v2';
+const SHELL = 'arthasetu-shell-v2';
+const MEDIA = 'arthasetu-media-v1';
 
-function sameOrigin(body: string) {
-  const res = new Response(body, { status: 200 });
+function sameOrigin(body: string, varyOnAccept = false) {
+  const res = new Response(body, {
+    status: 200,
+    headers: varyOnAccept ? { Vary: 'Accept' } : undefined,
+  });
   // Constructed responses report type 'default'; a same-origin fetch inside a
   // worker reports 'basic', which is what the worker checks before storing.
   Object.defineProperty(res, 'type', { value: 'basic' });
   return res;
 }
 
-type Bucket = Map<string, Response>;
+/**
+ * Each saved copy remembers the Accept header it was saved under, because the
+ * real Cache API compares it against a `Vary: Accept` response. A stub that
+ * ignored Vary let every saved image look reachable in tests while every one of
+ * them missed in Chrome.
+ */
+type Entry = { res: Response; accept: string };
+type Bucket = Map<string, Entry>;
+const acceptOf = (req: Request | string) =>
+  typeof req === 'string' ? '' : req.headers.get('accept') ?? '';
 
-function makeWorker(opts: { offline?: boolean } = {}) {
+function makeWorker(opts: { offline?: boolean; respond?: (url: string) => string } = {}) {
   const store = new Map<string, Bucket>();
   const listeners: Record<string, ((e: unknown) => void)[]> = {};
 
@@ -49,22 +62,24 @@ function makeWorker(opts: { offline?: boolean } = {}) {
         typeof req === 'string' ? new URL(req, 'https://x.test').href : req.url;
 
       return {
-        async match(req: Request | string, o?: { ignoreSearch?: boolean }) {
+        async match(req: Request | string, o?: { ignoreSearch?: boolean; ignoreVary?: boolean }) {
           const url = key(req);
-          const direct = bucket.get(url);
-          if (direct) return direct.clone();
-          if (o?.ignoreSearch) {
+          let entry = bucket.get(url);
+          if (!entry && o?.ignoreSearch) {
             const bare = url.split('?')[0];
-            for (const [k, v] of bucket) if (k.split('?')[0] === bare) return v.clone();
+            for (const [k, v] of bucket) if (k.split('?')[0] === bare) entry = v;
           }
-          return undefined;
+          if (!entry) return undefined;
+          const variesOnAccept = (entry.res.headers.get('vary') ?? '').toLowerCase().includes('accept');
+          if (variesOnAccept && !o?.ignoreVary && entry.accept !== acceptOf(req)) return undefined;
+          return entry.res.clone();
         },
         async put(req: Request | string, res: Response) {
-          bucket.set(key(req), res);
+          bucket.set(key(req), { res, accept: acceptOf(req) });
         },
         async add(url: string) {
           if (opts.offline) throw new Error('offline');
-          bucket.set(new URL(url, 'https://x.test').href, sameOrigin(url));
+          bucket.set(new URL(url, 'https://x.test').href, { res: sameOrigin(url), accept: '' });
         },
       };
     },
@@ -86,9 +101,10 @@ function makeWorker(opts: { offline?: boolean } = {}) {
       location: { origin: 'https://x.test' },
     },
     caches: cacheStorage,
-    fetch: async () => {
+    fetch: async (input: Request | string) => {
       if (opts.offline) throw new Error('offline');
-      return sameOrigin(NETWORK);
+      const url = typeof input === 'string' ? input : input.url;
+      return sameOrigin(opts.respond ? opts.respond(url) : NETWORK);
     },
     URL,
     Response,
@@ -97,6 +113,8 @@ function makeWorker(opts: { offline?: boolean } = {}) {
     Promise,
     Error,
     Boolean,
+    Map,
+    Set,
     console,
   };
 
@@ -105,16 +123,16 @@ function makeWorker(opts: { offline?: boolean } = {}) {
   return {
     cacheStorage,
 
-    async fire(type: string) {
+    async fire(type: string, data?: unknown, ports?: { postMessage: (m: unknown) => void }[]) {
       const waits: Promise<unknown>[] = [];
-      const event = { waitUntil: (p: Promise<unknown>) => waits.push(p) };
+      const event = { data, ports, waitUntil: (p: Promise<unknown>) => waits.push(p) };
       for (const fn of listeners[type] || []) fn(event);
       await Promise.all(waits);
     },
 
-    async seed(cacheName: string, url: string, body = CACHED) {
+    async seed(cacheName: string, url: string, body = CACHED, varyOnAccept = false) {
       const c = await cacheStorage.open(cacheName);
-      await c.put(new Request(url), sameOrigin(body));
+      await c.put(new Request(url), sameOrigin(body, varyOnAccept));
     },
 
     /** Runs one request through the worker and reports which path it took. */
@@ -268,6 +286,22 @@ async function main() {
     'optimised images take the same path',
     (await w.route('https://x.test/_next/image?url=%2Fimages%2Fx.png&w=64')) === CACHED
   );
+
+  const logo128 = 'https://x.test/_next/image?url=%2Fimages%2Flogo-mark.png&w=128&q=75';
+  const imageAccept = { Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8' };
+  await w.seed(ASSETS, logo128, CACHED, true);
+  check(
+    'a saved image is served even though the browser asks for it differently than it was saved',
+    (await w.route(logo128, { headers: imageAccept })) === CACHED,
+    'images are served Vary: Accept; honouring that, every saved image missed and the logo broke offline'
+  );
+
+  const deadImages = makeWorker({ offline: true });
+  await deadImages.seed(ASSETS, logo128, CACHED, true);
+  check(
+    'and it is served with no connection at all',
+    (await deadImages.route(logo128, { headers: imageAccept })) === CACHED
+  );
   check(
     'a page navigation prefers the network, so a new deployment is never masked',
     (await w.route('https://x.test/advisor', { mode: 'navigate' })) === NETWORK,
@@ -280,7 +314,6 @@ async function main() {
     ['the advisor API', 'https://x.test/api/advisor', {}],
     ['an RSC payload identified by query', 'https://x.test/dashboard?_rsc=1a2b3', {}],
     ['an RSC payload identified by header', 'https://x.test/dashboard', { headers: { RSC: '1' } }],
-    ['the background video', 'https://x.test/videos/light-mode-video.mp4', {}],
     ['the admin console behind its secret path', 'https://x.test/s3cr3t/admin/schemes', { mode: 'navigate' }],
     ['a cross-origin request', 'https://firestore.googleapis.com/v1/x', {}],
     ['the worker script itself', 'https://x.test/sw.js', {}],
@@ -294,6 +327,123 @@ async function main() {
       'unhandled',
     'replaying a write from cache would be a correctness bug, not a speed one'
   );
+
+  console.log('\n— the background video, so the redesign survives going offline —');
+
+  const clip = 'https://x.test/videos/dark-mode-video.mp4';
+  check(
+    'the first request plays straight from the network',
+    (await w.route(clip, { headers: { Range: 'bytes=0-' } })) === NETWORK
+  );
+  check(
+    'and the whole clip is saved while it plays',
+    (await (await w.cacheStorage.open(MEDIA)).match(clip)) !== undefined,
+    'without it the moving background vanished offline and the app looked like its old design'
+  );
+
+  const offlineClip = makeWorker({ offline: true });
+  await offlineClip.seed(MEDIA, clip);
+  check(
+    'a saved clip plays with no connection',
+    (await offlineClip.route(clip, { headers: { Range: 'bytes=0-' } })) === CACHED
+  );
+
+  const upgraded = makeWorker();
+  await upgraded.seed(MEDIA, clip);
+  await upgraded.seed('arthasetu-assets-v1', 'https://x.test/old.js');
+  await upgraded.fire('activate');
+  const kept = await upgraded.cacheStorage.keys();
+  check(
+    'a worker update keeps the saved clip rather than downloading it again',
+    kept.includes(MEDIA) && !kept.includes('arthasetu-assets-v1')
+  );
+
+  console.log('\n— every screen saved ahead of time —');
+
+  const warm = makeWorker({
+    respond: (url) =>
+      url.endsWith('.js')
+        ? 'chunk'
+        : `<html><script src="/_next/static/chunks/page${new URL(url, 'https://x.test').pathname.replace(/\W/g, '-')}.js"></script>` +
+          `<script>self.__next_f.push([1,"\\"/_next/static/chunks/shared.js\\""])</script>` +
+          `<img srcSet="/_next/image?url=%2Fimages%2Flogo-mark.png&amp;w=32&amp;q=75 1x, /_next/image?url=%2Fimages%2Flogo-mark.png&amp;w=64&amp;q=75 2x"` +
+          ` src="/_next/image?url=%2Fimages%2Fhero.jpg&amp;w=1920&amp;q=75"/></html>`,
+  });
+  await warm.fire('install');
+  await warm.fire('activate');
+  let warmReply: unknown = null;
+  await warm.fire('message', 'arthasetu-warm', [{ postMessage: (m) => (warmReply = m) }]);
+
+  const warmedPages = await warm.cacheStorage.open(PAGES);
+  const warmedAssets = await warm.cacheStorage.open(ASSETS);
+  const screens = ['/', '/dashboard', '/advisor', '/planner', '/schemes', '/profile', '/saved-plans', '/saved-advice'];
+  const missingScreens: string[] = [];
+  for (const s of screens) if (!(await warmedPages.match(s))) missingScreens.push(s);
+  check(
+    'every menu screen is saved, not only the ones already visited',
+    missingScreens.length === 0,
+    `missing: ${missingScreens.join(', ')} — an unsaved screen is where Chrome shows its own old copy`
+  );
+  check(
+    'the code each screen needs is saved with it',
+    (await warmedAssets.match('/_next/static/chunks/page-dashboard.js')) !== undefined,
+    'a saved page without its scripts shows the boot screen and nothing else'
+  );
+  check(
+    'script paths escaped inside inline page data are found too',
+    (await warmedAssets.match('/_next/static/chunks/shared.js')) !== undefined
+  );
+  check(
+    'the logo is saved at every size a screen draws it',
+    (await warmedAssets.match('/_next/image?url=%2Fimages%2Flogo-mark.png&w=32&q=75')) !== undefined &&
+      (await warmedAssets.match('/_next/image?url=%2Fimages%2Flogo-mark.png&w=64&q=75')) !== undefined,
+    'otherwise an offline screen shows an empty tile where the logo goes'
+  );
+  check(
+    'full-width photographs are not downloaded ahead of time',
+    (await warmedAssets.match('/_next/image?url=%2Fimages%2Fhero.jpg&w=1920&q=75')) === undefined,
+    "every width of a hero photo would cost megabytes of a rural user's data"
+  );
+
+  check(
+    'the worker reports back only once every screen is saved',
+    warmReply === 'arthasetu-warmed',
+    'the page records the job as done on this reply, never on sending the request'
+  );
+
+  const registrar = read('src/components/system/ServiceWorkerRegistrar.tsx');
+  check(
+    'the page records the job as done on the reply, not on sending',
+    registrar.indexOf("setItem('arthasetu-warmed-build'") > registrar.indexOf('port1.onmessage'),
+    'an upgrading phone is still run by the old worker, which ignores the request'
+  );
+  check(
+    'the request is repeated, ignoring the marker, when a new worker takes over',
+    registrar.includes("const onTakeover = () => warm(true);") &&
+      registrar.includes("addEventListener('controllerchange', onTakeover)") &&
+      registrar.includes('(alreadyWarmed && !force)'),
+    'the marker may record a job the OLD worker did under older rules'
+  );
+  check(
+    'registration does not accidentally force a repeat',
+    registrar.includes('.then(() => warm())'),
+    '.then(warm) would pass the registration object in as `force`'
+  );
+  check(
+    'the "already saved" marker is the deployment ID, not a script address',
+    registrar.includes('process.env.ARTHASETU_BUILD_ID') &&
+      !registrar.includes('script[src*=') &&
+      read('next.config.ts').includes('ARTHASETU_BUILD_ID'),
+    'the first script URL need not change when only one screen does, leaving its old copy offline'
+  );
+
+  let warmThrew = false;
+  try {
+    await makeWorker({ offline: true }).fire('message', 'arthasetu-warm');
+  } catch {
+    warmThrew = true;
+  }
+  check('saving ahead with no connection fails quietly', !warmThrew);
 
   console.log('\n— and holds up when the connection does not —');
 
@@ -330,11 +480,11 @@ async function main() {
   );
 
   const stale = makeWorker();
-  await stale.seed('arthasetu-assets-v0', 'https://x.test/old.js');
+  await stale.seed('arthasetu-assets-v1', 'https://x.test/old.js');
   await stale.fire('activate');
   check(
     'caches from an older version are dropped on activation',
-    !(await stale.cacheStorage.keys()).includes('arthasetu-assets-v0')
+    !(await stale.cacheStorage.keys()).includes('arthasetu-assets-v1')
   );
 
   // ── Headers ────────────────────────────────────────────────────────────────

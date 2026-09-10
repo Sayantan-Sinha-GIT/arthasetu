@@ -44,7 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(firebaseUser);
       if (firebaseUser) {
         try {
-          const tokenResult = await firebaseUser.getIdTokenResult(true);
+          // Forcing a refresh is a network call, which offline can only fail
+          // — after a delay the user spends looking at a spinner. The claims
+          // already on the device are good enough until the connection returns.
+          const tokenResult = await firebaseUser.getIdTokenResult(navigator.onLine);
           setHasAdminClaim(!!tokenResult.claims.admin);
         } catch {
           setHasAdminClaim(false);

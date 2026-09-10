@@ -813,6 +813,7 @@
   "errors": {
     "aiUnavailable": "AI assistance temporary oina phangde. Matam khara ngai amuk hangu.",
     "networkError": "Network error. Connection check touduna amuk hangu.",
+    "offlineBanner": "Nang offline oire. Saved information utli.",
     "saveFailed": "Thamba ngamdre. Amuk hangu.",
     "loadFailed": "Data load ngamdre. Amuk hangu.",
     "authRequired": "Mathang inba login tou.",

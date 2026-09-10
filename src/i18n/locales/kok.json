@@ -813,6 +813,7 @@
   "errors": {
     "aiUnavailable": "AI assistance temporarily unavailable. Portun prayatna kor.",
     "networkError": "Network error. Connection check kor ani portun prayatna kor.",
+    "offlineBanner": "Tum offline asa. Saved mahiti dakhoyta.",
     "saveFailed": "Save korunk zale na. Portun prayatna kor.",
     "loadFailed": "Load korunk zale na. Portun prayatna kor.",
     "authRequired": "Fuddhe vhorunk log in kor.",

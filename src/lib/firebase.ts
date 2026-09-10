@@ -4,7 +4,14 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  initializeFirestore,
+  memoryLocalCache,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,6 +25,29 @@ const firebaseConfig = {
 // Initialize Firebase only once (prevents duplicate app errors in dev with HMR)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
+/**
+ * Keeps a copy of every document the user has read on the device itself, so the
+ * dashboard, profile and saved plans still show the user's real data with no
+ * signal. Without it an offline read simply throws, and the app renders the
+ * signed-in user as if they were brand new: empty figures, "complete your
+ * profile", no plans.
+ *
+ * Prerendering runs on the server, which has no IndexedDB, so it gets a memory
+ * cache. Hot reload in development re-runs this module against an app whose
+ * Firestore is already initialised, which throws; that case reuses it.
+ */
+function createDb(): Firestore {
+  const localCache =
+    typeof window === 'undefined'
+      ? memoryLocalCache()
+      : persistentLocalCache({ tabManager: persistentMultipleTabManager() });
+  try {
+    return initializeFirestore(app, { localCache });
+  } catch {
+    return getFirestore(app);
+  }
+}
+
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = createDb();
 export default app;

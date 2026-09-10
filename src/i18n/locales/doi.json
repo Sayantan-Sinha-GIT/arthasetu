@@ -813,6 +813,7 @@
   "errors": {
     "aiUnavailable": "AI sahayata is vele uplabdh nahi hai. Kripya thode samay baad dubara koshish karo.",
     "networkError": "Network error. Kripya apna connection check karo ate dubara koshish karo.",
+    "offlineBanner": "Tus offline o. Saved jankari dikha raye han.",
     "saveFailed": "Bachon vich asafal. Kripya dubara koshish karo.",
     "loadFailed": "Data load karan vich asafal. Kripya dubara koshish karo.",
     "authRequired": "Jari rakhn layi kripya log in karo.",

@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { NetworkQualityProvider, useNetworkQuality } from '@/contexts/NetworkQualityContext';
 import { MotionConfig } from 'framer-motion';
 import PageBackgroundVideo from '@/components/ui/PageBackgroundVideo';
+import OfflineBanner from '@/components/system/OfflineBanner';
 
 function MotionQualityWrapper({ children }: { children: ReactNode }) {
   const { quality } = useNetworkQuality();
@@ -34,6 +35,7 @@ export function Providers({ children }: { children: ReactNode }) {
           <LanguageProvider>
             <AuthProvider>
               <PageBackgroundVideo />
+              <OfflineBanner />
               {children}
             </AuthProvider>
           </LanguageProvider>

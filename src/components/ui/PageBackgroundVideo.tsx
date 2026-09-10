@@ -32,7 +32,19 @@ export default function PageBackgroundVideo() {
   // motion behind dense records competes with the data, but that also left the
   // Data Saver toggle with nothing to switch off there, which made the setting
   // look broken to an administrator testing it.
-  const active = mounted && pathname !== '/' && quality === 'full';
+  // A clip that could not play must also switch off the see-through page
+  // styling, or the page is left transparent over nothing — which is what made
+  // the app look like its old, pre-redesign self when opened offline. Cleared
+  // when the connection comes back, so the clip gets another try.
+  const [unavailableSrc, setUnavailableSrc] = useState<string | null>(null);
+  useEffect(() => {
+    const retry = () => setUnavailableSrc(null);
+    window.addEventListener('online', retry);
+    return () => window.removeEventListener('online', retry);
+  }, []);
+
+  const src = theme === 'dark' ? '/videos/dark-mode-video.mp4' : '/videos/light-mode-video.mp4';
+  const active = mounted && pathname !== '/' && quality === 'full' && unavailableSrc !== src;
 
   // Signals the rest of the stylesheet that a video sits behind the page, so
   // <body> and the page shells go transparent and cards turn to frosted glass.
@@ -44,7 +56,7 @@ export default function PageBackgroundVideo() {
 
   if (!active) return null;
 
-  const src = theme === 'dark' ? '/videos/dark-mode-video.mp4' : '/videos/light-mode-video.mp4';
-
-  return <SeamlessBackgroundVideo key={theme} src={src} />;
+  return (
+    <SeamlessBackgroundVideo key={theme} src={src} onUnavailable={() => setUnavailableSrc(src)} />
+  );
 }

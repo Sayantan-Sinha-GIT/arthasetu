@@ -239,7 +239,9 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
           msg.id === assistantPlaceholderId
             ? {
                 ...msg,
-                content: t.advisor.errorMessage,
+                // With no connection the question never left the phone. Say
+                // that, rather than implying the advisor itself went wrong.
+                content: navigator.onLine ? t.advisor.errorMessage : t.errors.networkError,
               }
             : msg
         )
