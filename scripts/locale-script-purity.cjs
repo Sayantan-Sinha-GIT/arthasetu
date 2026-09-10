@@ -26,11 +26,13 @@ const LOCALE_SCRIPT = {
   or: ['odia'], sat: ['olchiki'], ks: ['arabic'], sd: ['arabic'], ur: ['arabic'],
   ta: ['tamil'], te: ['telugu'],
 };
-// Danda / double danda / ZWNJ / ZWJ / abbreviation sign and dashes are shared across Indic.
-const SHARED = new Set([0x0964, 0x0965, 0x200C, 0x200D, 0x0970, 0x00A0, 0x2013, 0x2014]);
+// Danda / double danda / ZWNJ / ZWJ / abbreviation sign and dashes are shared across Indic, as are
+// curly quotes and the ellipsis: the right single quote is part of Bodo and Assamese spelling
+// (बर’, নগ’ল), so rejecting it failed correct translations.
+const SHARED = new Set([0x0964, 0x0965, 0x200C, 0x200D, 0x0970, 0x00A0, 0x2013, 0x2014, 0x2018, 0x2019, 0x201C, 0x201D, 0x2026]);
 // Punctuation, currency and the comparison/maths symbols that appear verbatim
 // in every locale — a band label such as "DSCR < 1.2x" keeps its operator.
-const ASCII_OK = /[\s.,:;!?()[\]{}\-–—'"%₹0-9<>=+/*&@#]/;
+const ASCII_OK = /[\s.,:;!?()[\]{}\-–—'"%₹0-9<>=+/*&@#~|_]/;
 
 function inBlocks(cp, names) {
   return names.some((n) => BLOCKS[n].some(([a, b]) => cp >= a && cp <= b));
@@ -44,6 +46,11 @@ function inBlocks(cp, names) {
 const DEFAULT_ALLOWED_TOKENS = [
   'ArthaSetu', 'DSCR', 'PAT', 'EMI', 'CAPEX', 'OPEX', 'PMEGP', 'MUDRA',
   'PMFME', 'NLM', 'CGTMSE', 'SHG', 'MSME', 'AI', 'PDF', 'PM',
+  // Proper names a translator may reasonably leave in Roman script: the credit
+  // bureaus named in the Gramin Score disclaimer, and the PAN card and Udyam
+  // registration. Without them a correct translation that kept a brand name
+  // was rejected in every retry round.
+  'CIBIL', 'Experian', 'CRIF', 'Equifax', 'PAN', 'Udyam',
   '{district}', 'district',
 ];
 

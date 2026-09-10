@@ -2,6 +2,23 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/*
+ * Santali is written in Ol Chiki, a script many phones ship no font for, which
+ * would draw every word as empty boxes. Self-hosted rather than fetched from
+ * Google so it is saved for offline use with the rest of the app, and limited
+ * by unicode-range to the Ol Chiki block: the browser downloads this 5 KB file
+ * only when Ol Chiki characters are actually on screen, so it costs every
+ * other language nothing.
+ */
+@font-face {
+  font-family: 'Noto Sans Ol Chiki';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/NotoSansOlChiki-OlChiki.woff2') format('woff2');
+  unicode-range: U+1C50-1C7F;
+}
+
 /* ─── ArthaSetu Design System ─── */
 
 :root {
@@ -131,8 +148,8 @@
   --color-info-light: var(--color-info-light);
 
   /* ─── Typography ─── */
-  --font-display: var(--font-space), 'Space Grotesk', system-ui, sans-serif;
-  --font-sans: var(--font-inter), 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+  --font-display: var(--font-space), 'Space Grotesk', 'Noto Sans Ol Chiki', system-ui, sans-serif;
+  --font-sans: var(--font-inter), 'Inter', 'Noto Sans Devanagari', 'Noto Sans Ol Chiki', system-ui, sans-serif;
   --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 

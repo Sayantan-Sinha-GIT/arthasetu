@@ -63,13 +63,24 @@ export async function generateBankReadyPlanPdf({
       doc.addFont('NotoSansDevanagari.ttf', 'NotoSansDevanagari', 'bold');
       fontName = 'NotoSansDevanagari';
     }
-  } else if (['bn', 'as', 'mni', 'sat'].includes(language)) { // Santali is stored romanized (Latin), Bengali font covers it fine too
+  } else if (['bn', 'as', 'mni'].includes(language)) { // Manipuri is written in Bengali script
     const b64 = await fetchFontBase64('/fonts/NotoSansBengali-Regular.ttf');
     if (b64) {
       doc.addFileToVFS('NotoSansBengali.ttf', b64);
       doc.addFont('NotoSansBengali.ttf', 'NotoSansBengali', 'normal');
       doc.addFont('NotoSansBengali.ttf', 'NotoSansBengali', 'bold');
       fontName = 'NotoSansBengali';
+    }
+  } else if (language === 'sat') {
+    // Santali was stored in Latin letters, which the Bengali font above happened
+    // to cover. Now that it is written in its own script, Ol Chiki, no other
+    // font has those glyphs and the plan would print as empty boxes.
+    const b64 = await fetchFontBase64('/fonts/NotoSansOlChiki-Regular.ttf');
+    if (b64) {
+      doc.addFileToVFS('NotoSansOlChiki.ttf', b64);
+      doc.addFont('NotoSansOlChiki.ttf', 'NotoSansOlChiki', 'normal');
+      doc.addFont('NotoSansOlChiki.ttf', 'NotoSansOlChiki', 'bold');
+      fontName = 'NotoSansOlChiki';
     }
   } else if (['or'].includes(language)) { // Odia uses its own distinct script — NOT Bengali glyphs
     const b64 = await fetchFontBase64('/fonts/NotoSansOriya-Regular.ttf');

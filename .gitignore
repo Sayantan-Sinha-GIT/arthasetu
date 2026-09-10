@@ -51,3 +51,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# translation progress checkpoints (scripts/retranslate-locales.ts)
+scripts/output/retranslate/
