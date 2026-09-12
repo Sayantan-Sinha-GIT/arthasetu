@@ -103,6 +103,11 @@ export default function AdminHistoryClient() {
                         >
                           {item.status}
                         </span>
+                        {item.editedByAdmin && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                            Edited before approval
+                          </span>
+                        )}
                         <h2 className="font-bold text-sm text-foreground">
                           {item.schemeName || item.schemeId}
                         </h2>
@@ -123,16 +128,23 @@ export default function AdminHistoryClient() {
                     </Button>
                   </div>
 
-                  {item.notes && (
+                  {(item.summaryOfChanges || item.notes) && (
                     <div className="p-3 bg-surface rounded-xl text-xs text-muted border border-border">
-                      <span className="font-semibold text-foreground">Notes: </span>
-                      {item.notes}
+                      <span className="font-semibold text-foreground">Summary: </span>
+                      {item.summaryOfChanges || item.notes}
                     </div>
                   )}
 
-                  {isExpanded && item.proposedChanges && (
-                    <div className="pt-3 border-t border-border">
-                      <DiffViewer proposedChanges={item.proposedChanges} schemeName={item.schemeName} />
+                  {/* What went live, when recorded; otherwise what was proposed. */}
+                  {isExpanded && (item.publishedChanges || item.proposedChanges) && (
+                    <div className="pt-3 border-t border-border space-y-2">
+                      {item.publishedChanges && (
+                        <p className="text-[11px] font-semibold text-muted">Published values</p>
+                      )}
+                      <DiffViewer
+                        proposedChanges={item.publishedChanges || item.proposedChanges}
+                        schemeName={item.schemeName}
+                      />
                     </div>
                   )}
                 </Card>

@@ -261,6 +261,11 @@ export interface SchemeUpdateRecord {
   status: 'pending' | 'approved' | 'rejected';
   publishedChanges?: Record<string, { old: unknown; new: unknown }>;
   notes?: string;
+  /** True when the administrator changed, dropped or added a value before approving. */
+  editedByAdmin?: boolean;
+  approvedBy?: string;
+  /** Where the notice came from: pasted text, a fetched web page, or a PDF. */
+  source?: 'text' | 'page' | 'pdf';
 }
 
 // ─── Chat / Advisor ───

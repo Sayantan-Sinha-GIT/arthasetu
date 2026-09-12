@@ -128,6 +128,53 @@ export async function generateContent(
   }
 }
 
+/**
+ * Generate from a document, such as a government circular published as a PDF,
+ * plus an instruction. Gemini reads PDFs itself; Groq cannot, so there is no
+ * Groq fallback here — only the other Gemini model, which has its own quota.
+ */
+export async function generateContentFromDocument(
+  model: string,
+  systemInstruction: string,
+  document: { mimeType: string; data: string },
+  instruction: string,
+  options?: GenerateContentOptions
+): Promise<string> {
+  const client = getClient();
+
+  const run = async (targetModel: string) => {
+    const config: Record<string, unknown> = {
+      systemInstruction,
+      temperature: options?.temperature ?? 0.2,
+      maxOutputTokens: options?.maxOutputTokens ?? 4096,
+    };
+    if (options?.responseMimeType) config.responseMimeType = options.responseMimeType;
+
+    const response = await retryWithBackoff(
+      () =>
+        client.models.generateContent({
+          model: targetModel,
+          contents: [{ role: 'user', parts: [{ inlineData: document }, { text: instruction }] }],
+          config,
+        }),
+      targetModel
+    );
+    const text = response.text;
+    if (!text) throw new Error('Gemini returned an empty response');
+    return text;
+  };
+
+  const firstModel = pickGeminiModel(model);
+  try {
+    return await run(firstModel);
+  } catch (error) {
+    const otherModel = firstModel === GEMINI_MODELS.FLASH_LITE ? GEMINI_MODELS.FLASH : GEMINI_MODELS.FLASH_LITE;
+    if (options?.disableFallback || isModelCoolingOff(otherModel)) throw error;
+    console.warn(`⚠️ Gemini model (${firstModel}) could not read the document. Trying ${otherModel}...`, getErrorMessage(error, 'unknown'));
+    return await run(otherModel);
+  }
+}
+
 /** The requested model, unless it is out of quota and Flash-Lite is not. */
 function pickGeminiModel(model: string): string {
   return model !== GEMINI_MODELS.FLASH_LITE && isModelCoolingOff(model) && !isModelCoolingOff(GEMINI_MODELS.FLASH_LITE)

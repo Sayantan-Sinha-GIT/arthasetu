@@ -9,6 +9,7 @@ import {
   query,
   where,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { sanitizeFirestoreObject } from '@/lib/firestore/users';
@@ -159,6 +160,87 @@ export async function approveSchemeUpdate(
     console.error('Error approving scheme update:', error);
     throw error;
   }
+}
+
+export interface ReviewedSchemeUpdate {
+  schemeId: string;
+  schemeName: string;
+  adminId: string;
+  adminEmail: string;
+  sourceUrl: string;
+  source?: 'text' | 'page' | 'pdf';
+  summary: string;
+  /** What the AI proposed, with the notice's evidence. */
+  aiChanges: Record<string, { old: unknown; new: unknown; evidence?: string }>;
+  /** What the administrator approved, after any edits. Only these reach the scheme. */
+  finalChanges: Record<string, { old: unknown; new: unknown }>;
+  editedByAdmin: boolean;
+  /** Set when approving a proposal from the review queue. */
+  pendingUpdateId?: string;
+}
+
+/**
+ * Publish an administrator-reviewed scheme update as one atomic write: the
+ * approved values go to the live scheme, and the review (what the AI proposed,
+ * what was published, who approved it) goes to the audit log. Both land or
+ * neither does, so the directory never changes without a matching record.
+ */
+export async function publishReviewedSchemeUpdate(input: ReviewedSchemeUpdate): Promise<string> {
+  const paths = Object.keys(input.finalChanges);
+  if (paths.length === 0) {
+    throw new Error('There are no changes to publish.');
+  }
+
+  const batch = writeBatch(db);
+
+  // Dotted paths ("benefits.maxSubsidyPercent") update only those nested fields,
+  // leaving the rest of the scheme record exactly as it was.
+  const fieldUpdates: Record<string, unknown> = {};
+  for (const path of paths) {
+    fieldUpdates[path] = input.finalChanges[path].new;
+  }
+  batch.update(doc(db, 'schemes', input.schemeId), {
+    ...fieldUpdates,
+    lastVerifiedDate: new Date().toISOString().split('T')[0],
+    updatedAt: serverTimestamp(),
+  });
+
+  const publishedChanges = sanitizeFirestoreObject(input.finalChanges);
+  if (input.pendingUpdateId) {
+    // A queued proposal keeps the changes it was proposed with; the review is added to it.
+    const updateRef = doc(db, 'scheme_updates', input.pendingUpdateId);
+    batch.update(updateRef, {
+      status: 'approved',
+      approvedBy: input.adminEmail,
+      approvedAt: serverTimestamp(),
+      publishedChanges,
+      editedByAdmin: input.editedByAdmin,
+    });
+    await batch.commit();
+    return updateRef.id;
+  }
+
+  const updateRef = doc(collection(db, 'scheme_updates'));
+  batch.set(updateRef, {
+    ...sanitizeFirestoreObject({
+      schemeId: input.schemeId,
+      schemeName: input.schemeName,
+      adminId: input.adminId,
+      adminEmail: input.adminEmail,
+      sourceUrl: input.sourceUrl,
+      source: input.source,
+      summaryOfChanges: input.summary,
+      proposedChanges: input.aiChanges,
+      editedByAdmin: input.editedByAdmin,
+      approvedBy: input.adminEmail,
+      status: 'approved',
+    }),
+    publishedChanges,
+    timestamp: serverTimestamp(),
+    approvedAt: serverTimestamp(),
+  });
+  await batch.commit();
+  return updateRef.id;
 }
 
 /**

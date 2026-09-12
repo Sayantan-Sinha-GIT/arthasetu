@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AdminGuard from '@/components/admin/AdminGuard';
+import SchemeAiUpdateModal from '@/components/admin/SchemeAiUpdateModal';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -29,6 +30,9 @@ export default function AdminSchemesDirectoryClient() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteSuccessMsg, setDeleteSuccessMsg] = useState('');
   const [deleteErrorMsg, setDeleteErrorMsg] = useState('');
+
+  // Scheme being updated with AI
+  const [targetSchemeForUpdate, setTargetSchemeForUpdate] = useState<Scheme | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -197,6 +201,13 @@ export default function AdminSchemesDirectoryClient() {
                 <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
                   <span className="text-[10px] text-muted truncate max-w-[120px]">ID: {scheme.id}</span>
                   <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setTargetSchemeForUpdate(scheme)}
+                      className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                    >
+                      ✨ Update with AI
+                    </button>
                     <Link
                       href={`/${ADMIN_ROUTE_KEY}/admin/schemes/${scheme.id}/edit`}
                       className="text-xs font-bold text-primary hover:underline"
@@ -278,6 +289,18 @@ export default function AdminSchemesDirectoryClient() {
               </div>
             </div>
           </div>
+        )}
+
+        {targetSchemeForUpdate && (
+          <SchemeAiUpdateModal
+            scheme={targetSchemeForUpdate}
+            onClose={() => setTargetSchemeForUpdate(null)}
+            onPublished={(message) => {
+              setTargetSchemeForUpdate(null);
+              setDeleteSuccessMsg(message);
+              getAllSchemes().then(setSchemes).catch(() => {});
+            }}
+          />
         )}
       </main>
       <Footer />

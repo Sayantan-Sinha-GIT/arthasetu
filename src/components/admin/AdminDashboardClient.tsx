@@ -9,15 +9,15 @@ import Card from '@/components/ui/Card';
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import Button from '@/components/ui/Button';
 import DiffViewer from '@/components/admin/DiffViewer';
+import SchemeAiUpdateModal from '@/components/admin/SchemeAiUpdateModal';
 import { getAllSchemes } from '@/lib/firestore/schemes';
 import {
   getPendingUpdates,
   getAllUpdateHistory,
   approveSchemeUpdate,
   rejectSchemeUpdate,
-  proposeSchemeUpdate,
 } from '@/lib/firestore/admin';
-import { collection, getDocs, getCountFromServer, query, limit, startAfter, type DocumentSnapshot } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -34,35 +34,19 @@ export default function AdminDashboardClient() {
   const [pendingUpdates, setPendingUpdates] = useState<SchemeUpdateRecord[]>([]);
   const [history, setHistory] = useState<SchemeUpdateRecord[]>([]);
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
-  // The real total, since the table loads 25 at a time.
-  const [totalUsers, setTotalUsers] = useState<number | null>(null);
-  const [lastUserDoc, setLastUserDoc] = useState<DocumentSnapshot | null>(null);
-  const [hasMoreUsers, setHasMoreUsers] = useState(false);
-  const [loadingMoreUsers, setLoadingMoreUsers] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Selected update for diff view
   const [expandedUpdateId, setExpandedUpdateId] = useState<string | null>(null);
 
-  // AI Scheme Update Modal State
-  const [targetSchemeForAi, setTargetSchemeForAi] = useState<Scheme | null>(null);
-  const [aiCircularText, setAiCircularText] = useState('');
-  const [aiSourceUrl, setAiSourceUrl] = useState('');
-  const [aiDraftLoading, setAiDraftLoading] = useState(false);
-  const [aiDraftError, setAiDraftError] = useState('');
-  const [aiDraftDiff, setAiDraftDiff] = useState<{
-    summaryOfChanges?: string;
-    proposedChanges?: Record<string, { old: unknown; new: unknown }>;
-    updatedScheme?: Partial<Scheme>;
-  } | null>(null);
-  const [aiApproving, setAiApproving] = useState(false);
+  // Scheme being updated with AI, optionally from a queued proposal
+  const [schemeUpdate, setSchemeUpdate] = useState<{ scheme: Scheme; pendingUpdate?: SchemeUpdateRecord } | null>(null);
 
   // Admin User Deletion Modal
   const [targetUserToDelete, setTargetUserToDelete] = useState<{ uid: string; email: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteSuccessMsg, setDeleteSuccessMsg] = useState('');
   const [deleteErrorMsg, setDeleteErrorMsg] = useState('');
-  const [currentTimestamp] = useState(() => Date.now());
 
   const loadData = async () => {
     try {
@@ -75,52 +59,15 @@ export default function AdminDashboardClient() {
       setPendingUpdates(pending);
       setHistory(allHistory);
 
-      // Load initial page of users for User Governance (25 at a time)
-      const usersQuery = query(collection(db, 'users'), limit(26));
-      const [usersSnap, usersCount] = await Promise.all([
-        getDocs(usersQuery),
-        // One aggregate read instead of downloading every profile to count them.
-        getCountFromServer(collection(db, 'users')).catch(() => null),
-      ]);
-      setTotalUsers(usersCount ? usersCount.data().count : null);
-      const rawUserDocs = usersSnap.docs;
-      const more = rawUserDocs.length > 25;
-      const pagedDocs = more ? rawUserDocs.slice(0, 25) : rawUserDocs;
-
+      // Load users list for User Governance
+      const usersSnap = await getDocs(collection(db, 'users'));
       const uList: UserProfile[] = [];
-      pagedDocs.forEach((d) => {
+      usersSnap.forEach((d) => {
         uList.push({ uid: d.id, ...d.data() } as UserProfile);
       });
       setUsersList(uList);
-      setLastUserDoc(pagedDocs.length > 0 ? pagedDocs[pagedDocs.length - 1] : null);
-      setHasMoreUsers(more);
     } catch (err) {
       console.error('Error loading admin dashboard data:', err);
-    }
-  };
-
-  const handleLoadMoreUsers = async () => {
-    if (!lastUserDoc || loadingMoreUsers) return;
-    setLoadingMoreUsers(true);
-    try {
-      const nextQuery = query(collection(db, 'users'), startAfter(lastUserDoc), limit(26));
-      const snap = await getDocs(nextQuery);
-      const raw = snap.docs;
-      const more = raw.length > 25;
-      const paged = more ? raw.slice(0, 25) : raw;
-
-      const nextList: UserProfile[] = [];
-      paged.forEach((d) => {
-        nextList.push({ uid: d.id, ...d.data() } as UserProfile);
-      });
-
-      setUsersList((prev) => [...prev, ...nextList]);
-      setLastUserDoc(paged.length > 0 ? paged[paged.length - 1] : null);
-      setHasMoreUsers(more);
-    } catch (err) {
-      console.error('Error loading more users:', err);
-    } finally {
-      setLoadingMoreUsers(false);
     }
   };
 
@@ -157,68 +104,6 @@ export default function AdminDashboardClient() {
       console.error('Error rejecting update:', err);
     } finally {
       setActionLoading(null);
-    }
-  };
-  const handleRunAiSchemeUpdate = async () => {
-    if (!targetSchemeForAi || !aiCircularText.trim() || aiCircularText.trim().length < 20) {
-      setAiDraftError('Please provide at least 20 characters of official circular or policy notification text.');
-      return;
-    }
-    setAiDraftLoading(true);
-    setAiDraftError('');
-    try {
-      if (!user) throw new Error('Admin session expired.');
-      const token = await user.getIdToken(true);
-      const res = await fetch('/api/admin/schemes/draft', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          circularText: aiCircularText,
-          currentScheme: targetSchemeForAi,
-          sourceUrl: aiSourceUrl,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to analyze circular text with AI.');
-      }
-      setAiDraftDiff(data.data);
-    } catch (err) {
-      setAiDraftError(getErrorMessage(err, 'Failed to parse circular with AI.'));
-    } finally {
-      setAiDraftLoading(false);
-    }
-  };
-
-  const handleApproveAiSchemeUpdate = async () => {
-    if (!targetSchemeForAi || !aiDraftDiff?.proposedChanges || !user) return;
-    setAiApproving(true);
-    try {
-      const updateId = await proposeSchemeUpdate({
-        schemeId: targetSchemeForAi.id,
-        schemeName: targetSchemeForAi.name,
-        adminId: user.uid,
-        adminEmail: user.email || 'admin@arthasetu.app',
-        sourceUrl: aiSourceUrl || targetSchemeForAi.officialUrl,
-        summaryOfChanges: aiDraftDiff.summaryOfChanges || 'AI-assisted circular update',
-        proposedChanges: aiDraftDiff.proposedChanges,
-        status: 'pending',
-      });
-
-      await approveSchemeUpdate(updateId, user.uid, user.email || 'admin@arthasetu.app');
-      await loadData();
-      setTargetSchemeForAi(null);
-      setAiDraftDiff(null);
-      setAiCircularText('');
-      setAiSourceUrl('');
-      setDeleteSuccessMsg(`Scheme "${targetSchemeForAi.name}" updated successfully via AI proposal!`);
-    } catch (err) {
-      setAiDraftError(getErrorMessage(err, 'Failed to approve and apply scheme update.'));
-    } finally {
-      setAiApproving(false);
     }
   };
 
@@ -356,7 +241,7 @@ export default function AdminDashboardClient() {
           </Card>
           <Card padding="md" className="space-y-1">
             <span className="text-xs text-muted font-medium">{t.admin.registeredUsers}</span>
-            <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{totalUsers ?? usersList.length}</p>
+            <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{usersList.length}</p>
           </Card>
         </div>
 
@@ -393,7 +278,7 @@ export default function AdminDashboardClient() {
                 : 'bg-surface text-muted hover:text-foreground'
             }`}
           >
-            👥 {t.admin.userManagementTab} ({totalUsers ?? usersList.length})
+            👥 {t.admin.userManagementTab} ({usersList.length})
           </button>
         </div>
 
@@ -412,36 +297,19 @@ export default function AdminDashboardClient() {
                       <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-navy-100 dark:bg-navy-900 text-navy-800 dark:text-navy-200 border border-navy-200 dark:border-navy-700">
                         {scheme.governmentLevel === 'central' ? '🇮🇳 Central' : `🏛️ ${scheme.state}`}
                       </span>
-                      <div className="flex items-center gap-1.5">
-                        {scheme.lastVerifiedDate && (currentTimestamp - new Date(scheme.lastVerifiedDate).getTime()) > 180 * 86400000 ? (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                            ⚠️ &gt;180d
-                          </span>
-                        ) : (
-                          <span className="text-[9px] text-muted">
-                            ✓ {scheme.lastVerifiedDate || 'Recent'}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-muted">{scheme.category}</span>
-                      </div>
+                      <span className="text-[10px] text-muted">{scheme.category}</span>
                     </div>
                     <h3 className="font-bold text-sm text-foreground mt-2 line-clamp-1">{scheme.name}</h3>
                     <p className="text-xs text-muted line-clamp-2 mt-1">{scheme.description}</p>
                   </div>
 
                   <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
-                    <span className="text-[10px] text-muted truncate max-w-[90px]" title={scheme.id}>ID: {scheme.id}</span>
-                    <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted truncate" title={scheme.id}>ID: {scheme.id}</span>
+                    <div className="flex items-center gap-3 shrink-0">
                       <button
                         type="button"
-                        onClick={() => {
-                          setTargetSchemeForAi(scheme);
-                          setAiCircularText('');
-                          setAiSourceUrl(scheme.sourceUrl || scheme.officialUrl || '');
-                          setAiDraftDiff(null);
-                          setAiDraftError('');
-                        }}
-                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        onClick={() => setSchemeUpdate({ scheme })}
+                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
                       >
                         ✨ Update with AI
                       </button>
@@ -449,7 +317,7 @@ export default function AdminDashboardClient() {
                         href={`/${ADMIN_ROUTE_KEY}/admin/schemes/${scheme.id}/edit`}
                         className="text-xs font-bold text-primary hover:underline"
                       >
-                        Edit →
+                        Edit form →
                       </Link>
                     </div>
                   </div>
@@ -520,11 +388,16 @@ export default function AdminDashboardClient() {
                           <Button
                             type="button"
                             size="sm"
-                            onClick={() => handleApprove(update)}
+                            onClick={() => {
+                              // Queued proposals are reviewed, and can be edited, before going live.
+                              const scheme = schemes.find((item) => item.id === update.schemeId);
+                              if (scheme) setSchemeUpdate({ scheme, pendingUpdate: update });
+                              else handleApprove(update);
+                            }}
                             isLoading={actionLoading === update.id}
                             className="bg-success text-white hover:bg-success/90"
                           >
-                            Approve & Publish Live
+                            Review & Approve
                           </Button>
                         </div>
                       </div>
@@ -611,21 +484,6 @@ export default function AdminDashboardClient() {
                   </tbody>
                 </table>
               </div>
-
-              {hasMoreUsers && (
-                <div className="p-4 border-t border-border flex justify-center bg-surface/30">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    isLoading={loadingMoreUsers}
-                    onClick={handleLoadMoreUsers}
-                    className="rounded-xl text-xs"
-                  >
-                    Load More Users
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -687,177 +545,18 @@ export default function AdminDashboardClient() {
             </div>
           </div>
         )}
-
-        {/* AI Scheme Update Modal */}
-        {targetSchemeForAi && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in overflow-y-auto">
-            <div className="w-full max-w-3xl bg-surface-elevated border border-border rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-in my-8 max-h-[90vh] flex flex-col">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
-                    ✨
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-foreground">
-                      AI Scheme Update Assistant
-                    </h3>
-                    <p className="text-xs text-muted">
-                      Target: <span className="font-semibold text-foreground">{targetSchemeForAi.name}</span> ({targetSchemeForAi.id})
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTargetSchemeForAi(null);
-                    setAiDraftDiff(null);
-                    setAiDraftError('');
-                  }}
-                  className="text-muted hover:text-foreground text-xl font-bold p-1 rounded-lg"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {aiDraftError && (
-                <div className="p-3 rounded-xl bg-danger-light border border-danger/30 text-danger text-xs flex items-center gap-2">
-                  <span>⚠️</span>
-                  <span className="font-bold">{aiDraftError}</span>
-                </div>
-              )}
-
-              {/* Body: Step 1 (Input) vs Step 2 (Diff Review) */}
-              <div className="overflow-y-auto space-y-4 pr-1 flex-1">
-                {!aiDraftDiff ? (
-                  <div className="space-y-4">
-                    <p className="text-xs text-muted">
-                      Paste the new official government notification, circular text, or gazette amendment below. The AI will extract the parameters, compare them against the live scheme record, and present the exact differences for your review.
-                    </p>
-
-                    <div className="space-y-1.5">
-                      <label htmlFor="ai-circular-text" className="text-xs font-bold text-foreground">
-                        Official Circular / Notification Text <span className="text-danger">*</span>
-                      </label>
-                      <textarea
-                        id="ai-circular-text"
-                        rows={8}
-                        value={aiCircularText}
-                        onChange={(e) => setAiCircularText(e.target.value)}
-                        placeholder="Paste official notification text here (e.g., subsidy percentage revised to 35%, maximum project limit raised to ₹50 Lakhs, eligible age relaxed to 18-45 years...)"
-                        className="w-full p-3 rounded-xl bg-surface border border-border text-xs text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary font-mono leading-relaxed"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label htmlFor="ai-source-url" className="text-xs font-bold text-foreground">
-                        Official Notification / Gazette Source URL (Optional)
-                      </label>
-                      <input
-                        id="ai-source-url"
-                        type="url"
-                        value={aiSourceUrl}
-                        onChange={(e) => setAiSourceUrl(e.target.value)}
-                        placeholder="https://msme.gov.in/circulars/..."
-                        className="w-full p-2.5 rounded-xl bg-surface border border-border text-xs text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 space-y-1">
-                      <div className="flex items-center gap-1.5 font-bold">
-                        <span>📋</span>
-                        <span>AI Analysis Summary:</span>
-                      </div>
-                      <p className="leading-relaxed">
-                        {aiDraftDiff.summaryOfChanges || 'Changes detected based on the circular provided.'}
-                      </p>
-                    </div>
-
-                    {/* Diff Viewer Component */}
-                    <div className="border border-border rounded-2xl p-3 bg-surface/50">
-                      <DiffViewer
-                        proposedChanges={aiDraftDiff.proposedChanges || {}}
-                        schemeName={targetSchemeForAi.name}
-                      />
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-surface border border-border text-xs text-muted flex items-start gap-2">
-                      <span className="text-base">🛡️</span>
-                      <span>
-                        <strong>Human Verification Required:</strong> Review all changes above. If approved, these changes will update the verified scheme in Firestore immediately and be timestamped with your admin identity.
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer Actions */}
-              <div className="flex items-center justify-between pt-3 border-t border-border">
-                {aiDraftDiff ? (
-                  <>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={aiApproving}
-                      onClick={() => setAiDraftDiff(null)}
-                    >
-                      ← Back to Circular Input
-                    </Button>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        disabled={aiApproving}
-                        onClick={() => {
-                          setTargetSchemeForAi(null);
-                          setAiDraftDiff(null);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        isLoading={aiApproving}
-                        onClick={handleApproveAiSchemeUpdate}
-                        className="shadow-md bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        ✓ Approve &amp; Update Live Scheme
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={aiDraftLoading}
-                      onClick={() => setTargetSchemeForAi(null)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      isLoading={aiDraftLoading}
-                      onClick={handleRunAiSchemeUpdate}
-                      disabled={!aiCircularText.trim()}
-                      className="shadow-md"
-                    >
-                      ✨ Analyze Circular &amp; Show Differences
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+        {schemeUpdate && (
+          <SchemeAiUpdateModal
+            key={schemeUpdate.pendingUpdate?.id || schemeUpdate.scheme.id}
+            scheme={schemeUpdate.scheme}
+            pendingUpdate={schemeUpdate.pendingUpdate}
+            onClose={() => setSchemeUpdate(null)}
+            onPublished={(message) => {
+              setSchemeUpdate(null);
+              setDeleteSuccessMsg(message);
+              loadData();
+            }}
+          />
         )}
       </main>
       <Footer />

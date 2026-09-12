@@ -7,7 +7,8 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import DiffViewer from '@/components/admin/DiffViewer';
-import { createOrUpdateLiveScheme, proposeSchemeUpdate } from '@/lib/firestore/admin';
+import SchemeAiUpdateModal from '@/components/admin/SchemeAiUpdateModal';
+import { createOrUpdateLiveScheme } from '@/lib/firestore/admin';
 import { useAuth } from '@/contexts/AuthContext';
 import { ALL_INDIAN_REGIONS } from '@/lib/constants/states';
 import { getErrorMessage } from '@/lib/utils/errors';
@@ -60,8 +61,10 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // AI Assistant Modal State
+  // AI Assistant Modal State. A new scheme is extracted from a circular into this
+  // form; an existing scheme is updated through the shared review flow instead.
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isAiUpdateOpen, setIsAiUpdateOpen] = useState(false);
   const [circularText, setCircularText] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -151,30 +154,6 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
     setSuccessMsg('AI draft changes loaded into form. Review before saving!');
   };
 
-  // Propose as a pending update for team review
-  const handleProposeUpdate = async () => {
-    if (!aiDraftResult?.proposedChanges || !user) return;
-    setSaving(true);
-    try {
-      await proposeSchemeUpdate({
-        schemeId: formData.id,
-        schemeName: formData.name,
-        adminId: user.uid,
-        adminEmail: user.email || 'admin@arthasetu.app',
-        sourceUrl: sourceUrl || formData.officialUrl,
-        proposedChanges: aiDraftResult.proposedChanges,
-        status: 'pending',
-        notes: aiDraftResult.summaryOfChanges,
-      });
-      setIsAiModalOpen(false);
-      router.push(`/${ADMIN_ROUTE_KEY}/admin/history`);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to propose scheme update'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   // Direct Publish to Live Database
   const handleDirectPublish = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,12 +201,16 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
           variant="outline"
           size="sm"
           onClick={() => {
+            if (!isNew && initialData) {
+              setIsAiUpdateOpen(true);
+              return;
+            }
             setAiDraftResult(null);
             setIsAiModalOpen(true);
           }}
           className="border-saffron-400 text-saffron-700 dark:text-saffron-300 font-bold shrink-0"
         >
-          ✨ AI Parse from Gazette / Circular
+          {isNew ? '✨ AI Parse from Gazette / Circular' : '✨ Update with AI'}
         </Button>
       </div>
 
@@ -573,17 +556,6 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
               <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="md"
-                  onClick={handleProposeUpdate}
-                  isLoading={saving}
-                  className="w-full sm:w-auto"
-                >
-                  📥 Submit for Human Approval (Review Queue)
-                </Button>
-
-                <Button
-                  type="button"
                   size="md"
                   onClick={handleApplyAiChanges}
                   className="w-full sm:w-auto"
@@ -595,6 +567,18 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
           )}
         </div>
       </Modal>
+
+      {isAiUpdateOpen && !isNew && initialData && (
+        <SchemeAiUpdateModal
+          scheme={initialData}
+          onClose={() => setIsAiUpdateOpen(false)}
+          onPublished={(message) => {
+            setIsAiUpdateOpen(false);
+            setSuccessMsg(message);
+            setTimeout(() => router.push(`/${ADMIN_ROUTE_KEY}/admin/schemes`), 1200);
+          }}
+        />
+      )}
     </div>
   );
 }
