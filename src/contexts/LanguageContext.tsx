@@ -28,10 +28,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem('arthasetu-language');
     if (saved && SUPPORTED_LANGUAGES.some((l) => l.code === saved)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLanguageState(saved);
+      queueMicrotask(() => {
+        setLanguageState(saved);
+      });
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+      document.documentElement.dir = language === 'ur' ? 'rtl' : 'ltr';
+    }
+  }, [language]);
 
   const setLanguage = useCallback((lang: string) => {
     setLanguageState(lang);

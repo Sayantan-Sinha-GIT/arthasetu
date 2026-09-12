@@ -328,7 +328,13 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       )}
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+      <div
+        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-label="Advisor conversation log"
+      >
         {messages.map((msg) => (
           <MessageBubble
             key={msg.id}
@@ -407,6 +413,8 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
                   ? `${t.voice.listening} (${speechLanguage})...`
                   : t.advisor.placeholder
               }
+              id="advisor-message-input"
+              aria-label={t.advisor.placeholder}
               rows={1}
               className="w-full resize-none bg-transparent px-5 py-4 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none max-h-32 min-h-[52px] overflow-y-auto font-serif"
               disabled={isStreaming}
