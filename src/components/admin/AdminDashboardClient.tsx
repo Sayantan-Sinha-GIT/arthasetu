@@ -16,7 +16,7 @@ import {
   approveSchemeUpdate,
   rejectSchemeUpdate,
 } from '@/lib/firestore/admin';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, limit, startAfter, type DocumentSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -33,6 +33,9 @@ export default function AdminDashboardClient() {
   const [pendingUpdates, setPendingUpdates] = useState<SchemeUpdateRecord[]>([]);
   const [history, setHistory] = useState<SchemeUpdateRecord[]>([]);
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
+  const [lastUserDoc, setLastUserDoc] = useState<DocumentSnapshot | null>(null);
+  const [hasMoreUsers, setHasMoreUsers] = useState(false);
+  const [loadingMoreUsers, setLoadingMoreUsers] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Selected update for diff view
@@ -55,15 +58,47 @@ export default function AdminDashboardClient() {
       setPendingUpdates(pending);
       setHistory(allHistory);
 
-      // Load users list for User Governance
-      const usersSnap = await getDocs(collection(db, 'users'));
+      // Load initial page of users for User Governance (25 at a time)
+      const usersQuery = query(collection(db, 'users'), limit(26));
+      const usersSnap = await getDocs(usersQuery);
+      const rawUserDocs = usersSnap.docs;
+      const more = rawUserDocs.length > 25;
+      const pagedDocs = more ? rawUserDocs.slice(0, 25) : rawUserDocs;
+
       const uList: UserProfile[] = [];
-      usersSnap.forEach((d) => {
+      pagedDocs.forEach((d) => {
         uList.push({ uid: d.id, ...d.data() } as UserProfile);
       });
       setUsersList(uList);
+      setLastUserDoc(pagedDocs.length > 0 ? pagedDocs[pagedDocs.length - 1] : null);
+      setHasMoreUsers(more);
     } catch (err) {
       console.error('Error loading admin dashboard data:', err);
+    }
+  };
+
+  const handleLoadMoreUsers = async () => {
+    if (!lastUserDoc || loadingMoreUsers) return;
+    setLoadingMoreUsers(true);
+    try {
+      const nextQuery = query(collection(db, 'users'), startAfter(lastUserDoc), limit(26));
+      const snap = await getDocs(nextQuery);
+      const raw = snap.docs;
+      const more = raw.length > 25;
+      const paged = more ? raw.slice(0, 25) : raw;
+
+      const nextList: UserProfile[] = [];
+      paged.forEach((d) => {
+        nextList.push({ uid: d.id, ...d.data() } as UserProfile);
+      });
+
+      setUsersList((prev) => [...prev, ...nextList]);
+      setLastUserDoc(paged.length > 0 ? paged[paged.length - 1] : null);
+      setHasMoreUsers(more);
+    } catch (err) {
+      console.error('Error loading more users:', err);
+    } finally {
+      setLoadingMoreUsers(false);
     }
   };
 
@@ -466,6 +501,21 @@ export default function AdminDashboardClient() {
                   </tbody>
                 </table>
               </div>
+
+              {hasMoreUsers && (
+                <div className="p-4 border-t border-border flex justify-center bg-surface/30">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    isLoading={loadingMoreUsers}
+                    onClick={handleLoadMoreUsers}
+                    className="rounded-xl text-xs"
+                  >
+                    Load More Users
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Card from '@/components/ui/Card';
@@ -27,7 +27,8 @@ export default function RecentPlans({ userId }: RecentPlansProps) {
       try {
         const q = query(
           collection(db, 'plans'),
-          where('userId', '==', userId)
+          where('userId', '==', userId),
+          limit(5)
         );
         const snapshot = await getDocs(q);
         const fetched: Plan[] = [];

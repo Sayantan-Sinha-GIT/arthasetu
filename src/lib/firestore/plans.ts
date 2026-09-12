@@ -2,31 +2,51 @@ import {
   collection,
   doc,
   addDoc,
+  setDoc,
   getDoc,
   getDocs,
   deleteDoc,
   query,
   where,
   serverTimestamp,
+  type DocumentSnapshot,
+  limit,
+  startAfter,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Plan } from '@/types';
-
 import { sanitizeFirestoreObject } from '@/lib/firestore/users';
 
 /**
- * Save a generated financial plan to Firestore
+ * Save a generated financial plan to Firestore.
+ * If planId is provided, uses deterministic ID with setDoc to prevent duplicates.
  */
 export async function savePlan(
   userId: string,
-  planData: Omit<Plan, 'id' | 'createdAt' | 'updatedAt'>
+  planData: Omit<Plan, 'id' | 'createdAt' | 'updatedAt'>,
+  planId?: string
 ): Promise<string> {
   try {
-    const plansRef = collection(db, 'plans');
     const cleanData = sanitizeFirestoreObject({
       ...planData,
       userId,
     });
+
+    if (planId) {
+      const docRef = doc(db, 'plans', planId);
+      await setDoc(
+        docRef,
+        {
+          ...cleanData,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+      return planId;
+    }
+
+    const plansRef = collection(db, 'plans');
     const docRef = await addDoc(plansRef, {
       ...cleanData,
       createdAt: serverTimestamp(),
@@ -40,7 +60,7 @@ export async function savePlan(
 }
 
 /**
- * Retrieve all saved plans for a user, sorted in memory to avoid composite index requirements
+ * Retrieve all saved plans for a user, sorted in memory
  */
 export async function getSavedPlans(userId: string): Promise<Plan[]> {
   try {
@@ -62,6 +82,51 @@ export async function getSavedPlans(userId: string): Promise<Plan[]> {
   } catch (error) {
     console.error('Error fetching saved plans:', error);
     throw error;
+  }
+}
+
+/**
+ * Paged retrieval of saved plans for a user.
+ */
+export async function getSavedPlansPaged(
+  userId: string,
+  pageSize = 20,
+  lastVisibleDoc?: DocumentSnapshot
+): Promise<{ plans: Plan[]; lastDoc: DocumentSnapshot | null; hasMore: boolean }> {
+  try {
+    let q = query(
+      collection(db, 'plans'),
+      where('userId', '==', userId),
+      limit(pageSize + 1)
+    );
+
+    if (lastVisibleDoc) {
+      q = query(
+        collection(db, 'plans'),
+        where('userId', '==', userId),
+        startAfter(lastVisibleDoc),
+        limit(pageSize + 1)
+      );
+    }
+
+    const snapshot = await getDocs(q);
+    const rawDocs = snapshot.docs;
+    const hasMore = rawDocs.length > pageSize;
+    const pageDocs = hasMore ? rawDocs.slice(0, pageSize) : rawDocs;
+
+    const plans: Plan[] = pageDocs.map((d) => ({ id: d.id, ...d.data() } as Plan));
+    plans.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
+
+    const lastDoc = pageDocs.length > 0 ? pageDocs[pageDocs.length - 1] : null;
+
+    return { plans, lastDoc, hasMore };
+  } catch (error) {
+    console.error('Error fetching paged saved plans:', error);
+    return { plans: [], lastDoc: null, hasMore: false };
   }
 }
 

@@ -1,5 +1,17 @@
 // ─── Saved Advice Firestore Operations ───
-import { collection, doc, addDoc, getDocs, deleteDoc, query, where, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  query,
+  where,
+  serverTimestamp,
+  type DocumentSnapshot,
+  limit,
+  startAfter,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Advice } from '@/types';
 
@@ -53,6 +65,51 @@ export async function getSavedAdvice(userId: string): Promise<Advice[]> {
   } catch (error) {
     console.error('Error fetching saved advice:', error);
     throw error;
+  }
+}
+
+/**
+ * Fetch paged saved advice items for a user
+ */
+export async function getSavedAdvicePaged(
+  userId: string,
+  pageSize = 20,
+  lastVisibleDoc?: DocumentSnapshot
+): Promise<{ adviceList: Advice[]; lastDoc: DocumentSnapshot | null; hasMore: boolean }> {
+  try {
+    let q = query(
+      collection(db, 'advice'),
+      where('userId', '==', userId),
+      limit(pageSize + 1)
+    );
+
+    if (lastVisibleDoc) {
+      q = query(
+        collection(db, 'advice'),
+        where('userId', '==', userId),
+        startAfter(lastVisibleDoc),
+        limit(pageSize + 1)
+      );
+    }
+
+    const snapshot = await getDocs(q);
+    const rawDocs = snapshot.docs;
+    const hasMore = rawDocs.length > pageSize;
+    const pageDocs = hasMore ? rawDocs.slice(0, pageSize) : rawDocs;
+
+    const adviceList: Advice[] = pageDocs.map((d) => ({ id: d.id, ...d.data() } as Advice));
+    adviceList.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
+
+    const lastDoc = pageDocs.length > 0 ? pageDocs[pageDocs.length - 1] : null;
+
+    return { adviceList, lastDoc, hasMore };
+  } catch (error) {
+    console.error('Error fetching paged saved advice:', error);
+    return { adviceList: [], lastDoc: null, hasMore: false };
   }
 }
 
