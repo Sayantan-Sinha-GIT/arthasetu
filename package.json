@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@google/genai": "2.20.0",
-    "@studio-freight/lenis": "^1.0.42",
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",
     "framer-motion": "^13.1.1",
