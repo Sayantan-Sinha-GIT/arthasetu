@@ -239,6 +239,23 @@ export default function StepBasicInfo({
           error={errors.roadName}
           hint={t.onboarding.roadNameHint}
         />
+
+        {/* Consent Checkbox */}
+        <div className="pt-2">
+          <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-surface border border-border/60 hover:border-primary/40 transition-colors cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={Boolean(data.consentGiven)}
+              onChange={(e) => onChange({ consentGiven: e.target.checked })}
+              className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary/20 accent-primary cursor-pointer"
+            />
+            <span className="text-xs text-foreground/90 font-medium leading-relaxed">
+              {language === 'hi'
+                ? 'मैं व्यक्तिगत व्यापार सलाह और सरकारी योजनाओं की जानकारी प्राप्त करने के लिए अपने विवरण साझा करने की सहमति देता/देती हूँ।'
+                : 'I agree to share my business details to receive personalized guidance and government scheme recommendations.'}
+            </span>
+          </label>
+        </div>
       </div>
     </div>
   );

@@ -45,8 +45,9 @@ export interface UserProfile {
   loanDetails?: LoanDetail[];
   annualTurnover?: number;
 
-  // Profile completeness
+  // Profile completeness & consent
   onboardingComplete: boolean;
+  consentGiven?: boolean;
 
   // Timestamps
   createdAt: Timestamp;
