@@ -63,21 +63,30 @@ export interface GroqOptions {
 const TPM_RETRY_DELAYS_MS = [4000, 7000];
 
 async function groqFetch(apiKey: string, body: unknown): Promise<Response> {
-  let res = await fetch(GROQ_ENDPOINT, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  for (const delay of TPM_RETRY_DELAYS_MS) {
-    if (res.status !== 429) return res;
-    await new Promise((resolve) => setTimeout(resolve, delay));
-    res = await fetch(GROQ_ENDPOINT, {
+  const send = () =>
+    fetch(GROQ_ENDPOINT, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+
+  let res: Response;
+  try {
+    res = await send();
+    for (const delay of TPM_RETRY_DELAYS_MS) {
+      if (res.status !== 429) break;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      res = await send();
+    }
+  } catch (err) {
+    // Unreachable counts as an outage, the same as a server error.
+    noteGroqFailure();
+    throw err;
   }
+
+  // Server errors trip the circuit breaker; a 429 or a bad request does not.
+  if (res.status >= 500) noteGroqFailure();
+  else if (res.ok) noteGroqSuccess();
   return res;
 }
 

@@ -796,17 +796,25 @@ export async function generateBankReadyPlanPdf({
   doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
   drawTextWrapped(getT('planner.pdfSignature', 'Applicant Signature'), margin + 22, y + 14, 40, 'left', fontName, 8);
 
-  // Page numbers on every page, so a printed report missing a page is obvious.
+  // Page numbers on every page, so a printed report missing a page is obvious,
+  // and the guidance notice, so no single page reads as regulated advice. The
+  // notice is in the report's language and drawn like the rest of its text.
   const totalPages = doc.getNumberOfPages();
-  const footerDisclaimer = 'Guidance only, not regulated financial advice. Verify with your bank or official scheme portal.';
+  const footerNote = getT(
+    'advisor.guidanceDisclaimer',
+    'Guidance only, not regulated financial advice. Verify with your bank or official scheme portal.'
+  );
+  const footerLines = wrapLines(footerNote, contentWidth - 18, 6, fontName, 'normal').slice(0, 2);
   for (let page = 1; page <= totalPages; page++) {
     doc.setPage(page);
     doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
     doc.line(margin, pageHeight - 10, pageWidth - margin, pageHeight - 10);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
     doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
-    doc.text(`ArthaSetu • ${footerDisclaimer}`, margin, pageHeight - 6);
+    footerLines.forEach((line, i) =>
+      drawLineMixed(line, margin, pageHeight - 6.5 + i * LINE_H(6), 6, 'normal', 'left')
+    );
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
     doc.text(`${page} / ${totalPages}`, pageWidth - margin, pageHeight - 6, { align: 'right' });
   }
 

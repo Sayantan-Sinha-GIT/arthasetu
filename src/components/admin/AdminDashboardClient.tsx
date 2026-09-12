@@ -17,7 +17,7 @@ import {
   rejectSchemeUpdate,
   proposeSchemeUpdate,
 } from '@/lib/firestore/admin';
-import { collection, getDocs, query, limit, startAfter, type DocumentSnapshot } from 'firebase/firestore';
+import { collection, getDocs, getCountFromServer, query, limit, startAfter, type DocumentSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -34,6 +34,8 @@ export default function AdminDashboardClient() {
   const [pendingUpdates, setPendingUpdates] = useState<SchemeUpdateRecord[]>([]);
   const [history, setHistory] = useState<SchemeUpdateRecord[]>([]);
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
+  // The real total, since the table loads 25 at a time.
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
   const [lastUserDoc, setLastUserDoc] = useState<DocumentSnapshot | null>(null);
   const [hasMoreUsers, setHasMoreUsers] = useState(false);
   const [loadingMoreUsers, setLoadingMoreUsers] = useState(false);
@@ -75,7 +77,12 @@ export default function AdminDashboardClient() {
 
       // Load initial page of users for User Governance (25 at a time)
       const usersQuery = query(collection(db, 'users'), limit(26));
-      const usersSnap = await getDocs(usersQuery);
+      const [usersSnap, usersCount] = await Promise.all([
+        getDocs(usersQuery),
+        // One aggregate read instead of downloading every profile to count them.
+        getCountFromServer(collection(db, 'users')).catch(() => null),
+      ]);
+      setTotalUsers(usersCount ? usersCount.data().count : null);
       const rawUserDocs = usersSnap.docs;
       const more = rawUserDocs.length > 25;
       const pagedDocs = more ? rawUserDocs.slice(0, 25) : rawUserDocs;
@@ -349,7 +356,7 @@ export default function AdminDashboardClient() {
           </Card>
           <Card padding="md" className="space-y-1">
             <span className="text-xs text-muted font-medium">{t.admin.registeredUsers}</span>
-            <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{usersList.length}</p>
+            <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{totalUsers ?? usersList.length}</p>
           </Card>
         </div>
 
@@ -386,7 +393,7 @@ export default function AdminDashboardClient() {
                 : 'bg-surface text-muted hover:text-foreground'
             }`}
           >
-            👥 {t.admin.userManagementTab} ({usersList.length})
+            👥 {t.admin.userManagementTab} ({totalUsers ?? usersList.length})
           </button>
         </div>
 

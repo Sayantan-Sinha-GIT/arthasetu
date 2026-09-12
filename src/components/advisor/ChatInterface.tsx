@@ -332,6 +332,9 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
         className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
         role="log"
         aria-live="polite"
+        // Busy while a reply streams in, so a screen reader announces the
+        // finished answer once rather than every fragment as it arrives.
+        aria-busy={isStreaming}
         aria-relevant="additions text"
         aria-label="Advisor conversation log"
       >
@@ -439,9 +442,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
           </Button>
         </form>
         <p className="text-[11px] text-center text-muted mt-2 select-none">
-          {language === 'hi'
-            ? 'केवल मार्गदर्शन, विनियमित वित्तीय सलाह नहीं। अपने बैंक या आधिकारिक योजना पोर्टल से पुष्टि करें।'
-            : 'Guidance only, not regulated financial advice. Verify with your bank or official scheme portal.'}
+          {t.advisor.guidanceDisclaimer}
         </p>
       </div>
 

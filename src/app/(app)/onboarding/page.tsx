@@ -124,6 +124,8 @@ export default function OnboardingPage() {
         errs.pinCode = consistency.reason || 'PIN code does not match state/district';
       }
     }
+    // Personal data is only stored with the person's agreement (DPDP Act 2023).
+    if (!formData.consentGiven) errs.consent = t.onboarding.consentRequired;
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -141,6 +143,8 @@ export default function OnboardingPage() {
         uid: user.uid,
         email: user.email || '',
         onboardingComplete: true,
+        // When consent was first given, kept if the profile is completed again.
+        consentGivenAt: formData.consentGivenAt || new Date().toISOString(),
       });
       router.push('/dashboard');
       setTimeout(() => {

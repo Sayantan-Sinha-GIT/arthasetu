@@ -189,14 +189,10 @@ export default function PlannerPage() {
                   <span className="text-2xl">⚠️</span>
                   <div>
                     <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
-                      {language === 'hi'
-                        ? 'एआई स्पष्टीकरण व्यस्त है, आपके वित्तीय आंकड़े तैयार हैं!'
-                        : 'AI explanation is busy right now, but your numbers and calculations are ready!'}
+                      {t.planner.aiBusyTitle}
                     </p>
                     <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
-                      {language === 'hi'
-                        ? 'आप संपूर्ण वित्तीय मॉडल देख सकते हैं या एआई विश्लेषण का पुनः प्रयास कर सकते हैं।'
-                        : 'You can review all financials below or retry generating the full narrative.'}
+                      {t.planner.aiBusyDesc}
                     </p>
                   </div>
                 </div>
@@ -208,7 +204,7 @@ export default function PlannerPage() {
                   onClick={handleRetryAiNarrative}
                   className="text-xs font-bold rounded-xl border-amber-500/40 text-amber-900 dark:text-amber-100 hover:bg-amber-500/20 shrink-0"
                 >
-                  {language === 'hi' ? 'पुनः प्रयास करें' : 'Retry AI'}
+                  {t.planner.retryAi}
                 </Button>
               </div>
             )}

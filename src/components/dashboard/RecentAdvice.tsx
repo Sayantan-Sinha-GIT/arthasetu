@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Card from '@/components/ui/Card';
@@ -25,10 +25,11 @@ export default function RecentAdvice({ userId }: RecentAdviceProps) {
         return;
       }
       try {
+        // No limit(): without an orderBy it would pick arbitrary items, not
+        // the newest (see RecentPlans).
         const q = query(
           collection(db, 'advice'),
-          where('userId', '==', userId),
-          limit(5)
+          where('userId', '==', userId)
         );
         const snapshot = await getDocs(q);
         const fetched: Advice[] = [];

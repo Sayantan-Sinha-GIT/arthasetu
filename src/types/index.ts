@@ -48,6 +48,7 @@ export interface UserProfile {
   // Profile completeness & consent
   onboardingComplete: boolean;
   consentGiven?: boolean;
+  consentGivenAt?: string; // ISO timestamp of when consent was given
 
   // Timestamps
   createdAt: Timestamp;

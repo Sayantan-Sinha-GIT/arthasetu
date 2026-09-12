@@ -6,6 +6,7 @@ import {
   type PincodeInfo,
 } from '@/lib/constants/pincodes';
 import { getErrorMessage } from '@/lib/utils/errors';
+import { pinCodeSchema } from '@/lib/validation/api-schemas';
 
 export const maxDuration = 60;
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const pin = searchParams.get('pin')?.replace(/[^0-9]/g, '') || '';
 
-    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+    if (!pinCodeSchema.safeParse(pin).success) {
       return NextResponse.json(
         { success: false, error: 'Invalid 6-digit Indian PIN code' },
         { status: 400 }

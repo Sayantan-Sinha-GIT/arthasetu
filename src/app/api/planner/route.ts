@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
 import { buildPlannerPrompt } from '@/lib/prompts/planner';
 import { getErrorMessage } from '@/lib/utils/errors';
+import { plannerRequestSchema } from '@/lib/validation/api-schemas';
 import type { PlanInputs, CalculatedValues, UserProfile } from '@/types';
 
 export const maxDuration = 60;
@@ -103,32 +104,29 @@ export const PLANNER_NARRATIVE_SCHEMA = {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const {
-      inputs,
-      calculatedValues,
-      userProfile,
-      language = 'en',
-    }: {
+    const parsed = plannerRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      const missingDetails = parsed.error.issues.some(
+        (issue) => issue.path[0] === 'inputs' && (issue.path[1] === 'businessType' || issue.path[1] === 'location')
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: missingDetails
+            ? 'Business type and operating location are required to generate a business plan.'
+            : 'Missing required inputs or calculations',
+        },
+        { status: 400 }
+      );
+    }
+    const data = parsed.data as unknown as {
       inputs: PlanInputs;
       calculatedValues: CalculatedValues;
-      userProfile: Partial<UserProfile> | null;
+      userProfile?: Partial<UserProfile> | null;
       language: string;
-    } = body;
-
-    if (!inputs || !calculatedValues) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required inputs or calculations' },
-        { status: 400 }
-      );
-    }
-
-    if (!inputs.businessType?.trim() || !inputs.location?.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'Business type and operating location are required to generate a business plan.' },
-        { status: 400 }
-      );
-    }
+    };
+    const { inputs, calculatedValues, language } = data;
+    const userProfile = data.userProfile ?? null;
 
     const systemPrompt = buildPlannerPrompt(inputs, calculatedValues, userProfile, language);
     const userQuery = `Generate the comprehensive financial plan narrative for this ${inputs.businessScale} ${inputs.businessType} enterprise in ${inputs.location}. Ensure all 4 required sections are thoroughly detailed.`;

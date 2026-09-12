@@ -1,66 +1,49 @@
 import { z } from 'zod';
 
-export const planInputsSchema = z.object({
-  businessType: z.string().min(1, 'Business type is required'),
-  location: z.string().min(1, 'Location is required'),
-  businessScale: z.string().optional(),
-  equipmentCost: z.number().nonnegative().optional().default(0),
-  setupCost: z.number().nonnegative().optional().default(0),
-  initialInventory: z.number().nonnegative().optional().default(0),
-  workingCapitalReserve: z.number().nonnegative().optional().default(0),
-  monthlyRawMaterials: z.number().nonnegative().optional().default(0),
-  monthlyRent: z.number().nonnegative().optional().default(0),
-  monthlyStaffSalaries: z.number().nonnegative().optional().default(0),
-  monthlyUtilities: z.number().nonnegative().optional().default(0),
-  monthlyOtherExpenses: z.number().nonnegative().optional().default(0),
-  unitPrice: z.number().nonnegative().optional().default(0),
-  expectedMonthlySalesVolume: z.number().nonnegative().optional().default(0),
-  ownerEquityContribution: z.number().nonnegative().optional().default(0),
-  desiredLoanTenureMonths: z.number().positive().optional().default(36),
-  assumedAnnualInterestRate: z.number().nonnegative().optional().default(9.5),
-  existingMonthlyRevenue: z.number().nonnegative().optional().default(0),
-  existingMonthlyCost: z.number().nonnegative().optional().default(0),
-  existingLoans: z.number().nonnegative().optional().default(0),
-  isExistingBusiness: z.boolean().optional().default(false),
-});
+/**
+ * Request shapes for the API routes, checked before any work is done.
+ *
+ * They describe what the app actually sends — the planner posts the whole
+ * wizard state, the plan report posts `texts[]`, read-aloud posts `langCode` —
+ * so they check only what a route cannot work without and let everything else
+ * through. The routes' own sanitising (sanitizePlanInputs, the translation and
+ * speech limits) still fixes the values themselves.
+ */
 
-export const plannerRouteSchema = z.object({
-  inputs: planInputsSchema,
-  calculatedValues: z.record(z.string(), z.unknown()).optional(),
-  userProfile: z.record(z.string(), z.unknown()).nullable().optional(),
-  language: z.string().min(2).max(10).optional().default('en'),
-});
+const profileSchema = z.record(z.string(), z.unknown()).nullable().optional();
+const languageSchema = z.string().min(2).max(10).optional().default('en');
 
-export const translateMessageSchema = z.object({
-  texts: z.array(z.string()).min(1, 'At least one text string is required'),
-  targetLangCode: z.string().min(2, 'Target language code is required'),
-});
-
-export const ttsRouteSchema = z.object({
-  text: z.string().min(1, 'Text is required').max(2000, 'Text exceeds 2000 characters'),
-  language: z.string().min(2).max(10).optional().default('en'),
-  voice: z.string().optional(),
-});
-
-export const schemesExplainRouteSchema = z.object({
-  scheme: z.object({
-    id: z.string().optional(),
-    name: z.string().min(1, 'Scheme name is required'),
-    description: z.string().optional().default(''),
-    category: z.string().optional().default(''),
-    eligibility: z.record(z.string(), z.unknown()).optional().default({}),
+export const plannerRequestSchema = z.object({
+  inputs: z.looseObject({
+    businessType: z.string().trim().min(1, 'Business type is required'),
+    location: z.string().trim().min(1, 'Location is required'),
   }),
-  userProfile: z.record(z.string(), z.unknown()).nullable().optional(),
-  language: z.string().min(2).max(10).optional().default('en'),
+  calculatedValues: z.record(z.string(), z.unknown()),
+  userProfile: profileSchema,
+  language: languageSchema,
 });
 
-export const pincodeRouteSchema = z.object({
-  pincode: z.string().regex(/^[1-9][0-9]{5}$/, 'Invalid 6-digit Indian PIN code'),
+export const schemeExplainRequestSchema = z.object({
+  scheme: z.looseObject({
+    name: z.string().trim().min(1, 'Scheme name is required'),
+  }),
+  userProfile: profileSchema,
+  language: languageSchema,
 });
 
-export const aiPlannerNarrativeSchema = z.object({
-  executiveSummary: z.string().min(10, 'Executive summary is too short'),
-  keyAssumptions: z.array(z.string()).default([]),
-  riskAnalysis: z.array(z.string()).default([]),
-  actionableNextSteps: z.array(z.string()).default([]),
+export const translateRequestSchema = z.object({
+  text: z.string().optional(),
+  texts: z.array(z.unknown()).optional(),
+  targetLangCode: z
+    .string({ error: 'A supported targetLangCode is required' })
+    .min(1, 'A supported targetLangCode is required'),
 });
+
+export const ttsRequestSchema = z.object({
+  text: z.string({ error: 'text is required' }).trim().min(1, 'text is required'),
+  langCode: z.string({ error: 'Unsupported language' }).min(1, 'Unsupported language'),
+});
+
+export const pinCodeSchema = z
+  .string()
+  .regex(/^[1-9][0-9]{5}$/, 'Invalid 6-digit Indian PIN code');

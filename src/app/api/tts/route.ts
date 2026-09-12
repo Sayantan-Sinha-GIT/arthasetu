@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
+import { ttsRequestSchema } from '@/lib/validation/api-schemas';
 import {
   canSynthesise,
   synthesiseWithCloudTts,
@@ -25,11 +26,14 @@ const MAX_CHARS = 1200;
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, langCode } = await req.json();
-
-    if (typeof text !== 'string' || !text.trim()) {
-      return NextResponse.json({ error: 'text is required' }, { status: 400 });
+    const parsed = ttsRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || 'text is required' },
+        { status: 400 }
+      );
     }
+    const { text, langCode } = parsed.data;
     if (text.length > MAX_CHARS) {
       return NextResponse.json({ error: `text exceeds ${MAX_CHARS} characters` }, { status: 413 });
     }

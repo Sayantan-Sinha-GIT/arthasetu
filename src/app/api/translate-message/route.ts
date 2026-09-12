@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
 import { SUPPORTED_LANGUAGES } from '@/i18n/languages';
+import { translateRequestSchema } from '@/lib/validation/api-schemas';
 
 /** Upper bound on strings per request, so one call cannot become an unbounded prompt. */
 const MAX_BATCH_ITEMS = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, texts, targetLangCode } = await req.json();
+    const parsed = translateRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || 'A supported targetLangCode is required' },
+        { status: 400 }
+      );
+    }
+    const { text, texts, targetLangCode } = parsed.data;
 
     const targetLang = SUPPORTED_LANGUAGES.find(l => l.code === targetLangCode);
     if (!targetLangCode || !targetLang) {

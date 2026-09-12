@@ -6,7 +6,7 @@ export const maxDuration = 10;
 
 export async function POST(req: NextRequest) {
   try {
-    const rateCheck = await checkRateLimit(req, 'api');
+    const rateCheck = await checkRateLimit(req, 'client-errors', null, { persist: false });
     if (!rateCheck.allowed) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
     }

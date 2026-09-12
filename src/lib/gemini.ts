@@ -631,6 +631,18 @@ function isTransientError(error: unknown): boolean {
 }
 
 /**
+ * The provider itself failing — overloaded, erroring or unreachable — as
+ * opposed to a spent quota or a bad request. Only these trip the circuit breaker.
+ */
+function isOutageError(error: unknown): boolean {
+  if (isTransientError(error)) return true;
+  const status = (error as { status?: number })?.status;
+  if (typeof status === 'number' && status >= 500) return true;
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return /\b50[0-4]\b|INTERNAL|UNAVAILABLE|fetch failed|ECONNRESET|ETIMEDOUT|timed out/i.test(message);
+}
+
+/**
  * Once a Gemini model reports exhausted quota, every later call to it in that
  * window hits the same wall. Remembering it — per model, because Flash and
  * Flash-Lite have separate quotas — lets later requests skip straight to the
@@ -640,6 +652,11 @@ function isTransientError(error: unknown): boolean {
 const RATE_LIMIT_COOLOFF_MS = 60_000;
 const coolingOffUntil = new Map<string, number>();
 
+/**
+ * Circuit breaker for outages (not quota): after three provider failures in a
+ * row, Gemini is treated as cooling off for a minute so requests go straight
+ * to Groq instead of each waiting out the same failure.
+ */
 let geminiConsecutiveErrors = 0;
 let geminiCircuitOpenUntil = 0;
 
@@ -682,7 +699,9 @@ async function retryWithBackoff<T>(
 ): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      return await fn();
+      const result = await fn();
+      noteGeminiSuccess();
+      return result;
     } catch (error: unknown) {
       if (isRateLimitError(error)) {
         // Do not retry, and record it so the next request skips this model
@@ -697,6 +716,7 @@ async function retryWithBackoff<T>(
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
+      if (isOutageError(error)) noteGeminiFailure();
       throw error;
     }
   }

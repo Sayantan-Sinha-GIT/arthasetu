@@ -8,7 +8,7 @@ export interface RateLimitResult {
   retryAfter: number; // seconds
 }
 
-export type RateLimitBucket = 'ai' | 'api';
+export type RateLimitBucket = 'ai' | 'api' | 'client-errors';
 
 interface LimitRule {
   windowMs: number;
@@ -22,6 +22,10 @@ const BUCKET_RULES: Record<RateLimitBucket, LimitRule[]> = {
   ],
   api: [
     { windowMs: 60 * 1000, max: 60 }, // 60 requests per minute
+  ],
+  // Browser error reports: a page stuck in an error loop should not flood the log.
+  'client-errors': [
+    { windowMs: 60 * 1000, max: 10 },
   ],
 };
 
@@ -54,11 +58,17 @@ export function getClientIp(req: NextRequest): string {
 
 /**
  * Checks and increments rate limit counter for a given bucket and key (uid or IP).
+ *
+ * `persist: false` counts in this server instance's memory only. Every
+ * persisted check costs a Firestore read and write, and the free plan allows
+ * 20,000 writes a day, so an unauthenticated endpoint that anyone can call
+ * must not spend them.
  */
 export async function checkRateLimit(
   req: NextRequest,
   bucket: RateLimitBucket = 'api',
-  uid?: string | null
+  uid?: string | null,
+  { persist = true }: { persist?: boolean } = {}
 ): Promise<RateLimitResult> {
   const now = Date.now();
   cleanupMemoryStore(now);
@@ -85,7 +95,9 @@ export async function checkRateLimit(
 
     let count = 1;
 
-    try {
+    if (!persist) {
+      count = memRecord ? memRecord.count + 1 : 1;
+    } else try {
       // Attempt Firestore increment if available
       const docRef = adminDb.collection('rate_limits').doc(docId);
       const snapshot = await docRef.get();

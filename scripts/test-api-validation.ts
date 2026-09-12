@@ -1,72 +1,42 @@
 /**
- * Test API Input Validation Schemas
- * Run: npx tsx scripts/test-api-validation.ts
+ * Checks the API request schemas against the payloads the app really sends.
+ * The same cases run under Vitest in tests/unit/api-validation.test.ts.
+ *
+ *   npx tsx scripts/test-api-validation.ts
  */
 import {
-  planInputsSchema,
-  plannerRouteSchema,
-  translateMessageSchema,
-  ttsRouteSchema,
-  pincodeRouteSchema,
-  aiPlannerNarrativeSchema,
+  plannerRequestSchema,
+  translateRequestSchema,
+  ttsRequestSchema,
+  pinCodeSchema,
 } from '../src/lib/validation/api-schemas';
 
-function assert(cond: boolean, msg: string) {
-  if (!cond) {
-    console.error(`FAIL: ${msg}`);
-    process.exit(1);
-  }
-  console.log(`PASS: ${msg}`);
+let failed = 0;
+function check(name: string, ok: boolean) {
+  if (!ok) failed++;
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}`);
 }
 
-console.log('Testing Zod API Validation Schemas...\n');
+check('a valid PIN code passes', pinCodeSchema.safeParse('700001').success);
+check('a PIN code starting with 0 is rejected', !pinCodeSchema.safeParse('012345').success);
 
-// 1. PIN code validation
-const validPincode = pincodeRouteSchema.safeParse({ pincode: '700001' });
-assert(validPincode.success, 'Valid PIN code passes');
+check('the read-aloud payload passes', ttsRequestSchema.safeParse({ text: 'Namaste', langCode: 'hi' }).success);
+check('blank read-aloud text is rejected', !ttsRequestSchema.safeParse({ text: ' ', langCode: 'hi' }).success);
 
-const invalidPincode = pincodeRouteSchema.safeParse({ pincode: '012345' });
-assert(!invalidPincode.success, 'Invalid PIN code (starts with 0) rejected');
+check('a batch translation passes', translateRequestSchema.safeParse({ texts: ['Hello'], targetLangCode: 'hi' }).success);
+check('a translation without a language is rejected', !translateRequestSchema.safeParse({ text: 'Hello' }).success);
 
-const shortPincode = pincodeRouteSchema.safeParse({ pincode: '7000' });
-assert(!shortPincode.success, 'Short PIN code rejected');
-
-// 2. TTS route validation
-const validTts = ttsRouteSchema.safeParse({ text: 'Namaste', language: 'hi' });
-assert(validTts.success, 'Valid TTS payload passes');
-
-const emptyTts = ttsRouteSchema.safeParse({ text: '', language: 'hi' });
-assert(!emptyTts.success, 'Empty TTS text rejected');
-
-// 3. Translate message validation
-const validTranslate = translateMessageSchema.safeParse({ texts: ['Hello'], targetLangCode: 'hi' });
-assert(validTranslate.success, 'Valid translation payload passes');
-
-const emptyTranslate = translateMessageSchema.safeParse({ texts: [], targetLangCode: 'hi' });
-assert(!emptyTranslate.success, 'Empty translations array rejected');
-
-// 4. Plan inputs validation
-const validPlan = planInputsSchema.safeParse({
-  businessType: 'Dairy Farm',
-  location: 'Bihar',
-  equipmentCost: 50000,
+const planner = plannerRequestSchema.safeParse({
+  inputs: { businessType: 'Dairy Farm', location: 'Bihar', monthlyRentUtilities: 3000 },
+  calculatedValues: { monthlyNetProfit: 12000 },
+  userProfile: null,
 });
-assert(validPlan.success, 'Valid plan inputs pass');
+check('the planner payload passes and keeps its fields',
+  planner.success && planner.data.inputs.monthlyRentUtilities === 3000 && planner.data.language === 'en');
+check('a plan without a business type is rejected', !plannerRequestSchema.safeParse({
+  inputs: { location: 'Bihar' },
+  calculatedValues: {},
+}).success);
 
-const invalidNegativePlan = planInputsSchema.safeParse({
-  businessType: 'Dairy Farm',
-  location: 'Bihar',
-  equipmentCost: -50000,
-});
-assert(!invalidNegativePlan.success, 'Negative equipment cost rejected');
-
-// 5. AI narrative validation
-const validNarrative = aiPlannerNarrativeSchema.safeParse({
-  executiveSummary: 'This is a viable financial model for micro enterprise.',
-  keyAssumptions: ['Stable demand'],
-  riskAnalysis: ['Price surges'],
-  actionableNextSteps: ['Apply for loan'],
-});
-assert(validNarrative.success, 'Valid AI narrative passes');
-
-console.log('\nAll API validation tests passed successfully!');
+console.log(failed === 0 ? '\nAll API validation checks passed.' : `\n${failed} check(s) failed.`);
+process.exit(failed === 0 ? 0 : 1);

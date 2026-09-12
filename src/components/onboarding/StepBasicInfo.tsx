@@ -240,21 +240,30 @@ export default function StepBasicInfo({
           hint={t.onboarding.roadNameHint}
         />
 
-        {/* Consent Checkbox */}
+        {/* Consent Checkbox — required before the profile is saved */}
         <div className="pt-2">
-          <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-surface border border-border/60 hover:border-primary/40 transition-colors cursor-pointer select-none">
+          <label
+            className={`flex items-start gap-3 p-3.5 rounded-2xl bg-surface border transition-colors cursor-pointer select-none ${
+              errors.consent ? 'border-danger' : 'border-border/60 hover:border-primary/40'
+            }`}
+          >
             <input
               type="checkbox"
               checked={Boolean(data.consentGiven)}
               onChange={(e) => onChange({ consentGiven: e.target.checked })}
+              aria-invalid={Boolean(errors.consent)}
+              aria-describedby={errors.consent ? 'consent-error' : undefined}
               className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary/20 accent-primary cursor-pointer"
             />
             <span className="text-xs text-foreground/90 font-medium leading-relaxed">
-              {language === 'hi'
-                ? 'मैं व्यक्तिगत व्यापार सलाह और सरकारी योजनाओं की जानकारी प्राप्त करने के लिए अपने विवरण साझा करने की सहमति देता/देती हूँ।'
-                : 'I agree to share my business details to receive personalized guidance and government scheme recommendations.'}
+              {t.onboarding.consentLabel}
             </span>
           </label>
+          {errors.consent && (
+            <p id="consent-error" className="text-xs text-danger mt-1.5" role="alert">
+              {errors.consent}
+            </p>
+          )}
         </div>
       </div>
     </div>

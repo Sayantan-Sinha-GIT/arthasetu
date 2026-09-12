@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Card from '@/components/ui/Card';
@@ -25,10 +25,12 @@ export default function RecentPlans({ userId }: RecentPlansProps) {
         return;
       }
       try {
+        // No limit() here: without an orderBy (which needs a composite index)
+        // Firestore returns documents in id order, so a limit would pick
+        // arbitrary plans rather than the newest. One user's plans are few.
         const q = query(
           collection(db, 'plans'),
-          where('userId', '==', userId),
-          limit(5)
+          where('userId', '==', userId)
         );
         const snapshot = await getDocs(q);
         const fetched: Plan[] = [];

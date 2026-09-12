@@ -12,9 +12,9 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Strict Server-Side Admin Check (Email-based restriction)
+    // Strict Server-Side Admin Check (Email-based or Custom Claim restriction)
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.email == "sayantansinha2005@gmail.com";
+      return isAuthenticated() && (request.auth.token.email == "sayantansinha2005@gmail.com" || request.auth.token.admin == true);
     }
 
     // ─── 1. User Profiles ───

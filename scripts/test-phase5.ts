@@ -157,7 +157,12 @@ async function runPhase5Tests() {
   if ((rawAdminKey.startsWith("'") && rawAdminKey.endsWith("'")) || (rawAdminKey.startsWith('"') && rawAdminKey.endsWith('"'))) {
     rawAdminKey = rawAdminKey.slice(1, -1);
   }
-  const serviceAccount = JSON.parse(rawAdminKey) as ServiceAccount;
+  const parsed = JSON.parse(rawAdminKey);
+  const serviceAccount: ServiceAccount = {
+    ...parsed,
+    private_key: (parsed.private_key || parsed.privateKey || '').replace(/\\n/g, '\n'),
+    privateKey: (parsed.private_key || parsed.privateKey || '').replace(/\\n/g, '\n'),
+  };
   const adminApp = getAdminApps().length === 0 ? initAdminApp({ credential: cert(serviceAccount) }, 'admin-p5-test') : getAdminApps()[0];
   const adminAuth = getAdminAuth(adminApp);
 

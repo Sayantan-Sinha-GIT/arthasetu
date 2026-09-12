@@ -3,29 +3,27 @@ import { generateContent, GEMINI_MODELS } from '@/lib/gemini';
 import { getLanguageMeta } from '@/i18n/languages';
 import { getErrorMessage } from '@/lib/utils/errors';
 import { getCachedExplanation, setCachedExplanation } from '@/lib/cache/explanation-cache';
+import { schemeExplainRequestSchema } from '@/lib/validation/api-schemas';
 import type { Scheme, UserProfile } from '@/types';
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const {
-      scheme,
-      userProfile,
-      language = 'en',
-    }: {
-      scheme: Scheme;
-      userProfile: Partial<UserProfile> | null;
-      language: string;
-    } = body;
-
-    if (!scheme) {
+    const parsed = schemeExplainRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
       return NextResponse.json(
         { success: false, error: 'Scheme data is required' },
         { status: 400 }
       );
     }
+    const data = parsed.data as unknown as {
+      scheme: Scheme;
+      userProfile?: Partial<UserProfile> | null;
+      language: string;
+    };
+    const { scheme, language } = data;
+    const userProfile = data.userProfile ?? null;
 
     // Answered this scheme, in this language, for this kind of entrepreneur
     // before? Reuse it. This is the difference between the free tier lasting
