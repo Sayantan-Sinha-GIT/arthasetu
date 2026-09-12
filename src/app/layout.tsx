@@ -6,6 +6,8 @@ import IntroSplash from "@/components/layout/IntroSplash";
 import BootScreen from "@/components/layout/BootScreen";
 import ServiceWorkerRegistrar from "@/components/system/ServiceWorkerRegistrar";
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -87,6 +89,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <IntroSplash />
             <ServiceWorkerRegistrar />
             {children}
+            <Analytics />
+            <SpeedInsights />
           </Providers>
         </SmoothScrollProvider>
       </body>
