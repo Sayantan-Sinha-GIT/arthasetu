@@ -103,12 +103,18 @@ Values are then cleaned by the routes themselves (for example `sanitizePlanInput
 
 The console is at `/<NEXT_PUBLIC_ADMIN_ROUTE_KEY>/admin`, for the admin account only.
 
-### Updating a scheme from a circular
-1. On a scheme card choose **✨ Update with AI** (cards not verified in 180 days show `⚠️ >180d`).
-2. Paste the circular text (at least 20 characters) and, optionally, its source URL.
-3. **Analyze Circular & Show Differences** shows current and proposed values side by side.
-4. Nothing is published until **✓ Approve & Update Live Scheme** is pressed. The change is
-   recorded in the audit history with the admin's identity and today's verification date.
+### Updating a scheme with AI
+1. On a scheme card (dashboard or scheme directory), or on its edit page, choose **✨ Update with AI**.
+2. Paste the notice text, or give a link to the notice page or PDF. The server reads the link itself;
+   pages that need JavaScript or a login cannot be read, so paste their text instead.
+3. **✨ Detect changes with AI** lists each changed field beside its current value, with the line of
+   the notice it came from. Nothing has been written yet.
+4. Edit any new value, untick changes to leave out, or use **Change another field**. Invalid values
+   (a percentage above 100, a link without https) block approval.
+5. **✓ Approve & update scheme** writes the approved fields to the live directory, marks the scheme
+   verified today, and records the AI's proposal, the published values and the approver in the audit log.
+
+Proposals in the review queue open in the same review with **Review & Approve**.
 
 ### Deleting a user
 In the user management tab, delete the user and confirm. The server deletes their plans,
