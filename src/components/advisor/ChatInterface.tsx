@@ -11,7 +11,9 @@ import VoiceVisualizer from '@/components/voice/VoiceVisualizer';
 import Button from '@/components/ui/Button';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
-import { detectScriptLanguage } from '@/lib/lang/detectScript';
+import { resolveReplyLanguage } from '@/lib/lang/detectScript';
+import { getLanguageMeta } from '@/i18n/languages';
+import { ADVISOR_ERROR_MARKER } from '@/lib/advisor/understanding';
 import { auth } from '@/lib/firebase';
 import type { ChatMessage, UserProfile, VoiceState } from '@/types';
 
@@ -31,6 +33,9 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [activeSpeakingMessageId, setActiveSpeakingMessageId] = useState<string | null>(null);
+  // The question whose answer failed, offered back as one "Try again" tap so
+  // nobody has to type or speak it a second time.
+  const [failedQuery, setFailedQuery] = useState<{ text: string; fromVoice: boolean } | null>(null);
 
   // Dictation follows the language the site is displayed in — switch the UI to
   // Hindi and the microphone listens in Hindi. Derived, not stored: this was
@@ -164,16 +169,20 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   }, [messages, isStreaming, isListening, scrollToBottom]);
 
   // Handle Send Message with Streaming Response
-  const handleSendMessage = async (textToSend?: string, fromVoice = false) => {
+  const handleSendMessage = async (textToSend?: string, fromVoice = false, retry = false) => {
     const query = (textToSend || inputValue).trim();
     if (!query || isStreaming) return;
 
-    // Detect language script before sending
-    const detectedLanguageCode = detectScriptLanguage(query);
+    // The app's language, unless the message is plainly in another script.
+    const replyLanguage = resolveReplyLanguage(query, language);
 
     // Stop ongoing speech when user sends a new message
     ttsStop();
     setActiveSpeakingMessageId(null);
+    setFailedQuery(null);
+
+    // A retry replaces the failed question and its error, rather than repeating them.
+    const earlier = retry ? messages.slice(0, -2) : messages;
 
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -191,7 +200,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage, assistantMessage]);
+    setMessages([...earlier, userMessage, assistantMessage]);
     setInputValue('');
     const el = textareaRef.current;
     if (el) el.style.height = '46px';
@@ -210,9 +219,9 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
         },
         body: JSON.stringify({
           message: query,
-          conversationHistory: messages,
+          conversationHistory: earlier,
           userProfile,
-          language: detectedLanguageCode, // Override language to the detected one!
+          language: replyLanguage,
         }),
       });
 
@@ -230,35 +239,46 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
 
         const chunk = decoder.decode(value, { stream: true });
         fullAssistantText += chunk;
+        const visibleText = fullAssistantText.split(ADVISOR_ERROR_MARKER)[0];
 
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantPlaceholderId
-              ? { ...msg, content: fullAssistantText }
+              ? { ...msg, content: visibleText }
               : msg
           )
         );
       }
 
-      // Auto-speak completed response if the query itself was spoken (voice in -> voice out)
-      if (fullAssistantText && fromVoice) {
+      // The AI failed part-way: say so in the user's language and offer a retry.
+      let finalText = fullAssistantText;
+      if (fullAssistantText.includes(ADVISOR_ERROR_MARKER)) {
+        const partial = fullAssistantText.split(ADVISOR_ERROR_MARKER)[0].trim();
+        finalText = partial ? `${partial}\n\n*${t.advisor.errorMessage}*` : t.advisor.errorMessage;
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === assistantPlaceholderId ? { ...msg, content: finalText } : msg))
+        );
+        setFailedQuery({ text: query, fromVoice });
+      }
+
+      // Auto-speak completed response if the query itself was spoken (voice in -> voice out),
+      // in the language the answer was written in.
+      if (finalText && fromVoice) {
         setActiveSpeakingMessageId(assistantPlaceholderId);
-        ttsSpeak(fullAssistantText, speechLanguage);
+        ttsSpeak(finalText, getLanguageMeta(replyLanguage).speechCode || speechLanguage);
       }
     } catch (err) {
       console.error('Streaming error:', err);
+      // With no connection the question never left the phone. Say that, rather
+      // than implying the advisor itself went wrong.
+      const errorText = navigator.onLine ? t.advisor.errorMessage : t.errors.networkError;
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === assistantPlaceholderId
-            ? {
-                ...msg,
-                // With no connection the question never left the phone. Say
-                // that, rather than implying the advisor itself went wrong.
-                content: navigator.onLine ? t.advisor.errorMessage : t.errors.networkError,
-              }
-            : msg
+          msg.id === assistantPlaceholderId ? { ...msg, content: errorText } : msg
         )
       );
+      setFailedQuery({ text: query, fromVoice });
+      if (fromVoice) ttsSpeak(errorText, speechLanguage);
     } finally {
       setIsStreaming(false);
     }
@@ -359,6 +379,20 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
             <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0.2s]" />
             <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0.4s]" />
             <span className="ml-1 font-medium">{t.advisor.thinking}</span>
+          </div>
+        )}
+
+        {failedQuery && !isStreaming && (
+          <div className="flex justify-center animate-fade-in">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={() => handleSendMessage(failedQuery.text, failedQuery.fromVoice, true)}
+              className="rounded-2xl min-h-[48px] px-6 font-bold"
+            >
+              🔄 {t.planner.retryAi}
+            </Button>
           </div>
         )}
 

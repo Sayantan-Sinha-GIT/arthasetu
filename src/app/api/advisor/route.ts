@@ -5,7 +5,9 @@ import {
   GEMINI_MODELS,
   classifyAdvisorQuery,
   getAdvisorOffTopicRedirect,
+  hasLocalizedOffTopicRedirect,
 } from '@/lib/gemini';
+import { ADVISOR_ERROR_MARKER, formatIndianRupees } from '@/lib/advisor/understanding';
 import { calculateFinancialPlan, getPlausibilityWarnings, sanitizePlanInputs } from '@/lib/calculator';
 import { matchSchemesForProfile } from '@/lib/schemes/matcher';
 import {
@@ -94,13 +96,19 @@ export function createAdvisorSession(
       }
       if (name === 'matchSchemes') {
         // Live schemes, so what the admin publishes is what the advisor matches.
-        const matches = matchSchemesForProfile(await loadSchemesFn(), userProfile || null);
+        // The best eight, with the scheme's own benefit wording and amounts
+        // already written in lakh and crore, so the model quotes the record
+        // instead of recalling or reformatting figures.
+        const matches = matchSchemesForProfile(await loadSchemesFn(), userProfile || null).slice(0, 8);
         return matches.map(m => ({
           name: m.scheme.name,
+          shortName: m.scheme.shortName,
           description: m.scheme.description,
           matchScore: m.matchScore,
-          subsidy: m.scheme.benefits?.maxSubsidyPercent,
-          maxFunding: m.scheme.benefits?.maxFundingAmount,
+          subsidyPercent: m.scheme.benefits?.maxSubsidyPercent,
+          maxFunding: formatIndianRupees(m.scheme.benefits?.maxFundingAmount),
+          subsidyDetails: m.scheme.benefits?.subsidyDetails,
+          loanDetails: m.scheme.benefits?.loanDetails,
         }));
       }
       if (name === 'saveGeneratedPlan') {
@@ -326,7 +334,9 @@ export async function POST(req: NextRequest) {
 
     // The conversation goes along so a reply to the advisor's own question
     // ("date of birth is 23 aug 1990") is not judged as a stray message.
-    const topicClassification = await classifyAdvisorQuery(message, history);
+    const topicClassification = hasLocalizedOffTopicRedirect(language)
+      ? await classifyAdvisorQuery(message, history)
+      : 'ON_TOPIC';
     if (topicClassification === 'OFF_TOPIC') {
       const redirectMessage = getAdvisorOffTopicRedirect(language);
       const encoder = new TextEncoder();
@@ -349,15 +359,17 @@ export async function POST(req: NextRequest) {
     // the advisor saved earlier in this same chat exist only in the database,
     // so the stale copy made it ask for them again.
     const userProfile: Partial<UserProfile> | null = storedProfile ?? bodyProfile;
-    const systemInstruction = buildAdvisorSystemPrompt(userProfile, language);
+    const systemInstruction = buildAdvisorSystemPrompt(userProfile, language, message);
 
-    // Format conversation history for Gemini context natively
+    // The last six turns, three questions and answers, were all the model saw.
+    // People who answer in fragments ("2", "haan", "do lakh") need more of the
+    // conversation to be understood, so twelve are kept, each capped in length.
     const historyContext: { role: string; parts: { text: string }[] }[] = history
       .filter((msg) => typeof msg?.content === 'string' && msg.content.trim().length > 0)
-      .slice(-6)
+      .slice(-12)
       .map((msg) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
+        parts: [{ text: msg.content.slice(0, 4000) }],
       }));
     historyContext.push({ role: 'user', parts: [{ text: message }] });
 
@@ -383,11 +395,9 @@ export async function POST(req: NextRequest) {
           controller.close();
         } catch (streamError) {
           console.error('Error during Gemini stream:', streamError);
-          const errorMsg =
-            streamError instanceof Error && (streamError.message.includes('429') || streamError.message.toLowerCase().includes('quota') || streamError.message.toLowerCase().includes('exhausted'))
-              ? '\n\n*(ArthaSetu AI is experiencing high traffic or rate limits. Please wait a few seconds and try again.)*'
-              : '\n\n*(A network connection error occurred while reaching the AI servers. Please check your internet connection and try again.)*';
-          controller.enqueue(encoder.encode(errorMsg));
+          // The chat screen replaces this marker with a message in the user's
+          // language and a "Try again" button.
+          controller.enqueue(encoder.encode(`\n\n${ADVISOR_ERROR_MARKER}`));
           controller.close();
         }
       },

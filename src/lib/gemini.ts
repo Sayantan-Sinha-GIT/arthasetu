@@ -5,6 +5,7 @@
 import { GoogleGenAI, type Content, type Tool, type FunctionCall } from '@google/genai';
 import { getErrorMessage } from '@/lib/utils/errors';
 import { groqAgentStream, groqGenerateContent, isGroqConfigured } from '@/lib/groq';
+import { looksLikeEverydayBusinessMessage } from '@/lib/advisor/understanding';
 
 export const GEMINI_MODELS = {
   /** Primary established model: advisor, financial planner, scheme explanation — ultra fast & high availability */
@@ -327,6 +328,20 @@ async function* withFirstTokenDeadline(
   }
 }
 
+/**
+ * A tool result in the shape Gemini accepts.
+ *
+ * The API requires an object here. `matchSchemes` returns a list, which was
+ * passed straight through on the belief that any JSON value was accepted; it is
+ * not — Gemini answers 400 "Proto field is not repeating, cannot start list". So
+ * every scheme question failed on Gemini and fell over to Groq, which then had
+ * no scheme data and made figures up.
+ */
+export function toFunctionResponsePayload(result: unknown): Record<string, unknown> {
+  if (result && typeof result === 'object' && !Array.isArray(result)) return result as Record<string, unknown>;
+  return Array.isArray(result) ? { results: result } : { result };
+}
+
 export async function* generateAgentStream(
   model: string,
   systemInstruction: string,
@@ -394,12 +409,7 @@ export async function* generateAgentStream(
           return {
             functionResponse: {
               name: call.name,
-              // The SDK's FunctionResponse type is stricter (Record<string,
-              // unknown>) than what toolHandler can actually return (e.g.
-              // matchSchemes returns an array) — the Gemini API itself
-              // accepts any JSON value here, so this cast doesn't change
-              // what's sent, just widens the compile-time type to match.
-              response: result as Record<string, unknown>,
+              response: toFunctionResponsePayload(result),
               id: call.id,
             },
           };
@@ -556,6 +566,11 @@ export async function classifyAdvisorQuery(
   if (PROFILE_DETAIL_PATTERNS.some((pattern) => pattern.test(trimmed))) {
     return 'ON_TOPIC';
   }
+  // 3. A very short message, or one using everyday words for business, money or
+  //    a village trade ("murgi palan", "dukan ke liye paisa").
+  if (looksLikeEverydayBusinessMessage(trimmed)) {
+    return 'ON_TOPIC';
+  }
 
   const systemInstruction = `You are a strict binary scope classifier for ArthaSetu, a dedicated Indian rural micro-enterprise and business loan advisor.
 Determine whether the user query is ON_TOPIC or OFF_TOPIC based on the following scope:
@@ -616,6 +631,15 @@ requests anyway. When in doubt, answer "ON_TOPIC".`;
     console.warn('Advisor scope classification fallback to ON_TOPIC:', err);
     return 'ON_TOPIC'; // Fail open on transient error
   }
+}
+
+/**
+ * Whether a written redirect exists in this language. For any other language
+ * the scope check is skipped: an English refusal to someone writing Tamil helps
+ * nobody, and the advisor itself declines off-topic requests in their language.
+ */
+export function hasLocalizedOffTopicRedirect(language = 'en'): boolean {
+  return ['en', 'hi', 'bn', 'as'].includes(language);
 }
 
 /**

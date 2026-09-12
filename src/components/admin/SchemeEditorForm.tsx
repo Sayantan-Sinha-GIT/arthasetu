@@ -9,6 +9,8 @@ import Modal from '@/components/ui/Modal';
 import DiffViewer from '@/components/admin/DiffViewer';
 import SchemeAiUpdateModal from '@/components/admin/SchemeAiUpdateModal';
 import { createOrUpdateLiveScheme } from '@/lib/firestore/admin';
+import { getAllSchemes, getSchemeById } from '@/lib/firestore/schemes';
+import { findLikelyDuplicate } from '@/lib/schemes/identity';
 import { useAuth } from '@/contexts/AuthContext';
 import { ALL_INDIAN_REGIONS } from '@/lib/constants/states';
 import { getErrorMessage } from '@/lib/utils/errors';
@@ -58,6 +60,10 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
   });
 
   const [saving, setSaving] = useState(false);
+  // A new scheme that looks like one already in the directory. The directory
+  // once listed PM SVANidhi four times; the admin now sees the match first.
+  const [duplicateWarning, setDuplicateWarning] = useState<{ id: string; name: string; reason: string } | null>(null);
+  const [allowDuplicate, setAllowDuplicate] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -165,6 +171,21 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
     setSaving(true);
     setError('');
     try {
+      if (isNew) {
+        // Publishing writes to the ID, so an ID already in use would silently
+        // replace that scheme.
+        if (await getSchemeById(formData.id.trim())) {
+          setError(`A scheme with the ID "${formData.id}" already exists. Choose a different ID, or edit that scheme instead.`);
+          return;
+        }
+        if (!allowDuplicate) {
+          const match = findLikelyDuplicate(formData, await getAllSchemes());
+          if (match) {
+            setDuplicateWarning({ id: match.scheme.id, name: match.scheme.name, reason: match.reason });
+            return;
+          }
+        }
+      }
       await createOrUpdateLiveScheme({
         ...formData,
         lastVerifiedDate: new Date().toISOString().split('T')[0],
@@ -223,6 +244,35 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
       {successMsg && (
         <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-success text-xs font-semibold">
           ✓ {successMsg}
+        </div>
+      )}
+
+      {duplicateWarning && (
+        <div role="alert" className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs space-y-3">
+          <p className="font-semibold">
+            ⚠️ This looks like a scheme already in the directory: <strong>{duplicateWarning.name}</strong> ({duplicateWarning.id}) — {duplicateWarning.reason}.
+          </p>
+          <p>Users would see the same programme twice. Update the existing scheme instead, unless this really is a different programme.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => router.push(`/${ADMIN_ROUTE_KEY}/admin/schemes/${encodeURIComponent(duplicateWarning.id)}/edit`)}
+            >
+              Open the existing scheme
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setAllowDuplicate(true);
+                setDuplicateWarning(null);
+              }}
+            >
+              It is different — let me publish
+            </Button>
+          </div>
         </div>
       )}
 
