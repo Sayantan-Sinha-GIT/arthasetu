@@ -214,7 +214,7 @@ export default function ProfilePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || saving) return;
 
     if (!formData.pinCode || !/^[1-9][0-9]{5}$/.test(formData.pinCode)) {
       setErrorMessage('Please enter a valid 6-digit Indian PIN code.');
@@ -566,7 +566,7 @@ export default function ProfilePage() {
               </Card>
 
               <div className="flex justify-end pt-4">
-                <Button type="submit" isLoading={saving} size="lg" className="px-8 shadow-md font-bold">
+                <Button type="submit" isLoading={saving} disabled={saving} size="lg" className="px-8 shadow-md font-bold">
                   {t.profile.saveChanges}
                 </Button>
               </div>

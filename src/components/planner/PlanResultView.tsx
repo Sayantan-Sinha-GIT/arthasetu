@@ -79,10 +79,11 @@ export default function PlanResultView({
   }, [userId, inputs.location, inputs.businessType, inputs.planType, calculated.fundingGap, calculated.totalInitialCost]);
 
   const handleSavePlan = async () => {
-    if (!userId || saving) return;
+    if (!userId || saving || savedId) return;
     setSaving(true);
     try {
       const planTitle = `${inputs.businessType} Financial Viability Plan (${inputs.location})`;
+      const planDocId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined;
       const id = await savePlan(userId, {
         userId,
         title: planTitle,
@@ -90,7 +91,7 @@ export default function PlanResultView({
         inputs,
         calculatedValues: calculated,
         aiNarrative: narrative,
-      });
+      }, planDocId);
       setSavedId(id);
       setToastMessage(`✅ ${t.planner.savedPlanToast}`);
     } catch (err) {
