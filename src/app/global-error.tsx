@@ -140,17 +140,31 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const [lang, setLang] = useState<string | null>(null);
+  const [lang] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = localStorage.getItem('arthasetu-language');
+      return saved && GLOBAL_ERROR_STRINGS[saved] ? saved : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     console.error('ArthaSetu fatal root error:', error);
     try {
-      const saved = localStorage.getItem('arthasetu-language');
-      if (saved && GLOBAL_ERROR_STRINGS[saved]) {
-        setLang(saved);
-      }
+      fetch('/api/client-errors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: error?.message || 'Fatal root error',
+          stack: error?.stack?.slice(0, 1000) || '',
+          digest: error?.digest || '',
+          url: typeof window !== 'undefined' ? window.location.pathname : '',
+        }),
+      }).catch(() => {});
     } catch {
-      // Storage unavailable or restricted
+      // Ignore network errors in global error boundary
     }
   }, [error]);
 
