@@ -15,6 +15,7 @@ import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 import { INDIAN_STATES, UNION_TERRITORIES, ALL_INDIAN_REGIONS } from '@/lib/constants/states';
 import { getErrorMessage } from '@/lib/utils/errors';
+import { sanitizeFirestoreObject } from '@/lib/firestore/sanitize';
 
 export { INDIAN_STATES, UNION_TERRITORIES, ALL_INDIAN_REGIONS };
 
@@ -63,29 +64,9 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   }
 }
 
-/**
- * Strip all undefined keys recursively to prevent Firestore 'Unsupported field value: undefined' errors
- */
-export function sanitizeFirestoreObject<T extends Record<string, unknown>>(obj: T): T {
-  const clean: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined) {
-      if (
-        value !== null &&
-        typeof value === 'object' &&
-        !Array.isArray(value) &&
-        !(value instanceof Date) &&
-        !('_methodName' in value) &&
-        !('toMillis' in value)
-      ) {
-        clean[key] = sanitizeFirestoreObject(value as Record<string, unknown>);
-      } else {
-        clean[key] = value;
-      }
-    }
-  }
-  return clean as T;
-}
+// Lives in ./sanitize so the server routes can share it without importing the
+// browser Firebase SDK. Re-exported so existing importers are unchanged.
+export { sanitizeFirestoreObject };
 
 /**
  * Create or overwrite a user profile safely (with undefined field sanitization & profile integrity checks)

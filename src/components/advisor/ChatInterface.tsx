@@ -12,6 +12,7 @@ import Button from '@/components/ui/Button';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { detectScriptLanguage } from '@/lib/lang/detectScript';
+import { auth } from '@/lib/firebase';
 import type { ChatMessage, UserProfile, VoiceState } from '@/types';
 
 interface ChatInterfaceProps {
@@ -192,9 +193,16 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
     setIsStreaming(true);
 
     try {
+      // The advisor saves profile details and plans on the user's behalf, so the
+      // server has to know who is signed in: from a verified token, never from a
+      // uid in the request body.
+      const idToken = await auth.currentUser?.getIdToken().catch(() => undefined);
       const response = await fetch('/api/advisor', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
         body: JSON.stringify({
           message: query,
           conversationHistory: messages,
