@@ -640,6 +640,24 @@ function isTransientError(error: unknown): boolean {
 const RATE_LIMIT_COOLOFF_MS = 60_000;
 const coolingOffUntil = new Map<string, number>();
 
+let geminiConsecutiveErrors = 0;
+let geminiCircuitOpenUntil = 0;
+
+export function noteGeminiSuccess(): void {
+  geminiConsecutiveErrors = 0;
+}
+
+export function noteGeminiFailure(): void {
+  geminiConsecutiveErrors++;
+  if (geminiConsecutiveErrors >= 3) {
+    geminiCircuitOpenUntil = Date.now() + 60_000;
+  }
+}
+
+export function isGeminiCircuitOpen(): boolean {
+  return Date.now() < geminiCircuitOpenUntil;
+}
+
 function noteGeminiRateLimited(model: string): void {
   coolingOffUntil.set(model, Date.now() + RATE_LIMIT_COOLOFF_MS);
 }
@@ -649,9 +667,12 @@ export function isModelCoolingOff(model: string): boolean {
   return Date.now() < (coolingOffUntil.get(model) ?? 0);
 }
 
-/** True while every Gemini model is known to be out of quota. */
+/** True while every Gemini model is known to be out of quota or circuit is open. */
 export function isGeminiCoolingOff(): boolean {
-  return isModelCoolingOff(GEMINI_MODELS.FLASH) && isModelCoolingOff(GEMINI_MODELS.FLASH_LITE);
+  return (
+    isGeminiCircuitOpen() ||
+    (isModelCoolingOff(GEMINI_MODELS.FLASH) && isModelCoolingOff(GEMINI_MODELS.FLASH_LITE))
+  );
 }
 
 async function retryWithBackoff<T>(

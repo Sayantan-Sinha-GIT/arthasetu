@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import Button from '@/components/ui/Button';
 import PlannerWizard from '@/components/planner/PlannerWizard';
 import PlanResultView from '@/components/planner/PlanResultView';
 import { getUserProfile } from '@/lib/firestore/users';
@@ -20,6 +21,8 @@ export default function PlannerPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [aiBusyBanner, setAiBusyBanner] = useState(false);
+  const [retryingAi, setRetryingAi] = useState(false);
 
   // Active Generated Plan State
   const [activePlan, setActivePlan] = useState<{
@@ -81,6 +84,7 @@ export default function PlannerPage() {
         throw new Error(data.error || 'Failed to generate plan narrative');
       }
 
+      setAiBusyBanner(false);
       setActivePlan({
         inputs,
         calculated,
@@ -88,6 +92,7 @@ export default function PlannerPage() {
       });
     } catch (err) {
       console.error('Plan generation failed:', err);
+      setAiBusyBanner(true);
       // Fallback narrative so user is never blocked
       const fallbackCalculated = calculateFinancialPlan(inputs);
       setActivePlan({
@@ -113,6 +118,33 @@ export default function PlannerPage() {
       });
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleRetryAiNarrative = async () => {
+    if (!activePlan) return;
+    setRetryingAi(true);
+    try {
+      const response = await fetch('/api/planner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inputs: activePlan.inputs,
+          calculatedValues: activePlan.calculated,
+          userProfile: profile,
+          language,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success && data.narrative) {
+        setActivePlan((prev) => (prev ? { ...prev, narrative: data.narrative } : null));
+        setAiBusyBanner(false);
+      }
+    } catch (err) {
+      console.warn('Retry AI failed, retaining calculated numbers:', err);
+    } finally {
+      setRetryingAi(false);
     }
   };
 
@@ -150,13 +182,44 @@ export default function PlannerPage() {
 
         {/* Wizard View or Generated Plan Result View */}
         {activePlan ? (
-          <PlanResultView
-            inputs={activePlan.inputs}
-            calculated={activePlan.calculated}
-            narrative={activePlan.narrative}
-            userId={user?.uid || ''}
-            onEdit={() => setActivePlan(null)}
-          />
+          <div className="space-y-6">
+            {aiBusyBanner && (
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
+                      {language === 'hi'
+                        ? 'एआई स्पष्टीकरण व्यस्त है, आपके वित्तीय आंकड़े तैयार हैं!'
+                        : 'AI explanation is busy right now, but your numbers and calculations are ready!'}
+                    </p>
+                    <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
+                      {language === 'hi'
+                        ? 'आप संपूर्ण वित्तीय मॉडल देख सकते हैं या एआई विश्लेषण का पुनः प्रयास कर सकते हैं।'
+                        : 'You can review all financials below or retry generating the full narrative.'}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  isLoading={retryingAi}
+                  onClick={handleRetryAiNarrative}
+                  className="text-xs font-bold rounded-xl border-amber-500/40 text-amber-900 dark:text-amber-100 hover:bg-amber-500/20 shrink-0"
+                >
+                  {language === 'hi' ? 'पुनः प्रयास करें' : 'Retry AI'}
+                </Button>
+              </div>
+            )}
+            <PlanResultView
+              inputs={activePlan.inputs}
+              calculated={activePlan.calculated}
+              narrative={activePlan.narrative}
+              userId={user?.uid || ''}
+              onEdit={() => setActivePlan(null)}
+            />
+          </div>
         ) : (
           <PlannerWizard
             initialProfile={profile}

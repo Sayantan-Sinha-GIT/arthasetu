@@ -20,8 +20,26 @@ const GROQ_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'] as const;
 
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
+let groqConsecutiveErrors = 0;
+let groqCircuitOpenUntil = 0;
+
+export function noteGroqSuccess(): void {
+  groqConsecutiveErrors = 0;
+}
+
+export function noteGroqFailure(): void {
+  groqConsecutiveErrors++;
+  if (groqConsecutiveErrors >= 3) {
+    groqCircuitOpenUntil = Date.now() + 60_000;
+  }
+}
+
+export function isGroqCircuitOpen(): boolean {
+  return Date.now() < groqCircuitOpenUntil;
+}
+
 export function isGroqConfigured(): boolean {
-  return Boolean(process.env.GROQ_API_KEY);
+  return Boolean(process.env.GROQ_API_KEY) && !isGroqCircuitOpen();
 }
 
 export interface GroqOptions {
