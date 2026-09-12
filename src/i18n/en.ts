@@ -171,6 +171,13 @@ const en = {
     dobError: 'Please select a valid date of birth (age 18-100 years)',
     gender: 'Gender',
     selectGender: 'Select gender',
+    // Labels for the stored gender values (which stay in English).
+    genderOptions: {
+      male: 'Male',
+      female: 'Female',
+      other: 'Transgender / Other',
+      preferNot: 'Prefer not to say',
+    },
     employeeCount: 'Number of Employees',
     employeeCountPlaceholder: 'e.g. 2',
     employeeCountHint: 'Including yourself',
@@ -297,6 +304,14 @@ const en = {
     readScore: 'Read Score',
     ttsSummary: 'Your Gramin Credit Readiness Score is {{score}} out of 900. Classification is {{band}}. {{cashFlowRationale}} {{capitalRationale}}',
     completeProfileCta: 'Complete Financial Profile →',
+    // Labels for the score bands calculateGraminScore returns (in English).
+    bands: {
+      excellent: 'Excellent Readiness',
+      good: 'Good Readiness',
+      fair: 'Fair Readiness',
+      needsImprovement: 'Needs Improvement',
+      earlyStage: 'Early Stage',
+    },
   },
 
   // Profile

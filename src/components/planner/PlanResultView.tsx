@@ -12,10 +12,12 @@ import LocalBusinessContext from '@/components/planner/LocalBusinessContext';
 import DocumentChecklist from '@/components/schemes/DocumentChecklist';
 import SchemeCard from '@/components/schemes/SchemeCard';
 import { savePlan } from '@/lib/firestore/plans';
+import { getUserProfile } from '@/lib/firestore/users';
 import { getAllSchemes } from '@/lib/firestore/schemes';
 import { matchSchemesForProfile } from '@/lib/schemes/matcher';
 import { downloadPlanPdf } from '@/lib/pdf/export-plan-pdf';
-import type { PlanInputs, CalculatedValues, SchemeMatchResult } from '@/types';
+import { findRegionInText } from '@/lib/constants/region-match';
+import type { PlanInputs, CalculatedValues, SchemeMatchResult, UserProfile } from '@/types';
 
 interface PlanResultViewProps {
   inputs: PlanInputs;
@@ -43,14 +45,26 @@ export default function PlanResultView({
   const [toastMessage, setToastMessage] = useState('');
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [matchedSchemes, setMatchedSchemes] = useState<SchemeMatchResult[]>([]);
+  const [profile, setProfile] = useState<Partial<UserProfile> | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadMatchedSchemes() {
       try {
-        const allSchemes = await getAllSchemes();
+        const [allSchemes, loadedProfile] = await Promise.all([
+          getAllSchemes(),
+          userId ? getUserProfile(userId).catch(() => null) : Promise.resolve(null),
+        ]);
+        if (cancelled) return;
+        setProfile(loadedProfile);
+        // The matcher compares state names, and this used to pass the whole
+        // location line ("Kalindi Housing Estate, Kolkata"), which never equals
+        // one — so every state scheme was filtered out of every plan.
         const matches = matchSchemesForProfile(allSchemes, {
-          state: inputs.location,
-          businessType: inputs.businessType,
+          ...(loadedProfile || {}),
+          state: loadedProfile?.state || findRegionInText(inputs.location),
+          businessType: inputs.businessType || loadedProfile?.businessType,
+          businessStatus: inputs.planType === 'existing_expansion' ? 'existing' : 'planning',
           desiredFunding: calculated.fundingGap || calculated.totalInitialCost,
         });
         setMatchedSchemes(matches.slice(0, 3));
@@ -59,7 +73,10 @@ export default function PlanResultView({
       }
     }
     loadMatchedSchemes();
-  }, [inputs.location, inputs.businessType, calculated.fundingGap, calculated.totalInitialCost]);
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, inputs.location, inputs.businessType, inputs.planType, calculated.fundingGap, calculated.totalInitialCost]);
 
   const handleSavePlan = async () => {
     if (!userId || saving) return;
@@ -87,10 +104,14 @@ export default function PlanResultView({
   const handleDownloadPdf = async () => {
     setIsExportingPdf(true);
     try {
+      // The report names the applicant and prints their readiness score, so it
+      // needs the profile. Without one those rows read N/A rather than invent.
+      const pdfProfile = profile ?? (userId ? await getUserProfile(userId).catch(() => null) : null);
       await downloadPlanPdf({
         inputs,
         calculated,
         narrative,
+        profile: pdfProfile,
         t,
         language
       });

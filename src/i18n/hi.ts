@@ -139,6 +139,12 @@ const hi: Translations = {
     "dobError": "कृपया एक मान्य जन्म तिथि चुनें (आयु 18-100 वर्ष)",
     "gender": "लिंग",
     "selectGender": "लिंग चुनें",
+    "genderOptions": {
+      "male": "पुरुष",
+      "female": "महिला",
+      "other": "ट्रांसजेंडर / अन्य",
+      "preferNot": "बताना नहीं चाहते"
+    },
     "employeeCount": "कर्मचारियों की संख्या",
     "employeeCountPlaceholder": "उदा. 2",
     "employeeCountHint": "स्वयं को शामिल करते हुए",
@@ -262,7 +268,14 @@ const hi: Translations = {
     "disclaimer": "यह स्कोर केवल नियोजन उद्देश्यों के लिए एक आंतरिक वित्तीय तत्परता अनुमान है और सिबिल (CIBIL), एक्सपेरियन, क्रिफ या इक्विफैक्स का आधिकारिक क्रेडिट स्कोर नहीं है। अर्थसेतु वित्तीय संस्थानों द्वारा ऋण स्वीकृति की गारंटी नहीं देता है।",
     "readScore": "स्कोर पढ़ें",
     "ttsSummary": "आपका ग्रामीण क्रेडिट तैयारी स्कोर 900 में से {{score}} है। वर्गीकरण {{band}} है। {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "वित्तीय प्रोफ़ाइल पूरी करें →"
+    "completeProfileCta": "वित्तीय प्रोफ़ाइल पूरी करें →",
+    "bands": {
+      "excellent": "उत्कृष्ट तैयारी",
+      "good": "अच्छी तैयारी",
+      "fair": "ठीक-ठाक तैयारी",
+      "needsImprovement": "सुधार की ज़रूरत",
+      "earlyStage": "शुरुआती चरण"
+    }
   },
   "profile": {
     "title": "व्यवसाय प्रोफ़ाइल",

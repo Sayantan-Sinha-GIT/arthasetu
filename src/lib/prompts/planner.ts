@@ -1,5 +1,10 @@
 import type { PlanInputs, CalculatedValues, UserProfile } from '@/types';
 import { getLanguageMeta } from '@/i18n/languages';
+import {
+  DEFAULT_LOAN_INTEREST_RATE_PERCENT,
+  DEFAULT_LOAN_TENURE_MONTHS,
+  getPlausibilityWarnings,
+} from '@/lib/calculator';
 
 export function buildPlannerPrompt(
   inputs: PlanInputs,
@@ -24,6 +29,23 @@ Experience: ${userProfile.businessExperience || 'Beginner'}
 `
     : 'Entrepreneur in India';
 
+  // Correct arithmetic on unbelievable inputs produced a report calling a 99.2%
+  // net margin "exceptional ... highly bankable". Flagged figures must be
+  // questioned in the narrative, never praised.
+  const warnings = getPlausibilityWarnings(calculated);
+  const plausibilityBlock = warnings.length > 0
+    ? `
+---
+### ⚠️ Figures the application flagged as unrealistic:
+${warnings.map((w) => `- ${w.message}`).join('\n')}
+You MUST say plainly in executiveSummary that these figures look unrealistic and must be re-checked before approaching a bank, name the inputs to re-check, and make this the first item in riskAnalysis. Do NOT describe the plan as exceptional, highly profitable or highly bankable.
+`
+    : '';
+
+  const planTypeLine = inputs.planType === 'existing_expansion'
+    ? `- Plan Type: Expansion of an existing business (current monthly revenue ₹${(inputs.currentMonthlyRevenue || 0).toLocaleString('en-IN')}, current monthly expenses ₹${(inputs.currentMonthlyExpenses || 0).toLocaleString('en-IN')})`
+    : '- Plan Type: New startup';
+
   return `
 You are **ArthaSetu**, a seasoned rural business and micro-finance advisor in India.
 Below are the exact deterministic financial calculations for a rural micro-enterprise calculated by the application math engine.
@@ -34,13 +56,14 @@ ${profileContext}
 - Business Type: ${inputs.businessType}
 - Operating Scale: ${inputs.businessScale}
 - Location: ${inputs.location}
+${planTypeLine}
 
 ---
 ### 📊 Application Calculated Financial Figures (DO NOT recalculate or modify these figures):
 - Total Initial Investment Required: ₹${calculated.totalInitialCost.toLocaleString('en-IN')}
 - Available Personal Savings: ₹${inputs.availableSavings.toLocaleString('en-IN')}
 - Loan / Subsidy Gap: ₹${calculated.fundingGap.toLocaleString('en-IN')}
-- Estimated Monthly Loan EMI: ₹${calculated.monthlyLoanEmi.toLocaleString('en-IN')} (${inputs.loanInterestRatePercent}% interest, ${inputs.loanTenureMonths} months tenure)
+- Estimated Monthly Loan EMI: ₹${calculated.monthlyLoanEmi.toLocaleString('en-IN')} (${inputs.loanInterestRatePercent ?? DEFAULT_LOAN_INTEREST_RATE_PERCENT}% interest, ${inputs.loanTenureMonths ?? DEFAULT_LOAN_TENURE_MONTHS} months tenure)
 - Monthly Gross Revenue: ₹${calculated.monthlyGrossRevenue.toLocaleString('en-IN')}
 - Monthly Total Expenses: ₹${calculated.monthlyTotalExpenses.toLocaleString('en-IN')}
 - Monthly Net Profit: ₹${calculated.monthlyNetProfit.toLocaleString('en-IN')}
@@ -52,6 +75,7 @@ ${profileContext}
 ### 🌐 Language:
 ${languageInstruction}
 
+${plausibilityBlock}
 ---
 ### 🎯 Your Task:
 Provide the qualitative narrative, critical business assumptions, risk analysis, and immediate execution steps.

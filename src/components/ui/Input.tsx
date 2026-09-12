@@ -313,11 +313,33 @@ export function NumberInput({
     }
   }
 
+  // min and max on a number input only steer its spinner arrows: typed or pasted
+  // values ignore them, so "-50000" used to reach the profile and the calculator
+  // as negative capital. They are enforced here instead.
+  const minNum = min === undefined || min === '' ? undefined : Number(min);
+  const maxNum = max === undefined || max === '' ? undefined : Number(max);
+  const clamp = (n: number) => {
+    let v = n;
+    if (minNum !== undefined && Number.isFinite(minNum) && v < minNum) v = minNum;
+    if (maxNum !== undefined && Number.isFinite(maxNum) && v > maxNum) v = maxNum;
+    return v;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let raw = e.target.value;
+    // No minus sign where negative values make no sense.
+    if (minNum !== undefined && minNum >= 0) {
+      raw = raw.replace(/-/g, '');
+    }
     // Strip leading zeros if more digits follow (e.g. "07" -> "7")
     if (/^0\d+/.test(raw)) {
       raw = raw.replace(/^0+/, '');
+    }
+    // Over the maximum is never valid, so it is capped while typing. The minimum
+    // waits for blur: "3" on the way to "36" is briefly below a minimum of 6.
+    const typed = raw === '' ? 0 : Number(raw);
+    if (maxNum !== undefined && Number.isFinite(maxNum) && Number.isFinite(typed) && typed > maxNum) {
+      raw = String(maxNum);
     }
     setDisplayValue(raw);
 
@@ -344,18 +366,19 @@ export function NumberInput({
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(false);
     if (displayValue === '') {
-      setDisplayValue('0');
-      if (onValueChange) onValueChange(0);
+      const emptyValue = clamp(0);
+      setDisplayValue(String(emptyValue));
+      if (onValueChange) onValueChange(emptyValue);
       if (onChange) {
         const syntheticEvent = {
           ...e,
-          target: { ...e.target, value: '0' },
+          target: { ...e.target, value: String(emptyValue) },
         } as unknown as React.ChangeEvent<HTMLInputElement>;
         onChange(syntheticEvent);
       }
     } else {
       const parsed = Number(displayValue);
-      const cleanNum = isNaN(parsed) ? 0 : parsed;
+      const cleanNum = clamp(isNaN(parsed) ? 0 : parsed);
       setDisplayValue(cleanNum.toString());
       if (onValueChange) onValueChange(cleanNum);
     }

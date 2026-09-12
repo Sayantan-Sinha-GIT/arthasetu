@@ -4,6 +4,10 @@
 
 import type { PlanInputs, CalculatedValues } from '@/types';
 
+/** Loan terms assumed when the user gives none. The PDF report prints them, so they live in one place. */
+export const DEFAULT_LOAN_INTEREST_RATE_PERCENT = 9.5;
+export const DEFAULT_LOAN_TENURE_MONTHS = 36;
+
 /**
  * Calculate the total initial capital needed to launch or expand the business
  */
@@ -29,8 +33,8 @@ export function calculateFundingGap(totalInitialCost: number, availableSavings: 
  */
 export function calculateMonthlyLoanEmi(
   principal: number,
-  annualInterestRatePercent: number = 9.5,
-  tenureMonths: number = 36
+  annualInterestRatePercent: number = DEFAULT_LOAN_INTEREST_RATE_PERCENT,
+  tenureMonths: number = DEFAULT_LOAN_TENURE_MONTHS
 ): number {
   if (principal <= 0 || tenureMonths <= 0) return 0;
   if (annualInterestRatePercent <= 0) return Math.round(principal / tenureMonths);
@@ -96,13 +100,81 @@ export function calculateBreakEvenMonths(
   return Math.ceil(totalInitialCost / monthlyNetProfit);
 }
 
+/** Money and count fields that can never be negative. */
+const NON_NEGATIVE_PLAN_FIELDS = [
+  'currentMonthlyRevenue', 'currentMonthlyExpenses', 'expansionEquipmentCost', 'expansionWorkingCapital',
+  'equipmentCost', 'setupCost', 'initialInventory', 'workingCapitalReserve',
+  'unitPrice', 'unitsSoldPerMonth', 'otherMonthlyRevenue',
+  'monthlyRawMaterials', 'monthlyRentUtilities', 'monthlyLabor', 'monthlyTransportPackaging', 'monthlyMaintenanceOther',
+  'availableSavings', 'loanInterestRatePercent', 'loanTenureMonths',
+] as const;
+
+/**
+ * Makes every numeric input a real, non-negative number before any arithmetic.
+ *
+ * The form now refuses negative entries, but inputs also arrive from the AI
+ * advisor's tool calls (which can carry strings or negatives) and from plans
+ * saved before that fix. A negative capital or a "12000" string used to flow
+ * straight into the sums. Blank values stay undefined so defaults still apply.
+ */
+export function sanitizePlanInputs(inputs: PlanInputs): PlanInputs {
+  const out: Record<string, unknown> = { ...inputs };
+  for (const field of NON_NEGATIVE_PLAN_FIELDS) {
+    const value = out[field];
+    if (value === undefined || value === null || value === '') {
+      out[field] = undefined;
+      continue;
+    }
+    const n = typeof value === 'number' ? value : Number(String(value).replace(/[₹,\s]/g, ''));
+    out[field] = Number.isFinite(n) && n > 0 ? n : 0;
+  }
+  if (out.projectedRevenueIncreasePercent !== undefined) {
+    const n = Number(out.projectedRevenueIncreasePercent);
+    out.projectedRevenueIncreasePercent = Number.isFinite(n) ? n : undefined;
+  }
+  return out as unknown as PlanInputs;
+}
+
+export const HIGH_NET_MARGIN_PERCENT = 60;
+export const REVENUE_TO_COST_MULTIPLE = 20;
+
+export interface PlausibilityWarning {
+  code: 'revenue_vs_cost' | 'very_high_margin';
+  /** For the model: it explains the concern to the user in their own language. */
+  message: string;
+}
+
+/**
+ * Figures that are arithmetically correct but not believable, so they must be
+ * questioned rather than celebrated. A dairy plan with a 99.2% net margin was
+ * described in its report as "exceptional profitability ... highly bankable",
+ * which a loan officer would reject on sight.
+ */
+export function getPlausibilityWarnings(calculated: CalculatedValues): PlausibilityWarning[] {
+  const warnings: PlausibilityWarning[] = [];
+  if (calculated.totalInitialCost > 0 && calculated.monthlyGrossRevenue > calculated.totalInitialCost * REVENUE_TO_COST_MULTIPLE) {
+    warnings.push({
+      code: 'revenue_vs_cost',
+      message: `Monthly revenue is over ${REVENUE_TO_COST_MULTIPLE}x the total initial project cost, which is highly unrealistic for a micro-enterprise.`,
+    });
+  }
+  if (calculated.monthlyGrossRevenue > 0 && calculated.profitMarginPercent > HIGH_NET_MARGIN_PERCENT) {
+    warnings.push({
+      code: 'very_high_margin',
+      message: `A ${calculated.profitMarginPercent}% net profit margin is far above what rural micro-enterprises usually earn (roughly 10-40%). Some monthly costs — raw material, feed, electricity, transport, or the owner's own labour — are probably missing or too low.`,
+    });
+  }
+  return warnings;
+}
+
 /**
  * Main Orchestrator: Calculates complete financial metrics deterministically
  * Supports both:
  * 1. Startup Mode (New Business from scratch)
  * 2. Existing Business Expansion Mode (Starting from current cash flow & calculating growth gap)
  */
-export function calculateFinancialPlan(inputs: PlanInputs): CalculatedValues {
+export function calculateFinancialPlan(rawInputs: PlanInputs): CalculatedValues {
+  const inputs = sanitizePlanInputs(rawInputs);
   const isExistingBusiness = inputs.planType === 'existing_expansion';
 
   if (isExistingBusiness) {
@@ -119,8 +191,8 @@ export function calculateFinancialPlan(inputs: PlanInputs): CalculatedValues {
 
     const monthlyLoanEmi = calculateMonthlyLoanEmi(
       fundingGap,
-      inputs.loanInterestRatePercent ?? 9.5,
-      inputs.loanTenureMonths ?? 36
+      inputs.loanInterestRatePercent ?? DEFAULT_LOAN_INTEREST_RATE_PERCENT,
+      inputs.loanTenureMonths ?? DEFAULT_LOAN_TENURE_MONTHS
     );
 
     // Projected revenue after expansion
@@ -177,8 +249,8 @@ export function calculateFinancialPlan(inputs: PlanInputs): CalculatedValues {
 
   const monthlyLoanEmi = calculateMonthlyLoanEmi(
     fundingGap,
-    inputs.loanInterestRatePercent ?? 9.5,
-    inputs.loanTenureMonths ?? 36
+    inputs.loanInterestRatePercent ?? DEFAULT_LOAN_INTEREST_RATE_PERCENT,
+    inputs.loanTenureMonths ?? DEFAULT_LOAN_TENURE_MONTHS
   );
 
   const monthlyGrossRevenue = calculateMonthlyGrossRevenue(inputs);

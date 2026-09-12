@@ -4,6 +4,7 @@ import { Select, NumberInput } from '@/components/ui/Input';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { GENDERS } from '@/lib/firestore/users';
+import { GENDER_KEYS } from '@/lib/constants/profile-options';
 import type { UserProfile, LoanDetail } from '@/types';
 
 interface StepEligibilityProps {
@@ -17,7 +18,8 @@ export default function StepEligibility({ data, onChange, errors = {} }: StepEli
 
   const genderOptions = [
     { value: '', label: t.onboarding.selectGender },
-    ...GENDERS.map((g) => ({ value: g, label: g })),
+    // Stored in English, shown in the user's language.
+    ...GENDERS.map((g) => ({ value: g, label: (t.onboarding.genderOptions as Record<string, string> | undefined)?.[GENDER_KEYS[g]] || g })),
   ];
 
   const lenderOptions = [

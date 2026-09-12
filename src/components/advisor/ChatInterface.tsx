@@ -114,8 +114,13 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
   // re-seeds the greeting on a language switch. Has to stay an effect: the
   // message carries `new Date()`, which must not be computed at render time
   // (that would differ between server and client and break hydration).
+  const greetedLanguageRef = useRef<string | null>(null);
   useEffect(() => {
-    if (messages.length === 0) {
+    // Also re-seeded on a language switch, as long as the user has not written
+    // anything yet. It used to run only while there were no messages at all, so
+    // the greeting stayed in whatever language the page happened to open in.
+    const onlyGreeting = messages.length === 0 || (messages.length === 1 && messages[0].id === 'welcome-1');
+    if (onlyGreeting && greetedLanguageRef.current !== language) {
       const userName = userProfile?.name || '';
       const business = userProfile?.businessType || '';
       const location = userProfile?.locality || userProfile?.district || userProfile?.state || '';
@@ -136,7 +141,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
 
       const greeting = (userName ? greetingNamed : t.advisor.chat.greetingAnon) + profileNudge;
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      greetedLanguageRef.current = language;
       setMessages([
         {
           id: 'welcome-1',
@@ -147,7 +152,7 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
       ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfile, language, messages.length]);
+  }, [userProfile, language, messages]);
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {

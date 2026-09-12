@@ -135,6 +135,10 @@
     "dobError": "अननानै थार जुलुखु सान सायख (उदै 18-100 बोसोर)",
     "gender": "लिं",
     "selectGender": "लिं सायख",
+    "genderOptions": {
+      "male": "हौवा",
+      "female": "हिनजाव"
+    },
     "employeeCount": "मावगिरिनि अनजिमा",
     "employeeCountPlaceholder": "जेरै- 2",
     "employeeCountHint": "नोंखौबो लाफानानै",

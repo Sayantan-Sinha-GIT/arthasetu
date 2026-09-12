@@ -135,6 +135,11 @@
     "dobError": "कृपया बरी जल्म तारीख निवडात (पिराय 18-100 वर्सां)",
     "gender": "लिंग",
     "selectGender": "लिंग निवडात",
+    "genderOptions": {
+      "male": "दादलो",
+      "female": "बायल",
+      "other": "ट्रान्सजेंडर / हेर"
+    },
     "employeeCount": "कामगारांची संख्या",
     "employeeCountPlaceholder": "उदा. 2",
     "employeeCountHint": "स्वताक धरून",
@@ -259,7 +264,14 @@
     "disclaimer": "हो स्कोर फकत येवजणेच्या खातीर एक आतलो आर्थिक तयारयेचो अंदाज आसा आनी CIBIL, Experian, CRIF वा Equifax चो अधिकृत क्रेडिट स्कोर न्हय. ArthaSetu वित्तीय संस्थांकडून कर्जाची मंजुरीची हमी दिना.",
     "readScore": "स्कोर वाचा",
     "ttsSummary": "तुमी ग्रामीण क्रेडिट तयार आशिल्लो स्कोर ९०० पैकी {{score}} आसा. वर्गवारी {{band}} आसा. {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "आर्थिक माहिती पूर्ण करा →"
+    "completeProfileCta": "आर्थिक माहिती पूर्ण करा →",
+    "bands": {
+      "excellent": "उत्कृश्ट तयारी",
+      "good": "बरी तयारी",
+      "fair": "सादारण तयारी",
+      "needsImprovement": "सुदारणेची गरज",
+      "earlyStage": "सुरवातीचो टप्पो"
+    }
   },
   "profile": {
     "title": "व्यवसाय प्रोफाइल",

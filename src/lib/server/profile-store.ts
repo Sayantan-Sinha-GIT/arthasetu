@@ -48,6 +48,17 @@ export async function updateUserProfileAsAdmin(
   await ref.set({ ...clean, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
 }
 
+/** The stored profile, for routes that must not rely on a copy sent by the browser. */
+export async function loadUserProfileAsAdmin(
+  uid: string,
+  db: Firestore = adminDb
+): Promise<Partial<UserProfile> | null> {
+  if (!uid) return null;
+  const snap = await db.collection('users').doc(uid).get();
+  if (!snap.exists) return null;
+  return { ...(snap.data() as Partial<UserProfile>), uid };
+}
+
 /** Stores a plan under the verified user, whatever userId the plan data claims. */
 export async function savePlanAsAdmin(
   uid: string,

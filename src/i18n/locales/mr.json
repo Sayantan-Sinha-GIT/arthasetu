@@ -135,6 +135,12 @@
     "dobError": "कृपया वैध जन्मतारीख निवडा (वय १८-१०० वर्षे)",
     "gender": "लिंग",
     "selectGender": "लिंग निवडा",
+    "genderOptions": {
+      "male": "पुरुष",
+      "female": "स्त्री",
+      "other": "ट्रान्सजेंडर / इतर",
+      "preferNot": "सांगू इच्छित नाही"
+    },
     "employeeCount": "कर्मचाऱ्यांची संख्या",
     "employeeCountPlaceholder": "उदा. २",
     "employeeCountHint": "स्वतःला समाविष्ट करून",
@@ -259,7 +265,14 @@
     "disclaimer": "हा स्कोअर केवळ नियोजनाच्या उद्देशaसाठी अंतर्गत आर्थिक सज्जता अंदाज आहे आणि CIBIL, Experian, CRIF किंवा Equifax कडून औपचारिक क्रेडिट स्कोअर नाही. ArthaSetu वित्तीय संस्थांकडून कर्ज मंजुरीची हमी देत नाही.",
     "readScore": "स्कोअर वाचा",
     "ttsSummary": "तुमचा ग्रामीन क्रेडिट सज्जता स्कोअर ९०० पैकी {{score}} आहे. वर्गीकरण {{band}} आहे. {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "आर्थिक प्रोफाइल पूर्ण करा →"
+    "completeProfileCta": "आर्थिक प्रोफाइल पूर्ण करा →",
+    "bands": {
+      "excellent": "उत्कृष्ट तयारी",
+      "good": "चांगली तयारी",
+      "fair": "साधारण तयारी",
+      "needsImprovement": "सुधारणा आवश्यक",
+      "earlyStage": "प्राथमिक टप्पा"
+    }
   },
   "profile": {
     "title": "व्यवसाय प्रोफाइल",

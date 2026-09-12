@@ -1,7 +1,7 @@
 // ─── Groq fallback provider (server-side only) ───
 //
-// Gemini's free tier allows 20 requests a day across the whole project, which
-// six routes compete for. Groq's free tier reports a limit of 1,000 requests
+// Gemini's free tier allows about 20 requests a day per model (Flash and
+// Flash-Lite are counted separately), which six routes compete for. Groq's free tier reports a limit of 1,000 requests
 // on the same kind of work — fifty times the headroom — so it stands behind
 // Gemini as an automatic fallback rather than a replacement.
 //

@@ -1,4 +1,47 @@
-import type { GraminScoreInputs, GraminScoreResult, GraminScoreBreakdown } from '@/types';
+import type {
+  ExistingLoanInput,
+  GraminScoreInputs,
+  GraminScoreResult,
+  GraminScoreBreakdown,
+  UserProfile,
+} from '@/types';
+
+/**
+ * The score inputs a profile implies, before the user adjusts anything on the
+ * dashboard card. Shared so the card and the PDF report show the same number.
+ */
+export function graminInputsFromProfile(profile: Partial<UserProfile> | null | undefined): GraminScoreInputs {
+  const profileLoans: ExistingLoanInput[] =
+    profile?.loanDetails && profile.loanDetails.length > 0
+      ? profile.loanDetails.map((l) => ({
+          id: l.id,
+          lenderType: l.lenderType === 'informal' ? 'informal_moneylender' : l.lenderType,
+          emiAmount: l.monthlyEmi || 0,
+          status: 'on_time' as const,
+        }))
+      : [];
+
+  return {
+    monthlyIncome: typeof profile?.monthlyIncome === 'number' ? profile.monthlyIncome : 0,
+    monthlyExpenses: typeof profile?.monthlyExpenses === 'number' ? profile.monthlyExpenses : 0,
+    revenueConsistency: profile?.monthlyIncome && profile.monthlyIncome > 0 ? 'stable' : 'growing',
+    steadyIncomeMonths: profile?.businessStatus === 'existing' ? 12 : 0,
+    availableCapital: typeof profile?.availableCapital === 'number' ? profile.availableCapital : 0,
+    desiredFunding: typeof profile?.desiredFunding === 'number' ? profile.desiredFunding : 0,
+    monthlySavings: typeof profile?.monthlyIncome === 'number' && typeof profile?.monthlyExpenses === 'number'
+      ? Math.max(0, profile.monthlyIncome - profile.monthlyExpenses)
+      : 0,
+    emergencyReserve: typeof profile?.availableCapital === 'number' ? Math.round(profile.availableCapital * 0.2) : 0,
+    yearsInOperation: profile?.businessStatus === 'existing' ? 2 : 0,
+    isRegistered: !!profile?.businessStatus && profile.businessStatus === 'existing',
+    employeeCount: typeof profile?.employeeCount === 'number' ? profile.employeeCount : 0,
+    existingLoans: profileLoans,
+    keepsRecords: true,
+    usesBankAccount: true,
+    hasInsurance: false,
+    isShgMember: false,
+  };
+}
 
 /**
  * Deterministic Gramin Credit Readiness Score Calculator

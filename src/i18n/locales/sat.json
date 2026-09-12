@@ -152,6 +152,10 @@
     "dobError": "ᱫᱷᱟᱹᱭ ᱠᱟᱛᱮ ᱢᱤᱫᱴᱟᱹᱝ ᱴᱷᱤᱠ ᱡᱟᱱᱟᱢ ᱢᱟᱺᱦᱤ ᱵᱟᱪᱷᱟᱣ ᱢᱮ (ᱩᱢᱮᱨ 18-100 ᱥᱮᱨᱢᱟ)",
     "gender": "ᱠᱚᱲᱟ/ᱠᱩᱲᱤ",
     "selectGender": "ᱠᱚᱲᱟ/ᱠᱩᱲᱤ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
+    "genderOptions": {
+      "male": "ᱠᱚᱲᱟ",
+      "female": "ᱠᱩᱲᱤ"
+    },
     "employeeCount": "ᱠᱟᱹᱢᱤᱭᱟᱹ ᱠᱚᱣᱟᱜ ᱮᱞ",
     "employeeCountPlaceholder": "ᱡᱚᱠᱷᱚᱱ 2",
     "employeeCountHint": "ᱟᱡ ᱛᱮ ᱥᱮᱞᱮᱫ ᱠᱟᱛᱮ",

@@ -44,7 +44,10 @@ export function matchSchemesForProfile(
     }
 
     // 2. Business Category & Activity Alignment
-    const targetTypes = (scheme.targetBusinessTypes || []).map((t) => t.toLowerCase());
+    const targetTypes = (scheme.targetBusinessTypes || []).map((t) => String(t).toLowerCase()).filter(Boolean);
+    // A scheme that names no business types is open to every trade. Demanding a
+    // match against an empty list made such schemes invisible to everyone.
+    const isOpenToAllTypes = targetTypes.length === 0;
 
     const isExactTypeMatch = targetTypes.some(
       (t) =>
@@ -66,6 +69,10 @@ export function matchSchemesForProfile(
       score += 25;
       hasBusinessAlignment = true;
       matchReasons.push(`Applicable to ${profile.businessCategory || 'your industry sector'}`);
+    } else if (isOpenToAllTypes) {
+      score += 20;
+      hasBusinessAlignment = true;
+      matchReasons.push('Open to all business types');
     }
 
     // If there is no alignment with the scheme's target sectors, do not match
@@ -74,7 +81,9 @@ export function matchSchemesForProfile(
     }
 
     // 3. Business Stage Alignment (New vs Existing)
-    const schemeStatus = scheme.eligibility.businessStatus || 'both';
+    // Optional chaining throughout: a scheme published without an eligibility
+    // or benefits block used to throw here and take the whole list down with it.
+    const schemeStatus = scheme.eligibility?.businessStatus || 'both';
     if (
       schemeStatus === 'both' ||
       (schemeStatus === 'new' && userStatus === 'planning') ||
@@ -85,18 +94,20 @@ export function matchSchemesForProfile(
     }
 
     // 4. Rural & Priority Category Boost
-    if (isRural && (scheme.benefits.maxSubsidyPercent || 0) >= 25) {
+    const maxSubsidyPercent = scheme.benefits?.maxSubsidyPercent || 0;
+    const maxFundingAmount = scheme.benefits?.maxFundingAmount || 0;
+    if (isRural && maxSubsidyPercent >= 25) {
       score += 10;
-      matchReasons.push(`Enhanced ${scheme.benefits.maxSubsidyPercent}% subsidy for rural entrepreneurs`);
+      matchReasons.push(`Enhanced ${maxSubsidyPercent}% subsidy for rural entrepreneurs`);
     }
 
     // Filter by relevance threshold (minimum 50 points required for high confidence match)
     if (score >= 50) {
       let estimatedBenefit = '';
-      if ((scheme.benefits.maxSubsidyPercent || 0) > 0) {
-        estimatedBenefit = `Up to ${scheme.benefits.maxSubsidyPercent}% Government Subsidy`;
-      } else if (scheme.benefits.maxFundingAmount) {
-        estimatedBenefit = `Collateral-free loan up to ₹${(scheme.benefits.maxFundingAmount / 100000).toFixed(1)} Lakhs`;
+      if (maxSubsidyPercent > 0) {
+        estimatedBenefit = `Up to ${maxSubsidyPercent}% Government Subsidy`;
+      } else if (maxFundingAmount) {
+        estimatedBenefit = `Collateral-free loan up to ₹${(maxFundingAmount / 100000).toFixed(1)} Lakhs`;
       }
 
       results.push({

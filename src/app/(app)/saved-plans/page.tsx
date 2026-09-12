@@ -11,6 +11,7 @@ import Card from '@/components/ui/Card';
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { getSavedPlans, deletePlan } from '@/lib/firestore/plans';
+import { getUserProfile } from '@/lib/firestore/users';
 import { downloadPlanPdf } from '@/lib/pdf/export-plan-pdf';
 import type { Plan } from '@/types';
 
@@ -60,7 +61,10 @@ export default function SavedPlansPage() {
 
   const handleDownloadPlan = async (plan: Plan) => {
     try {
+      // For the applicant's name and readiness score in the report.
+      const profile = user ? await getUserProfile(user.uid).catch(() => null) : null;
       await downloadPlanPdf({
+        profile,
         inputs: plan.inputs,
         calculated: plan.calculatedValues,
         narrative: plan.aiNarrative || {

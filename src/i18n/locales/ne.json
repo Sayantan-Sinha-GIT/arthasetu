@@ -152,6 +152,12 @@
     "dobError": "कृपया मान्य जन्म मिति चयन गर्नुहोस् (उमेर १८-१०० वर्ष)",
     "gender": "लिङ्ग",
     "selectGender": "लिङ्ग चयन गर्नुहोस्",
+    "genderOptions": {
+      "male": "पुरुष",
+      "female": "महिला",
+      "other": "तेस्रो लिङ्गी / अन्य",
+      "preferNot": "भन्न चाहन्न"
+    },
     "employeeCount": "कर्मचारीहरूको संख्या",
     "employeeCountPlaceholder": "उदा. २",
     "employeeCountHint": "तपाईं सहित",
@@ -274,7 +280,14 @@
     "disclaimer": "यो स्कोर योजना उद्देश्यका लागि मात्र एक आन्तरिक वित्तीय readiness अनुमान हो र CIBIL, Experian, CRIF, वा Equifax बाट औपचारिक क्रेडिट स्कोर होइन। ArthaSetu ले वित्तीय संस्था द्वारा ऋण स्वीकृतिको ग्यारेन्टी गर्दैन।",
     "readScore": "स्कोर पढ्नुहोस्",
     "ttsSummary": "तपाईंको ग्रामीण ऋण Readiness स्कोर ९०० मा {{score}} हो। वर्गीकरण {{band}} हो। {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "वित्तीय प्रोफाइल पूरा गर्नुहोस् →"
+    "completeProfileCta": "वित्तीय प्रोफाइल पूरा गर्नुहोस् →",
+    "bands": {
+      "excellent": "उत्कृष्ट तयारी",
+      "good": "राम्रो तयारी",
+      "fair": "ठिकै तयारी",
+      "needsImprovement": "सुधार आवश्यक",
+      "earlyStage": "प्रारम्भिक चरण"
+    }
   },
   "profile": {
     "title": "व्यापार प्रोफाइल",

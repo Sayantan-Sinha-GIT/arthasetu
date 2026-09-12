@@ -73,7 +73,8 @@ export async function generateContent(
           model: targetModel,
           contents: userMessage,
           config,
-        })
+        }),
+      targetModel
     );
 
     const text = response.text;
@@ -100,17 +101,21 @@ export async function generateContent(
     }
   }
 
+  // Flash out of quota a moment ago: begin on Flash-Lite, which has its own.
+  const firstModel = pickGeminiModel(model);
+
   try {
-    return await executeGeneration(model);
+    return await executeGeneration(firstModel);
   } catch (primaryError) {
     if (options?.disableFallback) throw primaryError;
 
-    // Tier 2: the lighter Gemini model. Skipped entirely on a rate limit —
-    // both models draw on the same project quota, so trying the sibling can
-    // only re-confirm the exhaustion, and every second spent doing so is taken
-    // from the budget the working provider needs.
-    if (model !== GEMINI_MODELS.FLASH_LITE && !isRateLimitError(primaryError)) {
-      console.warn(`⚠️ Primary Gemini model (${model}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, primaryError);
+    // Tier 2: Flash-Lite. Gemini's free-tier limits are counted per model, not
+    // per project — the usage dashboard shows separate counters for Flash and
+    // Flash-Lite — so a rate limit on Flash is exactly when Flash-Lite can still
+    // answer. This used to be skipped on a rate limit, on the mistaken belief
+    // that both shared one quota, which sent traffic to Groq sooner than needed.
+    if (firstModel !== GEMINI_MODELS.FLASH_LITE && !isModelCoolingOff(GEMINI_MODELS.FLASH_LITE)) {
+      console.warn(`⚠️ Gemini model (${firstModel}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, getErrorMessage(primaryError, 'unknown'));
       try {
         return await executeGeneration(GEMINI_MODELS.FLASH_LITE);
       } catch (liteError) {
@@ -118,18 +123,24 @@ export async function generateContent(
       }
     }
 
-    // Already on Flash-Lite and it failed — go straight to the other provider.
+    // Already on Flash-Lite, or it is out of quota too — go to the other provider.
     return await tryGroqFallback(systemInstruction, userMessage, options, primaryError);
   }
+}
+
+/** The requested model, unless it is out of quota and Flash-Lite is not. */
+function pickGeminiModel(model: string): string {
+  return model !== GEMINI_MODELS.FLASH_LITE && isModelCoolingOff(model) && !isModelCoolingOff(GEMINI_MODELS.FLASH_LITE)
+    ? GEMINI_MODELS.FLASH_LITE
+    : model;
 }
 
 /**
  * Tier 3: a different provider entirely.
  *
- * Both Gemini models draw on the same free-tier project quota — 20 requests a
- * day — so when one is exhausted the other usually is too, and failing over
- * between them buys nothing. Groq is a separate account with far more
- * headroom, which is what actually keeps the app answering.
+ * Reached once both Gemini models have failed or are out of quota (each has its
+ * own small free-tier allowance). Groq is a separate account with far more
+ * headroom, which is what keeps the app answering after that.
  */
 async function tryGroqFallback(
   systemInstruction: string,
@@ -176,7 +187,8 @@ export async function* generateContentStream(
             temperature: options?.temperature ?? 0.7,
             maxOutputTokens: options?.maxOutputTokens ?? 4096,
           },
-        })
+        }),
+      targetModel
     );
   };
 
@@ -302,7 +314,8 @@ export async function* generateAgentStream(
     const initialMessage = lastMessage?.parts?.[0]?.text ?? (typeof userMessage === 'string' ? userMessage : '');
 
     let activeStream = await retryWithBackoff(() =>
-      chat.sendMessageStream({ message: initialMessage })
+      chat.sendMessageStream({ message: initialMessage }),
+      targetModel
     );
 
     let maxIterations = 5;
@@ -347,7 +360,8 @@ export async function* generateAgentStream(
       );
 
       activeStream = await retryWithBackoff(() =>
-        chat.sendMessageStream({ message: responses })
+        chat.sendMessageStream({ message: responses }),
+        targetModel
       );
     }
   };
@@ -369,26 +383,34 @@ export async function* generateAgentStream(
     }
   }
 
+  const firstModel = pickGeminiModel(model);
+  // Providers may only be switched before the user has seen any text. After
+  // that a failure is reported, not papered over with a second, different answer.
+  let yielded = false;
   try {
-    for await (const chunk of withFirstTokenDeadline(runAgent(model), FIRST_TOKEN_TIMEOUT_MS)) {
+    for await (const chunk of withFirstTokenDeadline(runAgent(firstModel), FIRST_TOKEN_TIMEOUT_MS)) {
+      yielded = true;
       yield chunk;
     }
     return;
   } catch (primaryError) {
-    if (options?.disableFallback) throw primaryError;
+    if (options?.disableFallback || yielded) throw primaryError;
 
-    // As above: on a rate limit the sibling model shares the spent quota, so it
-    // is skipped and the request goes straight to a different provider.
-    if (model !== GEMINI_MODELS.FLASH_LITE
-        && !isRateLimitError(primaryError)
-        && !isFirstTokenTimeout(primaryError)) {
-      console.warn(`⚠️ Primary Gemini agent (${model}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, primaryError);
+    // As above: Flash-Lite has its own quota, so it is tried when Flash is rate
+    // limited. Not after a first-token timeout, though — that model was slow,
+    // not refused, and the time left belongs to the other provider.
+    if (firstModel !== GEMINI_MODELS.FLASH_LITE
+        && !isFirstTokenTimeout(primaryError)
+        && !isModelCoolingOff(GEMINI_MODELS.FLASH_LITE)) {
+      console.warn(`⚠️ Gemini agent (${firstModel}) failed. Failing over to ${GEMINI_MODELS.FLASH_LITE}...`, getErrorMessage(primaryError, 'unknown'));
       try {
-        for await (const chunk of runAgent(GEMINI_MODELS.FLASH_LITE)) {
+        for await (const chunk of withFirstTokenDeadline(runAgent(GEMINI_MODELS.FLASH_LITE), FIRST_TOKEN_TIMEOUT_MS)) {
+          yielded = true;
           yield chunk;
         }
         return;
       } catch (liteError) {
+        if (yielded) throw liteError;
         yield* groqAgentFallback(systemInstruction, history, tools, toolHandler, options, liteError);
         return;
       }
@@ -399,11 +421,8 @@ export async function* generateAgentStream(
 }
 
 /**
- * Last resort for the advisor: run the same tool loop on Groq.
- *
- * Both Gemini models share one 20-a-day project quota, so when the primary is
- * exhausted the fallback almost always is too — without a different provider
- * the advisor simply stops answering.
+ * Last resort for the advisor: run the same tool loop on Groq, once both
+ * Gemini models have failed or are out of their separate free-tier quotas.
  */
 async function* groqAgentFallback(
   systemInstruction: string,
@@ -443,11 +462,53 @@ OFF-TOPIC DISALLOWED TOPICS:
  * Fast query classifier for AI Advisor using Gemini Flash-Lite.
  * Returns 'ON_TOPIC' or 'OFF_TOPIC'.
  */
+/** A conversation turn, as much of it as the scope check needs. */
+export interface ClassifierTurn {
+  role: string;
+  content: string;
+  id?: string;
+}
+
+/**
+ * Personal and money details people give when asked for them. None of these
+ * read as business on their own — "23 aug 1990" — which is exactly why a scope
+ * check that saw one message at a time turned them away.
+ */
+const PROFILE_DETAIL_PATTERNS: RegExp[] = [
+  /\b\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}\b/,
+  /\b\d{4}-\d{1,2}-\d{1,2}\b/,
+  /\b\d{1,2}(st|nd|rd|th)?\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s+\d{2,4}\b/i,
+  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}(st|nd|rd|th)?,?\s+\d{4}\b/i,
+  /\b(date of birth|dob|born|birthday|my age|years old|my name is|pin ?code|gender|female|male)\b/i,
+  /₹|\brupees?\b|\blakhs?\b|\bcrores?\b|\bhazaa?r\b|\bemi\b|\bloans?\b|\bsavings?\b/i,
+  /\b[1-9]\d{5}\b/,
+  /जन्म|उम्र|आयु|मेरा नाम|रुपये|रुपए|लाख|हजार|টাকা|হাজার|লাখ|জন্ম|বয়স|আমার নাম/,
+];
+
 export async function classifyAdvisorQuery(
-  userMessage: string
+  userMessage: string,
+  recentHistory: ClassifierTurn[] = []
 ): Promise<'ON_TOPIC' | 'OFF_TOPIC'> {
   const trimmed = userMessage.trim();
   if (!trimmed) return 'ON_TOPIC';
+
+  // Two cases are settled without a model call, which is also quicker and
+  // spares the free quota.
+  //
+  // 1. A reply to a question the advisor just asked is on topic by definition.
+  //    "date of birth is 23 aug 1990", sent after the advisor asked for exactly
+  //    that, was refused because this check only ever saw the one message. The
+  //    page's own greeting does not count: that was not the advisor asking.
+  const lastAdvisorTurn = [...recentHistory].reverse().find(
+    (turn) => turn?.role === 'assistant' && turn.id !== 'welcome-1' && String(turn.content || '').trim().length > 0
+  );
+  if (lastAdvisorTurn && /[?？؟]/.test(lastAdvisorTurn.content) && trimmed.split(/\s+/).length <= 40) {
+    return 'ON_TOPIC';
+  }
+  // 2. Personal or money details, whatever came before.
+  if (PROFILE_DETAIL_PATTERNS.some((pattern) => pattern.test(trimmed))) {
+    return 'ON_TOPIC';
+  }
 
   const systemInstruction = `You are a strict binary scope classifier for ArthaSetu, a dedicated Indian rural micro-enterprise and business loan advisor.
 Determine whether the user query is ON_TOPIC or OFF_TOPIC based on the following scope:
@@ -456,6 +517,8 @@ ${ADVISOR_SCOPE_RULES}
 Classification Rules:
 - If the user asks about starting a business, raising poultry, tailoring, dairy, grocery, tea stall, handicrafts, government schemes, loans, profit, pricing, marketing, suppliers, or gives a polite greeting/thanks -> output strictly "ON_TOPIC".
 - If the user asks for programming code, algorithms (e.g., linked list, binary tree), homework, essays, general trivia, movies, sports, or non-business topics -> output strictly "OFF_TOPIC".
+- If the user is answering or following up on the advisor's previous message (their name, age, date of birth, gender,
+  family, location, money, experience, loans, or a yes/no), output "ON_TOPIC".
 - When the query is short, vague or ambiguous — a bare mention of money, prices, "kitna", "how much", an unclear
   fragment, or anything you are not confident about — output "ON_TOPIC".
 - Output ONLY the single word "ON_TOPIC" or "OFF_TOPIC" with no markdown, punctuation, or explanation.
@@ -477,7 +540,9 @@ requests anyway. When in doubt, answer "ON_TOPIC".`;
   // ceiling stays as a backstop: this check must never be the reason a
   // legitimate question times out, so overrunning it fails open.
   const CLASSIFIER_TIMEOUT_MS = 6000;
-  const prompt = `User query: "${trimmed}"`;
+  const prompt = lastAdvisorTurn
+    ? `Advisor's previous message (the user may be replying to it): "${lastAdvisorTurn.content.slice(-400)}"\nUser query: "${trimmed}"`
+    : `User query: "${trimmed}"`;
   const classifyOnce = () =>
     isGroqConfigured()
       // Not 10 tokens, despite the answer being one word: Groq's gpt-oss models
@@ -566,25 +631,32 @@ function isTransientError(error: unknown): boolean {
 }
 
 /**
- * Once Gemini reports exhausted quota, every later call in that window will hit
- * the same wall. Remembering it lets subsequent requests skip Gemini and answer
- * from Groq immediately, instead of each one paying the discovery cost again.
- * Short enough that a quota reset or a raised limit is picked up on its own.
+ * Once a Gemini model reports exhausted quota, every later call to it in that
+ * window hits the same wall. Remembering it — per model, because Flash and
+ * Flash-Lite have separate quotas — lets later requests skip straight to the
+ * model or provider that can still answer, instead of each one paying the
+ * discovery cost again. Short enough that a quota reset is picked up on its own.
  */
 const RATE_LIMIT_COOLOFF_MS = 60_000;
-let geminiCoolingOffUntil = 0;
+const coolingOffUntil = new Map<string, number>();
 
-function noteGeminiRateLimited(): void {
-  geminiCoolingOffUntil = Date.now() + RATE_LIMIT_COOLOFF_MS;
+function noteGeminiRateLimited(model: string): void {
+  coolingOffUntil.set(model, Date.now() + RATE_LIMIT_COOLOFF_MS);
 }
 
-/** True while Gemini is known to be out of quota. */
+/** True while this Gemini model is known to be out of quota. */
+export function isModelCoolingOff(model: string): boolean {
+  return Date.now() < (coolingOffUntil.get(model) ?? 0);
+}
+
+/** True while every Gemini model is known to be out of quota. */
 export function isGeminiCoolingOff(): boolean {
-  return Date.now() < geminiCoolingOffUntil;
+  return isModelCoolingOff(GEMINI_MODELS.FLASH) && isModelCoolingOff(GEMINI_MODELS.FLASH_LITE);
 }
 
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
+  model: string,
   retries = MAX_RETRIES
 ): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -592,9 +664,9 @@ async function retryWithBackoff<T>(
       return await fn();
     } catch (error: unknown) {
       if (isRateLimitError(error)) {
-        // Do not retry, and record it so the next request goes straight to the
-        // other provider rather than rediscovering this.
-        noteGeminiRateLimited();
+        // Do not retry, and record it so the next request skips this model
+        // rather than rediscovering this.
+        noteGeminiRateLimited(model);
         throw error;
       }
 

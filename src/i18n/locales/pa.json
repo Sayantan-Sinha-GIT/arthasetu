@@ -152,6 +152,12 @@
     "dobError": "ਕਿਰਪਾ ਕਰਕੇ ਜਨਮ ਦੀ ਸਹੀ ਮਿਤੀ ਚੁਣੋ (ਉਮਰ 18-100 ਸਾਲ)",
     "gender": "ਲਿੰਗ",
     "selectGender": "ਲਿੰਗ ਚੁਣੋ",
+    "genderOptions": {
+      "male": "ਮਰਦ",
+      "female": "ਔਰਤ",
+      "other": "ਟ੍ਰਾਂਸਜੈਂਡਰ / ਹੋਰ",
+      "preferNot": "ਦੱਸਣਾ ਨਹੀਂ ਚਾਹੁੰਦੇ"
+    },
     "employeeCount": "ਕਰਮਚਾਰੀਆਂ ਦੀ ਗਿਣਤੀ",
     "employeeCountPlaceholder": "ਉਦਾਹਰਨ: 2",
     "employeeCountHint": "ਆਪਣੇ ਆਪ ਸਮੇਤ",
@@ -274,7 +280,14 @@
     "disclaimer": "ਇਹ ਸਕੋਰ ਸਿਰਫ਼ ਯੋਜਨਾਬੰਦੀ ਦੇ ਉਦੇਸ਼ਾਂ ਲਈ ਇੱਕ ਅੰਦਰੂਨੀ ਵਿੱਤੀ ਤਿਆਰੀ ਦਾ ਅਨੁਮਾਨ ਹੈ ਅਤੇ CIBIL, Experian, CRIF, ਜਾਂ Equifax ਤੋਂ ਰਸਮੀ ਕ੍ਰੈਡਿਟ ਸਕੋਰ ਨਹੀਂ ਹੈ। ArthaSetu ਵਿੱਤੀ ਸੰਸਥਾਵਾਂ ਦੁਆਰਾ ਕਰਜ਼ੇ ਦੀ ਮਨਜ਼ੂਰੀ ਦੀ ਗਰੰਟੀ ਨਹੀਂ ਦਿੰਦਾ ਹੈ।",
     "readScore": "ਸਕੋਰ ਪੜ੍ਹੋ",
     "ttsSummary": "Twada Gramin Credit Readiness Score 900 ਵਿੱਚੋਂ {{score}} ਹੈ। ਵਰਗੀਕਰਨ {{band}} ਹੈ। {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "ਵਿੱਤੀ ਪ੍ਰੋਫਾਈਲ ਪੂਰਾ ਕਰੋ →"
+    "completeProfileCta": "ਵਿੱਤੀ ਪ੍ਰੋਫਾਈਲ ਪੂਰਾ ਕਰੋ →",
+    "bands": {
+      "excellent": "ਸ਼ਾਨਦਾਰ ਤਿਆਰੀ",
+      "good": "ਚੰਗੀ ਤਿਆਰੀ",
+      "fair": "ਠੀਕ-ਠਾਕ ਤਿਆਰੀ",
+      "needsImprovement": "ਸੁਧਾਰ ਦੀ ਲੋੜ",
+      "earlyStage": "ਸ਼ੁਰੂਆਤੀ ਪੜਾਅ"
+    }
   },
   "profile": {
     "title": "Business Profile",

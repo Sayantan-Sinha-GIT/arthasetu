@@ -24,6 +24,7 @@ import {
   GENDERS,
 } from '@/lib/firestore/users';
 import { getDistrictOptions, getDistrictsByState } from '@/lib/constants/districts';
+import { GENDER_KEYS } from '@/lib/constants/profile-options';
 import {
   lookupPincode,
   fetchPincodeInfo,
@@ -297,7 +298,11 @@ export default function ProfilePage() {
     : [{ value: '', label: 'Select a state first' }];
   const categoryOptions = [{ value: '', label: t.onboarding.selectCategory }, ...BUSINESS_CATEGORIES.map((c) => ({ value: c, label: c }))];
   const experienceOptions = [{ value: '', label: t.onboarding.selectExperience }, ...EXPERIENCE_LEVELS.map((exp) => ({ value: exp, label: exp }))];
-  const genderOptions = [{ value: '', label: t.onboarding.selectGender }, ...GENDERS.map((g) => ({ value: g, label: g }))];
+  // Stored in English, shown in the user's language.
+  const genderOptions = [
+    { value: '', label: t.onboarding.selectGender },
+    ...GENDERS.map((g) => ({ value: g, label: (t.onboarding.genderOptions as Record<string, string> | undefined)?.[GENDER_KEYS[g]] || g })),
+  ];
   const languageOptions = SUPPORTED_LANGUAGES.map((l) => ({ value: l.code, label: `${l.nativeName} (${l.name})${l.isMachineTranslated ? ' — AI' : ''}` }));
   const lenderOptions = [
     { value: 'bank', label: t.graminScore?.bank || 'Commercial Bank' },
@@ -313,7 +318,6 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <main className="relative overflow-hidden flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 animate-fade-in">
-        <AmbientBackground variant="subtle" />
         <AmbientBackground variant="subtle" />
         {/* Header */}
         <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 bg-[#0B0806] border border-[#3A291D] shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 z-10">

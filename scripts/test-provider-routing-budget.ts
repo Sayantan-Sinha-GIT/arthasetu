@@ -10,8 +10,9 @@
  *     ladder sits in front of the provider failover, so the request spent its
  *     whole budget proving Gemini was unavailable and was killed by the 60s
  *     serverless ceiling before Groq, which was configured and idle, was asked.
- *  2. On a rate limit the second Gemini model was tried anyway, though both
- *     draw on the same project quota, so it could only fail too.
+ *  2. (Revised later.) It was believed both Gemini models shared one project
+ *     quota, so Flash-Lite was skipped on a rate limit. The usage dashboard
+ *     shows the limits are per model, so Flash-Lite is now tried first.
  *  3. Nothing bounded how long Gemini could produce silence. Measured latency
  *     was 40s to 120s against that 60s ceiling.
  *  4. The scope classifier — an off-topic guard — shared the main chain, so its
@@ -57,9 +58,16 @@ check('a rate limit is remembered',
   'without this every request pays the discovery cost again');
 check('the cool-off routes straight to the other provider',
   /isGeminiCoolingOff\(\)[\s\S]{0,160}?isGroqConfigured\(\)/.test(gemini));
-check('the sibling Gemini model is skipped on a rate limit',
-  (gemini.match(/!isRateLimitError\(primaryError\)/g) || []).length >= 2,
-  'both models share one project quota, so the sibling can only fail too');
+// Corrected: Gemini's free-tier limits are per model, not per project, so
+// Flash-Lite is the right next step when Flash is rate limited.
+check('Flash-Lite, with its own quota, is tried when Flash is rate limited',
+  !/!isRateLimitError\(primaryError\)/.test(gemini) &&
+    (gemini.match(/!isModelCoolingOff\(GEMINI_MODELS\.FLASH_LITE\)/g) || []).length >= 2,
+  'skipping it sends traffic to the fallback provider while a working Gemini model sits idle');
+check('the rate-limit memory is kept per model',
+  /noteGeminiRateLimited\(model: string\)/.test(gemini) && /new Map<string, number>\(\)/.test(gemini));
+check('providers are never switched after text has been shown',
+  /if \(options\?\.disableFallback \|\| yielded\) throw primaryError;/.test(gemini));
 
 console.log('\n— nothing may run out the serverless clock —');
 

@@ -152,6 +152,10 @@
     "dobError": "صحیح تٲریخ لِکھِو",
     "gender": "جِنٛس",
     "selectGender": "جِنٛس مُنتَخَب کَرِو",
+    "genderOptions": {
+      "male": "مرد",
+      "female": "زنانہ"
+    },
     "employeeCount": "مُلٲزِمَن ہُنٛد تِعداد",
     "employeeCountPlaceholder": "مِثال: 2",
     "employeeCountHint": "تُوٚہِ سٟتؠ",

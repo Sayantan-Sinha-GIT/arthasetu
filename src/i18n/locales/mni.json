@@ -135,6 +135,10 @@
     "dobError": "চাদীবা পোকপা কুমহৈ অমদি খনগৎউ (চহি 18-100 ফাওবা)",
     "gender": "নুপা/নুপী",
     "selectGender": "নুপা/নুপী মখল খনগৎউ",
+    "genderOptions": {
+      "male": "নুপা",
+      "female": "নুপী"
+    },
     "employeeCount": "থবক তৌরিবশিংগী মশিং",
     "employeeCountPlaceholder": "দুদাহ ঐচমবা মখল: 2",
     "employeeCountHint": "নহাক্না মশানা চংশিনবা য়াওনা",

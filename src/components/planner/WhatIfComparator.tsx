@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { classifyDscr, type DscrBand } from '@/lib/calculator';
+import {
+  calculateFinancialPlan,
+  classifyDscr,
+  DEFAULT_LOAN_INTEREST_RATE_PERCENT,
+  type DscrBand,
+} from '@/lib/calculator';
 import Card from '@/components/ui/Card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { PlanInputs } from '@/types';
@@ -39,10 +44,15 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
   // Custom scenario adjustment sliders
   const [revenueDeltaPct, setRevenueDeltaPct] = useState(0); // -50% to +100%
   const [costsDeltaPct, setCostsDeltaPct] = useState(0); // -30% to +50%
-  const [customInterestRate, setCustomInterestRate] = useState(inputs.loanInterestRatePercent || 10.5);
+  const baseInterestRate = inputs.loanInterestRatePercent ?? DEFAULT_LOAN_INTEREST_RATE_PERCENT;
+  const [customInterestRate, setCustomInterestRate] = useState(baseInterestRate);
   const [capitalSubsidyPct, setCapitalSubsidyPct] = useState(0); // 0% to 40%
 
-  // Helper to compute any scenario metrics deterministically
+  // Every scenario runs through the same calculator as the plan itself, with its
+  // inputs scaled. This used to be a separate copy of the arithmetic that
+  // disagreed with the plan on the same page: 10.5% interest where the plan used
+  // 9.5%, a 30% growth default where the plan used 35%, setup costs left out of
+  // expansions, and no estimate of an existing business's running expenses.
   const computeScenario = (
     title: string,
     badge: string,
@@ -52,55 +62,36 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
     interestRate: number,
     subsidyPercent: number
   ): ScenarioResult => {
-    // 1. Adjusted Monthly Revenue
-    const monthlyGrossRevenue = Math.round(
-      (inputs.planType === 'existing_expansion'
-        ? (inputs.currentMonthlyRevenue || 0) * (1 + (inputs.projectedRevenueIncreasePercent || 30) / 100)
-        : (inputs.unitsSoldPerMonth || 1) * (inputs.unitPrice || 0)) * revMultiplier
-    );
+    const scale = (value: number | undefined, factor: number) => (value === undefined ? undefined : value * factor);
+    const capexKept = 1 - subsidyPercent / 100;
+    const scenario = calculateFinancialPlan({
+      ...inputs,
+      // Revenue
+      unitPrice: scale(inputs.unitPrice, revMultiplier) as number,
+      otherMonthlyRevenue: scale(inputs.otherMonthlyRevenue, revMultiplier) as number,
+      currentMonthlyRevenue: scale(inputs.currentMonthlyRevenue, revMultiplier),
+      // Costs that move with volume and prices
+      monthlyRawMaterials: scale(inputs.monthlyRawMaterials, costMultiplier) as number,
+      monthlyTransportPackaging: scale(inputs.monthlyTransportPackaging, costMultiplier) as number,
+      currentMonthlyExpenses: scale(inputs.currentMonthlyExpenses, costMultiplier),
+      // A capital subsidy lowers what has to be financed
+      equipmentCost: scale(inputs.equipmentCost, capexKept) as number,
+      setupCost: scale(inputs.setupCost, capexKept) as number,
+      initialInventory: scale(inputs.initialInventory, capexKept) as number,
+      workingCapitalReserve: scale(inputs.workingCapitalReserve, capexKept) as number,
+      expansionEquipmentCost: scale(inputs.expansionEquipmentCost, capexKept),
+      expansionWorkingCapital: scale(inputs.expansionWorkingCapital, capexKept),
+      loanInterestRatePercent: interestRate,
+    });
 
-    // 2. Adjusted OPEX
-    const rawMaterials = (inputs.monthlyRawMaterials || 0) * costMultiplier;
-    const rentUtilities = inputs.monthlyRentUtilities || 0;
-    const labor = inputs.monthlyLabor || 0;
-    const transport = (inputs.monthlyTransportPackaging || 0) * costMultiplier;
-    const maintenance = inputs.monthlyMaintenanceOther || 0;
-    const monthlyOperatingCosts = Math.round(rawMaterials + rentUtilities + labor + transport + maintenance);
+    const monthlyGrossRevenue = scenario.monthlyGrossRevenue;
+    const monthlyOperatingCosts = scenario.monthlyOperatingExpenses;
+    const monthlyLoanEmi = scenario.monthlyLoanEmi;
+    const monthlyNetProfit = scenario.monthlyNetProfit;
+    const profitMarginPercent = scenario.profitMarginPercent;
+    const breakEvenMonths = scenario.breakEvenMonths;
 
-    // 3. Adjusted Initial Investment & Subsidy
-    const baseCapEx =
-      inputs.planType === 'existing_expansion'
-        ? (inputs.expansionEquipmentCost || 0) + (inputs.expansionWorkingCapital || 0)
-        : (inputs.equipmentCost || 0) + (inputs.setupCost || 0) + (inputs.initialInventory || 0) + (inputs.workingCapitalReserve || 0);
-
-    const subsidyAmount = Math.round(baseCapEx * (subsidyPercent / 100));
-    const effectiveCapEx = Math.max(0, baseCapEx - subsidyAmount);
-    const fundingGap = Math.max(0, effectiveCapEx - (inputs.availableSavings || 0));
-
-    // 4. Adjusted Loan EMI
-    let monthlyLoanEmi = 0;
-    const tenureMonths = inputs.loanTenureMonths || 36;
-    if (fundingGap > 0 && interestRate > 0) {
-      const monthlyRate = interestRate / 12 / 100;
-      monthlyLoanEmi = Math.round(
-        (fundingGap * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) /
-          (Math.pow(1 + monthlyRate, tenureMonths) - 1)
-      );
-    }
-
-    // 5. Net Profit (PAT)
-    const monthlyNetProfit = monthlyGrossRevenue - monthlyOperatingCosts - monthlyLoanEmi;
-    const profitMarginPercent =
-      monthlyGrossRevenue > 0 ? Math.round((monthlyNetProfit / monthlyGrossRevenue) * 100) : 0;
-
-    // 6. Break-Even Payback Period
-    let breakEvenMonths: number | null = null;
-    if (monthlyNetProfit > 0 && effectiveCapEx > 0) {
-      breakEvenMonths = Math.ceil(effectiveCapEx / monthlyNetProfit);
-    }
-
-    // 7. DSCR (Debt Service Coverage Ratio)
-    // Operating Cash Flow / Loan EMI
+    // DSCR (Debt Service Coverage Ratio): Operating Cash Flow / Loan EMI
     const operatingCashFlow = monthlyGrossRevenue - monthlyOperatingCosts;
     const dscr = monthlyLoanEmi > 0 ? Number((operatingCashFlow / monthlyLoanEmi).toFixed(2)) : 9.99;
 
@@ -135,7 +126,7 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
     'primary',
     1.0,
     1.0,
-    inputs.loanInterestRatePercent || 10.5,
+    baseInterestRate,
     0
   );
 
@@ -145,7 +136,7 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
     'warning',
     0.8,
     1.1,
-    (inputs.loanInterestRatePercent || 10.5) + 1.5,
+    baseInterestRate + 1.5,
     0
   );
 
@@ -155,7 +146,7 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
     'success',
     1.25,
     0.95,
-    inputs.loanInterestRatePercent || 10.5,
+    baseInterestRate,
     25
   );
 
@@ -200,7 +191,7 @@ export default function WhatIfComparator({ inputs }: WhatIfComparatorProps) {
             onClick={() => {
               setRevenueDeltaPct(0);
               setCostsDeltaPct(0);
-              setCustomInterestRate(inputs.loanInterestRatePercent || 10.5);
+              setCustomInterestRate(baseInterestRate);
               setCapitalSubsidyPct(0);
             }}
             className="text-xs text-primary font-bold hover:underline"

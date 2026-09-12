@@ -1,5 +1,52 @@
 import jsPDF from 'jspdf';
+import { DEFAULT_LOAN_INTEREST_RATE_PERCENT, DEFAULT_LOAN_TENURE_MONTHS } from '@/lib/calculator';
+import { calculateGraminScore, graminInputsFromProfile } from '@/lib/gramin-score';
+import { GENDER_KEYS, GRAMIN_BAND_KEYS } from '@/lib/constants/profile-options';
+import { detectScriptLanguage } from '@/lib/lang/detectScript';
 import type { PlanInputs, CalculatedValues, UserProfile } from '@/types';
+
+/** Which Noto font covers each language's script. Anything unlisted prints in Helvetica. */
+const SCRIPT_FONTS: Array<{ langs: string[]; file: string; name: string }> = [
+  { langs: ['hi', 'mr', 'ne', 'sa', 'mai', 'doi', 'brx', 'kok'], file: 'NotoSansDevanagari-Regular.ttf', name: 'NotoSansDevanagari' },
+  // Manipuri is written in Bengali script
+  { langs: ['bn', 'as', 'mni'], file: 'NotoSansBengali-Regular.ttf', name: 'NotoSansBengali' },
+  // Santali is written in Ol Chiki; no other font has those glyphs
+  { langs: ['sat'], file: 'NotoSansOlChiki-Regular.ttf', name: 'NotoSansOlChiki' },
+  // Odia uses its own distinct script — NOT Bengali glyphs
+  { langs: ['or'], file: 'NotoSansOriya-Regular.ttf', name: 'NotoSansOriya' },
+  { langs: ['ta'], file: 'NotoSansTamil-Regular.ttf', name: 'NotoSansTamil' },
+  { langs: ['te'], file: 'NotoSansTelugu-Regular.ttf', name: 'NotoSansTelugu' },
+  { langs: ['kn'], file: 'NotoSansKannada-Regular.ttf', name: 'NotoSansKannada' },
+  { langs: ['ml'], file: 'NotoSansMalayalam-Regular.ttf', name: 'NotoSansMalayalam' },
+  { langs: ['gu'], file: 'NotoSansGujarati-Regular.ttf', name: 'NotoSansGujarati' },
+  { langs: ['pa'], file: 'NotoSansGurmukhi-Regular.ttf', name: 'NotoSansGurmukhi' },
+  { langs: ['ur', 'sd', 'ks'], file: 'NotoSansArabic-Regular.ttf', name: 'NotoSansArabic' },
+];
+
+/**
+ * Characters Helvetica can print. jsPDF's built-in fonts are WinAnsi-only, and
+ * handed anything else — "₹", or the non-breaking hyphen models write in
+ * "pre‑booking" — they silently re-encode the whole line at two bytes a letter.
+ * That printed "₹1,625" as "¹1,625", which reads as 11,625 on a loan document,
+ * and spread each such line out letter by letter until it ran off the page.
+ */
+const WINANSI_EXTRAS = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ');
+function isWinAnsi(ch: string): boolean {
+  const c = ch.codePointAt(0) ?? 0;
+  return c === 0x0a || (c >= 0x20 && c <= 0x7e) || (c >= 0xa0 && c <= 0xff) || WINANSI_EXTRAS.has(ch);
+}
+
+/** Turns model and user text into something every font in the report can draw. */
+export function normalizePdfText(text: string, helveticaOnly: boolean, keepRupeeSign = false): string {
+  const out = String(text ?? '')
+    .replace(/\*\*|__|`/g, '') // markdown emphasis the model sometimes leaves in
+    .replace(/₹\s*/g, keepRupeeSign ? '₹' : 'Rs. ') // the same "Rs." every table uses, where ₹ cannot be drawn
+    .replace(/[‐‑‒−]/g, '-') // hyphen variants and the minus sign
+    .replace(/[     \t]/g, ' ') // non-breaking, thin and tab spaces
+    .replace(/[​⁠﻿\r]/g, '') // zero-width characters
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}️]/gu, ''); // emoji, which no font here has
+  return helveticaOnly ? [...out].filter(isWinAnsi).join('') : out;
+}
 
 interface ExportPdfOptions {
   inputs: PlanInputs;
@@ -15,6 +62,129 @@ interface ExportPdfOptions {
   graminBand?: string;
   t?: unknown;
   language?: string;
+}
+
+const PT_TO_MM = 25.4 / 72;
+/**
+ * Canvas pixels per point when text is drawn as an image: about 290 dpi, sharp
+ * in print. Higher made a two-page Hindi report over 900 KB to share.
+ */
+const CANVAS_TEXT_SCALE = 4;
+
+interface CanvasTextRenderer {
+  /** Width in mm. */
+  measure(text: string, sizePt: number, style: string): number;
+  wrap(text: string, maxWidthMm: number, sizePt: number, style: string): string[];
+  draw(doc: jsPDF, text: string, x: number, baselineY: number, sizePt: number, style: string, align: 'left' | 'right' | 'center'): void;
+}
+
+/**
+ * Text drawn by the browser instead of by jsPDF, for every report in an Indian script.
+ *
+ * jsPDF places glyphs one at a time and does no shaping, so Indic text came out
+ * visibly misspelt: the short-i sign drawn after its consonant ("प्रस्तावति" for
+ * "प्रस्तावित"), conjuncts broken apart, Urdu letters unjoined. The browser's own
+ * text engine shapes all of these correctly, so each line is drawn on a canvas
+ * and placed in the PDF as an image at print resolution. The browser also falls
+ * back font by font per character, so English words, digits and ₹ inside a
+ * Hindi sentence render properly with no run splitting at all.
+ *
+ * Null outside a browser (tests run in Node), where the jsPDF font path is used.
+ */
+async function createCanvasTextRenderer(fontFile: string, familyName: string, rtl = false): Promise<CanvasTextRenderer | null> {
+  if (typeof document === 'undefined' || typeof FontFace === 'undefined') return null;
+  try {
+    const face = new FontFace(familyName, `url(/fonts/${fontFile})`);
+    await face.load();
+    document.fonts.add(face);
+  } catch (err) {
+    console.warn('PDF script font could not be loaded for canvas text:', err);
+    return null;
+  }
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  if (!measureCtx) return null;
+
+  const fontCss = (sizePt: number, style: string) =>
+    `${style === 'bold' ? 700 : 400} ${sizePt * CANVAS_TEXT_SCALE}px "${familyName}", Arial, Helvetica, sans-serif`;
+  const mmPerPx = PT_TO_MM / CANVAS_TEXT_SCALE;
+
+  const measure = (text: string, sizePt: number, style: string) => {
+    measureCtx.font = fontCss(sizePt, style);
+    return measureCtx.measureText(text).width * mmPerPx;
+  };
+
+  const wrap = (text: string, maxWidthMm: number, sizePt: number, style: string) => {
+    const lines: string[] = [];
+    for (const paragraph of String(text).split('\n')) {
+      let current = '';
+      for (const word of paragraph.split(' ').filter(Boolean)) {
+        const candidate = current ? `${current} ${word}` : word;
+        if (measure(candidate, sizePt, style) <= maxWidthMm) {
+          current = candidate;
+          continue;
+        }
+        if (current) lines.push(current);
+        current = '';
+        if (measure(word, sizePt, style) <= maxWidthMm) {
+          current = word;
+          continue;
+        }
+        // A single word wider than the column is broken by character.
+        for (const ch of Array.from(word)) {
+          if (current && measure(current + ch, sizePt, style) > maxWidthMm) {
+            lines.push(current);
+            current = ch;
+          } else {
+            current += ch;
+          }
+        }
+      }
+      lines.push(current);
+    }
+    return lines.length > 0 ? lines : [''];
+  };
+
+  const draw = (doc: jsPDF, text: string, x: number, baselineY: number, sizePt: number, style: string, align: 'left' | 'right' | 'center') => {
+    if (!text) return;
+    const px = sizePt * CANVAS_TEXT_SCALE;
+    measureCtx.font = fontCss(sizePt, style);
+    const textWidthPx = measureCtx.measureText(text).width;
+    const pad = Math.ceil(px * 0.3);
+    // Room above the baseline for Indic top marks, and below it for descending vowel signs.
+    const above = Math.ceil(px * 1.15);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.ceil(textWidthPx + pad * 2));
+    canvas.height = above + Math.ceil(px * 0.55);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.font = fontCss(sizePt, style);
+    ctx.fillStyle = doc.getTextColor();
+    ctx.textBaseline = 'alphabetic';
+    if (rtl) {
+      // Right-to-left base direction, so colons, numbers and embedded English
+      // land where an Urdu reader expects them rather than at the wrong end.
+      ctx.direction = 'rtl';
+      ctx.textAlign = 'right';
+      ctx.fillText(text, pad + textWidthPx, above);
+    } else {
+      ctx.fillText(text, pad, above);
+    }
+
+    const widthMm = textWidthPx * mmPerPx;
+    const startX = align === 'right' ? x - widthMm : align === 'center' ? x - widthMm / 2 : x;
+    doc.addImage(
+      canvas,
+      'PNG',
+      startX - pad * mmPerPx,
+      baselineY - above * mmPerPx,
+      canvas.width * mmPerPx,
+      canvas.height * mmPerPx,
+      undefined,
+      'FAST'
+    );
+  };
+
+  return { measure, wrap, draw };
 }
 
 const fetchFontBase64 = async (url: string) => {
@@ -39,8 +209,8 @@ export async function generateBankReadyPlanPdf({
   calculated,
   narrative,
   profile,
-  graminScore = 720,
-  graminBand = 'Strong Financial Readiness',
+  graminScore,
+  graminBand,
   t,
   language = 'en',
 }: ExportPdfOptions): Promise<jsPDF> {
@@ -54,97 +224,39 @@ export async function generateBankReadyPlanPdf({
   let fontName = 'helvetica';
   let fontStyle = 'normal';
 
-  // Load custom fonts if needed
-  if (['hi', 'mr', 'ne', 'sa', 'mai', 'doi', 'brx', 'kok'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansDevanagari-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansDevanagari.ttf', b64);
-      doc.addFont('NotoSansDevanagari.ttf', 'NotoSansDevanagari', 'normal');
-      doc.addFont('NotoSansDevanagari.ttf', 'NotoSansDevanagari', 'bold');
-      fontName = 'NotoSansDevanagari';
-    }
-  } else if (['bn', 'as', 'mni'].includes(language)) { // Manipuri is written in Bengali script
-    const b64 = await fetchFontBase64('/fonts/NotoSansBengali-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansBengali.ttf', b64);
-      doc.addFont('NotoSansBengali.ttf', 'NotoSansBengali', 'normal');
-      doc.addFont('NotoSansBengali.ttf', 'NotoSansBengali', 'bold');
-      fontName = 'NotoSansBengali';
-    }
-  } else if (language === 'sat') {
-    // Santali was stored in Latin letters, which the Bengali font above happened
-    // to cover. Now that it is written in its own script, Ol Chiki, no other
-    // font has those glyphs and the plan would print as empty boxes.
-    const b64 = await fetchFontBase64('/fonts/NotoSansOlChiki-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansOlChiki.ttf', b64);
-      doc.addFont('NotoSansOlChiki.ttf', 'NotoSansOlChiki', 'normal');
-      doc.addFont('NotoSansOlChiki.ttf', 'NotoSansOlChiki', 'bold');
-      fontName = 'NotoSansOlChiki';
-    }
-  } else if (['or'].includes(language)) { // Odia uses its own distinct script — NOT Bengali glyphs
-    const b64 = await fetchFontBase64('/fonts/NotoSansOriya-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansOriya.ttf', b64);
-      doc.addFont('NotoSansOriya.ttf', 'NotoSansOriya', 'normal');
-      doc.addFont('NotoSansOriya.ttf', 'NotoSansOriya', 'bold');
-      fontName = 'NotoSansOriya';
-    }
-  } else if (['ta'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansTamil-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansTamil.ttf', b64);
-      doc.addFont('NotoSansTamil.ttf', 'NotoSansTamil', 'normal');
-      doc.addFont('NotoSansTamil.ttf', 'NotoSansTamil', 'bold');
-      fontName = 'NotoSansTamil';
-    }
-  } else if (['te'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansTelugu-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansTelugu.ttf', b64);
-      doc.addFont('NotoSansTelugu.ttf', 'NotoSansTelugu', 'normal');
-      doc.addFont('NotoSansTelugu.ttf', 'NotoSansTelugu', 'bold');
-      fontName = 'NotoSansTelugu';
-    }
-  } else if (['kn'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansKannada-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansKannada.ttf', b64);
-      doc.addFont('NotoSansKannada.ttf', 'NotoSansKannada', 'normal');
-      doc.addFont('NotoSansKannada.ttf', 'NotoSansKannada', 'bold');
-      fontName = 'NotoSansKannada';
-    }
-  } else if (['ml'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansMalayalam-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansMalayalam.ttf', b64);
-      doc.addFont('NotoSansMalayalam.ttf', 'NotoSansMalayalam', 'normal');
-      doc.addFont('NotoSansMalayalam.ttf', 'NotoSansMalayalam', 'bold');
-      fontName = 'NotoSansMalayalam';
-    }
-  } else if (['gu'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansGujarati-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansGujarati.ttf', b64);
-      doc.addFont('NotoSansGujarati.ttf', 'NotoSansGujarati', 'normal');
-      doc.addFont('NotoSansGujarati.ttf', 'NotoSansGujarati', 'bold');
-      fontName = 'NotoSansGujarati';
-    }
-  } else if (['pa'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansGurmukhi-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansGurmukhi.ttf', b64);
-      doc.addFont('NotoSansGurmukhi.ttf', 'NotoSansGurmukhi', 'normal');
-      doc.addFont('NotoSansGurmukhi.ttf', 'NotoSansGurmukhi', 'bold');
-      fontName = 'NotoSansGurmukhi';
-    }
-  } else if (['ur', 'sd', 'ks'].includes(language)) {
-    const b64 = await fetchFontBase64('/fonts/NotoSansArabic-Regular.ttf');
-    if (b64) {
-      doc.addFileToVFS('NotoSansArabic.ttf', b64);
-      doc.addFont('NotoSansArabic.ttf', 'NotoSansArabic', 'normal');
-      doc.addFont('NotoSansArabic.ttf', 'NotoSansArabic', 'bold');
-      fontName = 'NotoSansArabic';
+  // Load a script font if needed. The screen language decides first, then the
+  // text itself: an English screen can still carry a business name or plan
+  // typed in Bengali, which Helvetica cannot draw at all.
+  const contentSample = [
+    narrative.executiveSummary,
+    ...(narrative.keyAssumptions || []),
+    ...(narrative.riskAnalysis || []),
+    ...(narrative.actionableNextSteps || []),
+    inputs.businessType,
+    inputs.location,
+    profile?.name,
+  ].filter(Boolean).join(' ');
+  const scriptFont =
+    SCRIPT_FONTS.find((f) => f.langs.includes(language)) ??
+    SCRIPT_FONTS.find((f) => f.langs.includes(detectScriptLanguage(contentSample)));
+  // In a browser the script's text is shaped and drawn by the browser itself
+  // (see createCanvasTextRenderer). The font is embedded for jsPDF only where
+  // that is unavailable.
+  let canvasText: CanvasTextRenderer | null = null;
+  if (scriptFont) {
+    canvasText = await createCanvasTextRenderer(
+      scriptFont.file,
+      `ArthaSetuPdf${scriptFont.name}`,
+      scriptFont.name === 'NotoSansArabic' // Urdu, Sindhi and Kashmiri read right to left
+    );
+    if (!canvasText) {
+      const b64 = await fetchFontBase64(`/fonts/${scriptFont.file}`);
+      if (b64) {
+        doc.addFileToVFS(`${scriptFont.name}.ttf`, b64);
+        doc.addFont(`${scriptFont.name}.ttf`, scriptFont.name, 'normal');
+        doc.addFont(`${scriptFont.name}.ttf`, scriptFont.name, 'bold');
+        fontName = scriptFont.name;
+      }
     }
   }
 
@@ -166,7 +278,8 @@ export async function generateBankReadyPlanPdf({
     const numberPart = new Intl.NumberFormat('en-IN', {
       maximumFractionDigits: 0,
     }).format(val);
-    return `Rs. ${numberPart}`;
+    // ₹ wherever the browser draws the text; Helvetica has no ₹ glyph.
+    return canvasText ? `₹${numberPart}` : `Rs. ${numberPart}`;
   };
 
   const getT = (key: string, fallback: string) => {
@@ -187,17 +300,19 @@ export async function generateBankReadyPlanPdf({
   // ligatures) — its per-character width math for custom Noto TTFs can run a
   // bit optimistic for non-Latin scripts, letting a "line" it thinks fits
   // actually render wider than the column. Wrapping to a slightly narrower
-  // effective width for non-English languages gives real headroom against
-  // that mismatch. English/Latin measurement is accurate, so no shrink there.
-  const WRAP_SAFETY = language === 'en' ? 1 : 0.82;
+  // effective width for script-font reports gives real headroom against
+  // that mismatch. Helvetica measurement is accurate, so no shrink there.
+  const WRAP_SAFETY = canvasText || fontName === 'helvetica' ? 1 : 0.82;
   // mm of vertical space per wrapped line at a given pt font size, with a
   // bit of extra leading over the font's natural line height as a buffer.
   const LINE_H = (size: number) => size * 0.46;
 
   const wrapLines = (text: string, maxWidth: number, size: number, theFontName = fontName, style = fontStyle) => {
+    // Every string in the report is wrapped here first, so this is where it is made printable.
+    if (canvasText) return canvasText.wrap(normalizePdfText(text, false, true), maxWidth, size, style);
     doc.setFont(theFontName, style);
     doc.setFontSize(size);
-    return doc.splitTextToSize(text, maxWidth * WRAP_SAFETY) as string[];
+    return doc.splitTextToSize(normalizePdfText(text, fontName === 'helvetica'), maxWidth * WRAP_SAFETY) as string[];
   };
 
   // Pre-measures the tallest cell in a row so the row's background/height can
@@ -225,7 +340,9 @@ export async function generateBankReadyPlanPdf({
   // reliable way to know in advance which symbols a given subset omits.
   // Routing all ASCII to helvetica sidesteps that guesswork entirely; Rs. is
   // ASCII and routes to helvetica, while the script's own glyphs stay on the native font.
-  const isLatinLetter = (ch: string) => ch.charCodeAt(0) < 128;
+  // Everything Helvetica can encode, not only ASCII: the bullet and dashes are
+  // missing from the Noto subsets too, and were vanishing from every non-English report.
+  const isLatinLetter = isWinAnsi;
 
   const splitRuns = (line: string): Array<{ text: string; latin: boolean }> => {
     if (fontName === 'helvetica') return [{ text: line, latin: false }]; // English doc: no fallback needed
@@ -253,10 +370,16 @@ export async function generateBankReadyPlanPdf({
   };
 
   const lineWidthMixed = (line: string, size: number, style: string) =>
-    splitRuns(line).reduce((sum, run) => sum + runWidth(run, size, style), 0);
+    canvasText
+      ? canvasText.measure(line, size, style)
+      : splitRuns(line).reduce((sum, run) => sum + runWidth(run, size, style), 0);
 
   // Draws one already-wrapped line, switching fonts mid-line as needed.
   const drawLineMixed = (line: string, x: number, yPos: number, size: number, style: string, align: 'left' | 'right' | 'center') => {
+    if (canvasText) {
+      canvasText.draw(doc, line, x, yPos, size, style, align);
+      return;
+    }
     const runs = splitRuns(line);
     let startX = x;
     if (align === 'right') startX = x - lineWidthMixed(line, size, style);
@@ -302,7 +425,9 @@ export async function generateBankReadyPlanPdf({
   doc.setTextColor(255, 255, 255);
   doc.setFont(fontName, 'bold');
   fontStyle = 'bold';
-  drawTextWrapped(getT('planner.bankReadyTitle', 'ARTHASETU | BANK-READY PROJECT REPORT'), margin + 6, y + 10, contentWidth - 12, 'left', fontName, 14);
+  // No translated report title exists, so other languages lead with the app's
+  // name; the translated subtitle right below says what the document is.
+  drawTextWrapped(language === 'en' ? 'ARTHASETU | BANK-READY PROJECT REPORT' : getT('appName', 'ArthaSetu'), margin + 6, y + 10, contentWidth - 12, 'left', fontName, 14);
 
   fontStyle = 'normal';
   drawTextWrapped(getT('planner.pdfProjectSubtitle', 'Project: {{type}} — MSME Credit & Subsidy Assessment').replace('{{type}}', (inputs.businessType || getT('planner.pdfNA', 'N/A')).toUpperCase()), margin + 6, y + 17, contentWidth - 12, 'left', fontName, 9);
@@ -327,12 +452,36 @@ export async function generateBankReadyPlanPdf({
   const col3 = margin + 100;
   const col4 = margin + 140;
 
+  // Never a made-up score. This printed "720 / 900 (Strong Financial Readiness)"
+  // for everyone, because no caller passed one. Now derived from the profile the
+  // same way the dashboard card is, or shown as not available.
+  const derivedGramin = graminScore === undefined && profile ? calculateGraminScore(graminInputsFromProfile(profile)) : null;
+  const scoreValue = graminScore ?? derivedGramin?.score;
+  const bandValue = graminBand ?? derivedGramin?.band;
+
+  // Stored values (score bands, genders) are English. Shown translated, and in
+  // another language left out when no translation exists, rather than printing
+  // English words into a Hindi report.
+  const localizedOption = (group: string, keys: Record<string, string>, value?: string) => {
+    if (!value) return '';
+    const key = keys[value];
+    const localized = key ? getT(`${group}.${key}`, value) : value;
+    return language !== 'en' && localized === value ? '' : localized;
+  };
+  const bandLabel = localizedOption('graminScore.bands', GRAMIN_BAND_KEYS, bandValue);
+  const genderLabel = localizedOption('onboarding.genderOptions', GENDER_KEYS, profile?.gender);
+
+  const graminText = scoreValue === undefined
+    ? getT('planner.pdfNA', 'N/A')
+    : `${scoreValue} / 900${bandLabel ? ` (${bandLabel})` : ''}`;
+
   const metaRows: Array<[string, string, string, string]> = [
     [
       getT('planner.pdfApplicant', 'Applicant / Entity:'),
       profile?.name || getT('planner.pdfRegEntrepreneur', 'Registered Entrepreneur'),
       getT('planner.pdfCategoryGender', 'Category / Gender:'),
-      `${profile?.gender ? profile.gender.toUpperCase() : getT('planner.pdfIndividual', 'INDIVIDUAL')} / ${getT('planner.pdfGeneral', 'GENERAL')}`,
+      // "GENERAL" was a caste category the app never asks about, printed for everyone.
+      `${getT('planner.pdfIndividual', 'INDIVIDUAL')}${genderLabel ? ` / ${language === 'en' ? genderLabel.toUpperCase() : genderLabel}` : ''}`,
     ],
     [
       getT('planner.pdfOpScale', 'Operating Scale:'),
@@ -344,7 +493,7 @@ export async function generateBankReadyPlanPdf({
       getT('planner.pdfOpLocation', 'Operating Location:'),
       inputs.location || getT('planner.pdfRuralUnit', 'Rural / Semi-Urban Unit'),
       getT('planner.pdfGraminScore', 'Gramin Credit Score:'),
-      `${graminScore} / 900 (${graminBand})`,
+      graminText,
     ],
   ];
 
@@ -494,7 +643,7 @@ export async function generateBankReadyPlanPdf({
     y += rowH;
   });
 
-  const emiLabel = getT('planner.pdfEstEmi', 'Est. Monthly EMI (@ {{rate}}% / {{mo}} mo):').replace('{{rate}}', (inputs.loanInterestRatePercent || 10.5).toString()).replace('{{mo}}', (inputs.loanTenureMonths || 60).toString());
+  const emiLabel = getT('planner.pdfEstEmi', 'Est. Monthly EMI (@ {{rate}}% / {{mo}} mo):').replace('{{rate}}', (inputs.loanInterestRatePercent ?? DEFAULT_LOAN_INTEREST_RATE_PERCENT).toString()).replace('{{mo}}', (inputs.loanTenureMonths ?? DEFAULT_LOAN_TENURE_MONTHS).toString());
   const emiAmt = `${formatCurrency(calculated.monthlyLoanEmi)} / ${getT('planner.pdfMo', 'mo')}`;
   const emiRowH = measureRowHeight([
     { text: emiLabel, width: 120 },
@@ -591,22 +740,36 @@ export async function generateBankReadyPlanPdf({
   drawMultilineMixed(summaryLines, margin + 4, y + 5.5, 8, 'normal');
   y += summaryBoxHeight + 6;
 
-  if (narrative.actionableNextSteps && narrative.actionableNextSteps.length > 0) {
+  // Every section the model writes, not just the next steps: assumptions and
+  // risks are what a loan officer reads first, and they were being dropped.
+  const drawBulletSection = (title: string, items: string[] | undefined) => {
+    const list = (items || []).map((s) => String(s || '').trim()).filter(Boolean);
+    if (list.length === 0) return;
+    doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
     fontStyle = 'bold';
-    checkPageBreak(10);
-    drawTextWrapped(getT('planner.pdfNextSteps', 'Key Recommended Next Steps:'), margin, y, contentWidth, 'left', fontName, 9);
+    checkPageBreak(16);
+    drawTextWrapped(title, margin, y, contentWidth, 'left', fontName, 9);
     y += 5;
     fontStyle = 'normal';
     doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
-    narrative.actionableNextSteps.slice(0, 3).forEach((step) => {
-      const stepLines = wrapLines(`• ${step}`, contentWidth - 4, 8.5);
-      const stepH = stepLines.length * LINE_H(8.5);
-      checkPageBreak(stepH + 2);
-      drawMultilineMixed(stepLines, margin + 2, y, 8.5, 'normal');
-      y += stepH + 2;
+    list.forEach((item) => {
+      const itemLines = wrapLines(item, contentWidth - 8, 8.5);
+      const itemH = itemLines.length * LINE_H(8.5);
+      checkPageBreak(itemH + 2);
+      // The bullet in Helvetica, which every report can draw, with the text
+      // hung beside it so wrapped lines line up under the words.
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text('•', margin + 2, y);
+      drawMultilineMixed(itemLines, margin + 6, y, 8.5, 'normal');
+      y += itemH + 2;
     });
-    y += 2;
-  }
+    y += 3;
+  };
+
+  drawBulletSection(getT('planner.keyAssumptions', 'Key Operational Assumptions'), narrative.keyAssumptions);
+  drawBulletSection(getT('planner.riskAnalysis', 'Risk Analysis & Mitigation Strategy'), narrative.riskAnalysis);
+  drawBulletSection(getT('planner.pdfNextSteps', 'Key Recommended Next Steps:'), narrative.actionableNextSteps);
 
   // ─── 6. DISCLAIMER ───
   const disclaimerTitle = getT('planner.pdfDisclaimerTitle', 'IMPORTANT DISCLAIMER:');
@@ -633,10 +796,124 @@ export async function generateBankReadyPlanPdf({
   doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
   drawTextWrapped(getT('planner.pdfSignature', 'Applicant Signature'), margin + 22, y + 14, 40, 'left', fontName, 8);
 
+  // Page numbers on every page, so a printed report missing a page is obvious.
+  const totalPages = doc.getNumberOfPages();
+  for (let page = 1; page <= totalPages; page++) {
+    doc.setPage(page);
+    doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+    doc.line(margin, pageHeight - 10, pageWidth - margin, pageHeight - 10);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+    doc.text('ArthaSetu', margin, pageHeight - 6);
+    doc.text(`${page} / ${totalPages}`, pageWidth - margin, pageHeight - 6, { align: 'right' });
+  }
+
   return doc;
 }
 
+type PlanNarrative = ExportPdfOptions['narrative'];
+
+/** Letters of each script font's script, to tell which language a text is written in. */
+const SCRIPT_LETTERS: Record<string, RegExp> = {
+  NotoSansDevanagari: /[ऀ-ॿ]/g,
+  NotoSansBengali: /[ঀ-৿]/g,
+  NotoSansOlChiki: /[᱐-᱿]/g,
+  NotoSansOriya: /[଀-୿]/g,
+  NotoSansTamil: /[஀-௿]/g,
+  NotoSansTelugu: /[ఀ-౿]/g,
+  NotoSansKannada: /[ಀ-೿]/g,
+  NotoSansMalayalam: /[ഀ-ൿ]/g,
+  NotoSansGujarati: /[઀-૿]/g,
+  NotoSansGurmukhi: /[਀-੿]/g,
+  NotoSansArabic: /[؀-ۿ]/g,
+};
+
+/** Whether a plan's narrative is written in a different script from the report's language. */
+export function narrativeNeedsTranslation(text: string, language: string): boolean {
+  const latin = (text.match(/[A-Za-z]/g) || []).length;
+  const scriptFont = SCRIPT_FONTS.find((f) => f.langs.includes(language));
+  if (!scriptFont) {
+    const nonLatin = Object.values(SCRIPT_LETTERS).reduce((n, re) => n + (text.match(re) || []).length, 0);
+    return nonLatin > latin;
+  }
+  const native = (text.match(SCRIPT_LETTERS[scriptFont.name]) || []).length;
+  // Letters of English or of any other Indian script, so a Bengali plan in a
+  // Hindi report is caught as well as an English one.
+  const foreign = Object.entries(SCRIPT_LETTERS)
+    .filter(([name]) => name !== scriptFont.name)
+    .reduce((n, [, re]) => n + (text.match(re) || []).length, latin);
+  return foreign > native;
+}
+
+function hashText(text: string): string {
+  let hash = 5381;
+  for (let i = 0; i < text.length; i++) hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
+  return (hash >>> 0).toString(36);
+}
+
+/**
+ * The narrative in the report's language.
+ *
+ * A plan keeps the language it was generated in, so a plan made in English and
+ * downloaded from the Hindi interface printed a Hindi report around a wholly
+ * English summary, assumptions, risks and next steps. Translated in one request
+ * when the scripts differ, cached for the session so a second download is free,
+ * and left as-is if translation is unavailable (for example, quota spent).
+ */
+async function localizeNarrative(narrative: PlanNarrative, language: string): Promise<PlanNarrative> {
+  if (typeof window === 'undefined') return narrative;
+  const assumptions = narrative.keyAssumptions || [];
+  const risks = narrative.riskAnalysis || [];
+  const steps = narrative.actionableNextSteps || [];
+  const texts = [narrative.executiveSummary || '', ...assumptions, ...risks, ...steps];
+  if (!narrativeNeedsTranslation(texts.join(' '), language)) return narrative;
+
+  const cacheKey = `arthasetu-pdf-narrative:${language}:${hashText(JSON.stringify(texts))}`;
+  let translated: string[] | null = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) translated = JSON.parse(cached);
+  } catch {
+    // Storage unavailable: translate without caching.
+  }
+
+  if (!translated) {
+    try {
+      const res = await fetch('/api/translate-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts, targetLangCode: language }),
+      });
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.translatedTexts) && data.translatedTexts.length === texts.length) {
+        translated = data.translatedTexts.map((value: unknown, i: number) =>
+          typeof value === 'string' && value.trim() ? value : texts[i]
+        );
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(translated));
+        } catch {
+          // Storage full or blocked: the translation is still used this time.
+        }
+      }
+    } catch (err) {
+      console.warn('The plan narrative could not be translated for the PDF; using the original text.', err);
+    }
+  }
+  if (!translated || translated.length !== texts.length) return narrative;
+
+  let index = 0;
+  const take = (count: number) => translated.slice(index, (index += count));
+  return {
+    executiveSummary: take(1)[0],
+    keyAssumptions: take(assumptions.length),
+    riskAnalysis: take(risks.length),
+    actionableNextSteps: take(steps.length),
+  };
+}
+
 export async function downloadPlanPdf(options: ExportPdfOptions, filename = 'ArthaSetu_Project_Viability_Plan.pdf') {
-  const doc = await generateBankReadyPlanPdf(options);
+  const narrative = await localizeNarrative(options.narrative, options.language || 'en');
+  const doc = await generateBankReadyPlanPdf({ ...options, narrative });
   doc.save(filename);
 }

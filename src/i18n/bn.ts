@@ -136,6 +136,12 @@ const bn: Translations = {
     "dobError": "অনুগ্রহ করে একটি বৈধ জন্ম তারিখ নির্বাচন করুন (বয়স ১৮-১০০ বছর)",
     "gender": "লিঙ্গ",
     "selectGender": "লিঙ্গ নির্বাচন করুন",
+    "genderOptions": {
+      "male": "পুরুষ",
+      "female": "মহিলা",
+      "other": "ট্রান্সজেন্ডার / অন্যান্য",
+      "preferNot": "বলতে চাই না"
+    },
     "employeeCount": "কর্মচারীর সংখ্যা",
     "employeeCountPlaceholder": "যেমন: ২",
     "employeeCountHint": "নিজেকে অন্তর্ভুক্ত করে",
@@ -262,7 +268,14 @@ const bn: Translations = {
     "disclaimer": "এই স্কোরটি কেবল অভ্যন্তরীণ আর্থিক পরিকল্পনার উদ্দেশ্যে তৈরি এবং এটি CIBIL, Experian, CRIF, বা Equifax-এর প্রাতিষ্ঠানিক ক্রেডিট স্কোর নয়। অর্থসেতু আর্থিক প্রতিষ্ঠান থেকে ঋণ মঞ্জুরের নিশ্চয়তা দেয় না।",
     "readScore": "স্কোর শুনুন",
     "ttsSummary": "আপনার গ্রামীণ ঋণ প্রস্তুতের স্কোর হলো ৯০ এর মধ্যে {{score}}। বিভাগটি হলো {{band}}। {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "আর্থিক প্রোফাইল সম্পূর্ণ করুন →"
+    "completeProfileCta": "আর্থিক প্রোফাইল সম্পূর্ণ করুন →",
+    "bands": {
+      "excellent": "চমৎকার প্রস্তুতি",
+      "good": "ভালো প্রস্তুতি",
+      "fair": "মোটামুটি প্রস্তুতি",
+      "needsImprovement": "উন্নতি প্রয়োজন",
+      "earlyStage": "প্রাথমিক পর্যায়"
+    }
   },
   "profile": {
     "title": "ব্যবসায়িক প্রোফাইল",

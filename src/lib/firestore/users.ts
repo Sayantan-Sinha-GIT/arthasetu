@@ -19,33 +19,8 @@ import { sanitizeFirestoreObject } from '@/lib/firestore/sanitize';
 
 export { INDIAN_STATES, UNION_TERRITORIES, ALL_INDIAN_REGIONS };
 
-export const BUSINESS_CATEGORIES = [
-  'Livestock & Poultry',
-  'Agriculture & Allied',
-  'Food Processing & Bakery',
-  'Handloom, Textiles & Tailoring',
-  'Handicrafts & Artisanal',
-  'Retail Shop & Trading',
-  'Services & Repair',
-  'Manufacturing & Small Workshop',
-  'Beauty & Wellness',
-  'Logistics & Transport',
-  'Other Micro-Enterprise',
-];
-
-export const EXPERIENCE_LEVELS = [
-  '0-1 years (Beginner / New Venture)',
-  '1-3 years',
-  '3-5 years',
-  '5+ years (Experienced)',
-];
-
-export const GENDERS = [
-  'Male',
-  'Female',
-  'Transgender / Other',
-  'Prefer not to say',
-];
+// Live in a pure module so the advisor's server route can use the same lists.
+export { BUSINESS_CATEGORIES, EXPERIENCE_LEVELS, GENDERS } from '@/lib/constants/profile-options';
 
 /**
  * Fetch a user profile from Firestore by UID

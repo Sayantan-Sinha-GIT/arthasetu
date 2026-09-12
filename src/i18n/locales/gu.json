@@ -135,6 +135,12 @@
     "dobError": "કૃપા કરીને માન્ય જન્મ તારીખ પસંદ કરો (ઉંમર 18-100 વર્ષ)",
     "gender": "જાતિ (જેન્ડર)",
     "selectGender": "જાતિ પસંદ કરો",
+    "genderOptions": {
+      "male": "પુરુષ",
+      "female": "સ્ત્રી",
+      "other": "ટ્રાન્સજેન્ડર / અન્ય",
+      "preferNot": "જણાવવા માંગતા નથી"
+    },
     "employeeCount": "કર્મચારીઓની સંખ્યા",
     "employeeCountPlaceholder": "દા.ત. 2",
     "employeeCountHint": "તમને (પોતાને) સાથે ગણીને",
@@ -259,7 +265,14 @@
     "disclaimer": "આ સ્કોર ફક્ત આયોજન હેતુઓ માટે આંતરિક નાણાકીય તૈયારીનું અનુમાન છે અને CIBIL, Experian, CRIF અથવા Equifax તરફથી સત્તાવાર ક્રેડિટ સ્કોર નથી. અર્થસેતુ નાણાકીય સંસ્થાઓ દ્વારા લોન મંજૂરીની ખાતરી આપતું નથી.",
     "readScore": "સ્કોર વાંચો",
     "ttsSummary": "તમારો ગ્રામીણ ક્રેડિટ રીડીનેસ સ્કોર 900 માંથી {{score}} છે. વર્ગીકરણ {{band}} છે. {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "નાણાકીય પ્રોફાઇલ પૂર્ણ કરો →"
+    "completeProfileCta": "નાણાકીય પ્રોફાઇલ પૂર્ણ કરો →",
+    "bands": {
+      "excellent": "ઉત્તમ તૈયારી",
+      "good": "સારી તૈયારી",
+      "fair": "સામાન્ય તૈયારી",
+      "needsImprovement": "સુધારાની જરૂર",
+      "earlyStage": "પ્રારંભિક તબક્કો"
+    }
   },
   "profile": {
     "title": "વ્યવસાય પ્રોફાઇલ",

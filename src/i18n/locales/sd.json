@@ -152,6 +152,10 @@
     "dobError": "مهرباني ڪري پيدائش جي صحيح تاريخ چونڊيو (عمر 18-100 سال)",
     "gender": "جنس",
     "selectGender": "جنس چونڊيو",
+    "genderOptions": {
+      "male": "مرد",
+      "female": "عورت"
+    },
     "employeeCount": "ملازمن جو تعداد",
     "employeeCountPlaceholder": "مثال طور 2",
     "employeeCountHint": "توهان سميت",
@@ -274,7 +278,14 @@
     "disclaimer": "هي اسڪور صرف منصوبابندي جي مقصدن لاءِ هڪ اندروني مالي تياري جو اندازو آهي ۽ CIBIL، Experian، CRIF، يا Equifax طرفان ڪو باضابطه ڪريڊٽ اسڪور ناهي. ArthaSetu مالي ادارن پاران قرض جي منظوري جي ضمانت نٿو ڏئي.",
     "readScore": "اسڪور پڙهو",
     "ttsSummary": "توهان جو گرامين ڪريڊٽ ريڊينس اسڪور 900 مان {{score}} آهي. درجه بندي {{band}} آهي. {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "مالي پروفائيل مڪمل ڪريو →"
+    "completeProfileCta": "مالي پروفائيل مڪمل ڪريو →",
+    "bands": {
+      "excellent": "شاندار تياري",
+      "good": "سٺي تياري",
+      "fair": "مناسب تياري",
+      "needsImprovement": "بهتري جي ضرورت",
+      "earlyStage": "شروعاتي مرحلو"
+    }
   },
   "profile": {
     "title": "ڪاروباري پروفائيل",

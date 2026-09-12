@@ -152,6 +152,12 @@
     "dobError": "براہ کرم درست تاریخ پیدائش منتخب کریں (عمر 18-100 سال)",
     "gender": "صنف",
     "selectGender": "صنف منتخب کریں",
+    "genderOptions": {
+      "male": "مرد",
+      "female": "عورت",
+      "other": "خواجہ سرا / دیگر",
+      "preferNot": "بتانا نہیں چاہتے"
+    },
     "employeeCount": "ملازمین کی تعداد",
     "employeeCountPlaceholder": "مثلاً 2",
     "employeeCountHint": "بشمول خود آپ",
@@ -274,7 +280,14 @@
     "disclaimer": "یہ اسکور صرف منصوبہ بندی کے مقاصد کے لیے ایک اندرونی مالیاتی تیاری کا تخمینہ ہے اور CIBIL، Experian، CRIF، یا Equifax کا باضابطہ کریڈٹ اسکور نہیں ہے۔ ArthaSetu مالیاتی اداروں کی طرف سے قرض کی منظوری کی ضمانت نہیں دیتا۔",
     "readScore": "اسکور پڑھیں",
     "ttsSummary": "آپ کا گرامین کریڈٹ ریڈی نیس اسکور 900 میں سے {{score}} ہے۔ درجہ بندی {{band}} ہے۔ {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "مالیاتی پروفائل مکمل کریں ←"
+    "completeProfileCta": "مالیاتی پروفائل مکمل کریں ←",
+    "bands": {
+      "excellent": "بہترین تیاری",
+      "good": "اچھی تیاری",
+      "fair": "مناسب تیاری",
+      "needsImprovement": "بہتری کی ضرورت",
+      "earlyStage": "ابتدائی مرحلہ"
+    }
   },
   "profile": {
     "title": "کاروباری پروفائل",

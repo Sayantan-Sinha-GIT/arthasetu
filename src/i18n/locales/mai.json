@@ -135,6 +135,12 @@
     "dobError": "कृपया एकटा वैध जन्म तिथि चुनू (उम्र 18-100 वर्ष)",
     "gender": "लिंग",
     "selectGender": "लिंग चुनू",
+    "genderOptions": {
+      "male": "पुरुष",
+      "female": "महिला",
+      "other": "ट्रांसजेंडर / आन",
+      "preferNot": "नहि कहय चाहैत छी"
+    },
     "employeeCount": "कर्मचारी के संख्या",
     "employeeCountPlaceholder": "उदा. 2",
     "employeeCountHint": "अहाँ के मिला कए",
@@ -259,7 +265,14 @@
     "disclaimer": "ई स्कोर केवल योजना उद्देश्य लेल एकटा आंतरिक वित्तीय तैयारी अनुमान अछि आ CIBIL, Experian, CRIF, वा Equifax सं औपचारिक क्रेडिट स्कोर नहि अछि। ArthaSetu वित्तीय संस्थान द्वारा लोन मंजूरी के गारंटी नहि दैत अछि।",
     "readScore": "स्कोर पढ़ू",
     "ttsSummary": "अहाँ के Gramin Credit Readiness Score 900 मे सं {{score}} अछि। वर्गीकरण {{band}} अछि। {{cashFlowRationale}} {{capitalRationale}}",
-    "completeProfileCta": "वित्तीय प्रोफाइल पूरा करू →"
+    "completeProfileCta": "वित्तीय प्रोफाइल पूरा करू →",
+    "bands": {
+      "excellent": "उत्कृष्ट तैयारी",
+      "good": "नीक तैयारी",
+      "fair": "ठीक-ठाक तैयारी",
+      "needsImprovement": "सुधारक आवश्यकता",
+      "earlyStage": "शुरुआती चरण"
+    }
   },
   "profile": {
     "title": "बिजनेस प्रोफाइल",

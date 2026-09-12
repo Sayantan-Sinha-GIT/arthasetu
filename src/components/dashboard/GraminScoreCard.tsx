@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { calculateGraminScore, GRAMIN_DISCLAIMER } from '@/lib/gramin-score';
+import { calculateGraminScore, graminInputsFromProfile, GRAMIN_DISCLAIMER } from '@/lib/gramin-score';
+import { GRAMIN_BAND_KEYS } from '@/lib/constants/profile-options';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -19,41 +20,13 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Derive initial inputs from profile
-  const [inputs, setInputs] = useState<GraminScoreInputs>(() => {
-    const profileLoans: ExistingLoanInput[] =
-      profile?.loanDetails && profile.loanDetails.length > 0
-        ? profile.loanDetails.map((l) => ({
-            id: l.id,
-            lenderType: l.lenderType === 'informal' ? 'informal_moneylender' : l.lenderType,
-            emiAmount: l.monthlyEmi || 0,
-            status: 'on_time' as const,
-          }))
-        : [];
-
-    return {
-      monthlyIncome: typeof profile?.monthlyIncome === 'number' ? profile.monthlyIncome : 0,
-      monthlyExpenses: typeof profile?.monthlyExpenses === 'number' ? profile.monthlyExpenses : 0,
-      revenueConsistency: profile?.monthlyIncome && profile.monthlyIncome > 0 ? 'stable' : 'growing',
-      steadyIncomeMonths: profile?.businessStatus === 'existing' ? 12 : 0,
-      availableCapital: typeof profile?.availableCapital === 'number' ? profile.availableCapital : 0,
-      desiredFunding: typeof profile?.desiredFunding === 'number' ? profile.desiredFunding : 0,
-      monthlySavings: typeof profile?.monthlyIncome === 'number' && typeof profile?.monthlyExpenses === 'number'
-        ? Math.max(0, profile.monthlyIncome - profile.monthlyExpenses)
-        : 0,
-      emergencyReserve: typeof profile?.availableCapital === 'number' ? Math.round(profile.availableCapital * 0.2) : 0,
-      yearsInOperation: profile?.businessStatus === 'existing' ? 2 : 0,
-      isRegistered: !!profile?.businessStatus && profile.businessStatus === 'existing',
-      employeeCount: typeof profile?.employeeCount === 'number' ? profile.employeeCount : 0,
-      existingLoans: profileLoans,
-      keepsRecords: true,
-      usesBankAccount: true,
-      hasInsurance: false,
-      isShgMember: false,
-    };
-  });
+  // Derive initial inputs from profile (shared with the PDF report)
+  const [inputs, setInputs] = useState<GraminScoreInputs>(() => graminInputsFromProfile(profile));
 
   const scoreResult = calculateGraminScore(inputs);
+  // The band comes back in English; it was shown untranslated in every language.
+  const bandLabel =
+    (t.graminScore.bands as Record<string, string> | undefined)?.[GRAMIN_BAND_KEYS[scoreResult.band]] || scoreResult.band;
 
   const handleAddLoan = () => {
     setInputs((prev) => ({
@@ -112,7 +85,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
           <TextToSpeechButton
             text={t.graminScore.ttsSummary
               .replace('{{score}}', scoreResult.score.toString())
-              .replace('{{band}}', scoreResult.band)
+              .replace('{{band}}', bandLabel)
               .replace('{{cashFlowRationale}}', scoreResult.breakdown.cashFlowHealth.rationale)
               .replace('{{capitalRationale}}', scoreResult.breakdown.capitalAdequacy.rationale)}
             size="sm"
@@ -146,7 +119,7 @@ export default function GraminScoreCard({ profile }: GraminScoreCardProps) {
           </div>
 
           <Badge variant={scoreResult.bandColor === 'success' ? 'success' : scoreResult.bandColor === 'info' ? 'info' : 'warning'} size="md" className="uppercase tracking-widest text-[10px]">
-            {scoreResult.band}
+            {bandLabel}
           </Badge>
 
           {/* Progress Bar */}
