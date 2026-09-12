@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { verifyAdminRequest, deleteAuthUserSafely, ADMIN_EMAIL } from '@/lib/admin-auth';
+import { verifyAdminRequest, ADMIN_EMAIL } from '@/lib/admin-auth';
+import { deleteUserData } from '@/lib/server/delete-user-data';
 import { getErrorMessage } from '@/lib/utils/errors';
 
 export const maxDuration = 60;
@@ -26,30 +27,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Delete all target user's plans in Firestore
-    const plansSnap = await adminDb.collection('plans').where('userId', '==', targetUid).get();
-    const planDeletions = plansSnap.docs.map((d) => d.ref.delete());
-    await Promise.all(planDeletions);
+    // 1. Delete all user records cleanly and safely in batches
+    const { plans: plansCount, advice: adviceCount } = await deleteUserData(targetUid);
 
-    // 2. Delete all target user's advice in Firestore
-    const adviceSnap = await adminDb.collection('advice').where('userId', '==', targetUid).get();
-    const adviceDeletions = adviceSnap.docs.map((d) => d.ref.delete());
-    await Promise.all(adviceDeletions);
-
-    // 3. Delete target user's profile document
-    await adminDb.collection('users').doc(targetUid).delete();
-
-    // 4. Delete user from Firebase Auth via resilient helper
-    await deleteAuthUserSafely(targetUid);
-
-    // 5. Write audit log entry to adminActions collection
+    // 2. Write audit log entry to adminActions collection
     await adminDb.collection('adminActions').add({
       adminEmail: adminEmail || ADMIN_EMAIL,
       targetUid,
       targetEmail: targetEmail || 'unknown',
       action: 'delete_user',
-      plansDeleted: plansSnap.size,
-      adviceDeleted: adviceSnap.size,
+      plansDeleted: plansCount,
+      adviceDeleted: adviceCount,
       timestamp: FieldValue.serverTimestamp(),
     });
 
@@ -57,8 +45,8 @@ export async function POST(req: NextRequest) {
       success: true,
       message: `User ${targetEmail || targetUid} and all associated records deleted successfully.`,
       recordsDeleted: {
-        plans: plansSnap.size,
-        advice: adviceSnap.size,
+        plans: plansCount,
+        advice: adviceCount,
       },
     });
   } catch (error) {
