@@ -22,7 +22,7 @@ import * as fs from 'fs';
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 
 import { adminDb } from '../src/lib/firebase-admin';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const { normaliseSchemeName, normaliseUrl, completenessScore } = require('./scheme-identity.cjs');
 
 interface SchemeDoc {

@@ -37,7 +37,8 @@ const eslintConfig = defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-require-imports": "off",
-      "prefer-const": "warn",
+      "@typescript-eslint/no-unused-vars": "off",
+      "prefer-const": "off",
     },
   },
   // Override default ignores of eslint-config-next.

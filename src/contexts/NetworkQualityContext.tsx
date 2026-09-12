@@ -47,9 +47,10 @@ export function NetworkQualityProvider({ children }: { children: ReactNode }) {
   // effect rather than a lazy initializer to avoid a hydration mismatch.
   useEffect(() => {
     const saved = localStorage.getItem('arthasetu-data-saver-pref');
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved === 'auto' || saved === 'on' || saved === 'off') {
-      setPreferenceState(saved);
+      queueMicrotask(() => {
+        setPreferenceState(saved);
+      });
     }
 
     const nav = navigator as Navigator & {

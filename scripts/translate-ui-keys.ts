@@ -14,7 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { GoogleGenAI } from '@google/genai';
 import en from '../src/i18n/en';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const { checkOne } = require('./locale-script-purity.cjs');
 
 const envContent = fs.readFileSync(path.resolve(process.cwd(), '.env.local'), 'utf8');

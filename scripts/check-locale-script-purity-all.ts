@@ -26,7 +26,7 @@ import en from '../src/i18n/en';
 import hi from '../src/i18n/hi';
 import bn from '../src/i18n/bn';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const purity = require('./locale-script-purity.cjs') as {
   checkOne: (code: string, text: string, options?: { allow?: string[] }) => { foreign: string[]; latin: number };
   LOCALE_SCRIPT: Record<string, string[]>;

@@ -60,6 +60,7 @@ export default function AdminDashboardClient() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteSuccessMsg, setDeleteSuccessMsg] = useState('');
   const [deleteErrorMsg, setDeleteErrorMsg] = useState('');
+  const [currentTimestamp] = useState(() => Date.now());
 
   const loadData = async () => {
     try {
@@ -405,7 +406,7 @@ export default function AdminDashboardClient() {
                         {scheme.governmentLevel === 'central' ? '🇮🇳 Central' : `🏛️ ${scheme.state}`}
                       </span>
                       <div className="flex items-center gap-1.5">
-                        {scheme.lastVerifiedDate && (Date.now() - new Date(scheme.lastVerifiedDate).getTime()) > 180 * 86400000 ? (
+                        {scheme.lastVerifiedDate && (currentTimestamp - new Date(scheme.lastVerifiedDate).getTime()) > 180 * 86400000 ? (
                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                             ⚠️ &gt;180d
                           </span>
