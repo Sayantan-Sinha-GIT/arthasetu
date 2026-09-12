@@ -34,11 +34,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env
 .env.local
 .env*.local
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -48,9 +49,6 @@ yarn-error.log*
 next-env.d.ts
 
 .chrome-test-profile/
-
-.vercel
-.env*
 
 # translation progress checkpoints (scripts/retranslate-locales.ts)
 scripts/output/retranslate/
