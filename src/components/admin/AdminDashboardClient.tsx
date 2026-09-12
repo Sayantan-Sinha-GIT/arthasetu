@@ -15,6 +15,7 @@ import {
   getAllUpdateHistory,
   approveSchemeUpdate,
   rejectSchemeUpdate,
+  proposeSchemeUpdate,
 } from '@/lib/firestore/admin';
 import { collection, getDocs, query, limit, startAfter, type DocumentSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -40,6 +41,19 @@ export default function AdminDashboardClient() {
 
   // Selected update for diff view
   const [expandedUpdateId, setExpandedUpdateId] = useState<string | null>(null);
+
+  // AI Scheme Update Modal State
+  const [targetSchemeForAi, setTargetSchemeForAi] = useState<Scheme | null>(null);
+  const [aiCircularText, setAiCircularText] = useState('');
+  const [aiSourceUrl, setAiSourceUrl] = useState('');
+  const [aiDraftLoading, setAiDraftLoading] = useState(false);
+  const [aiDraftError, setAiDraftError] = useState('');
+  const [aiDraftDiff, setAiDraftDiff] = useState<{
+    summaryOfChanges?: string;
+    proposedChanges?: Record<string, { old: unknown; new: unknown }>;
+    updatedScheme?: Partial<Scheme>;
+  } | null>(null);
+  const [aiApproving, setAiApproving] = useState(false);
 
   // Admin User Deletion Modal
   const [targetUserToDelete, setTargetUserToDelete] = useState<{ uid: string; email: string } | null>(null);
@@ -135,6 +149,68 @@ export default function AdminDashboardClient() {
       console.error('Error rejecting update:', err);
     } finally {
       setActionLoading(null);
+    }
+  };
+  const handleRunAiSchemeUpdate = async () => {
+    if (!targetSchemeForAi || !aiCircularText.trim() || aiCircularText.trim().length < 20) {
+      setAiDraftError('Please provide at least 20 characters of official circular or policy notification text.');
+      return;
+    }
+    setAiDraftLoading(true);
+    setAiDraftError('');
+    try {
+      if (!user) throw new Error('Admin session expired.');
+      const token = await user.getIdToken(true);
+      const res = await fetch('/api/admin/schemes/draft', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          circularText: aiCircularText,
+          currentScheme: targetSchemeForAi,
+          sourceUrl: aiSourceUrl,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to analyze circular text with AI.');
+      }
+      setAiDraftDiff(data.data);
+    } catch (err) {
+      setAiDraftError(getErrorMessage(err, 'Failed to parse circular with AI.'));
+    } finally {
+      setAiDraftLoading(false);
+    }
+  };
+
+  const handleApproveAiSchemeUpdate = async () => {
+    if (!targetSchemeForAi || !aiDraftDiff?.proposedChanges || !user) return;
+    setAiApproving(true);
+    try {
+      const updateId = await proposeSchemeUpdate({
+        schemeId: targetSchemeForAi.id,
+        schemeName: targetSchemeForAi.name,
+        adminId: user.uid,
+        adminEmail: user.email || 'admin@arthasetu.app',
+        sourceUrl: aiSourceUrl || targetSchemeForAi.officialUrl,
+        summaryOfChanges: aiDraftDiff.summaryOfChanges || 'AI-assisted circular update',
+        proposedChanges: aiDraftDiff.proposedChanges,
+        status: 'pending',
+      });
+
+      await approveSchemeUpdate(updateId, user.uid, user.email || 'admin@arthasetu.app');
+      await loadData();
+      setTargetSchemeForAi(null);
+      setAiDraftDiff(null);
+      setAiCircularText('');
+      setAiSourceUrl('');
+      setDeleteSuccessMsg(`Scheme "${targetSchemeForAi.name}" updated successfully via AI proposal!`);
+    } catch (err) {
+      setAiDraftError(getErrorMessage(err, 'Failed to approve and apply scheme update.'));
+    } finally {
+      setAiApproving(false);
     }
   };
 
@@ -328,20 +404,46 @@ export default function AdminDashboardClient() {
                       <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-navy-100 dark:bg-navy-900 text-navy-800 dark:text-navy-200 border border-navy-200 dark:border-navy-700">
                         {scheme.governmentLevel === 'central' ? '🇮🇳 Central' : `🏛️ ${scheme.state}`}
                       </span>
-                      <span className="text-[10px] text-muted">{scheme.category}</span>
+                      <div className="flex items-center gap-1.5">
+                        {scheme.lastVerifiedDate && (Date.now() - new Date(scheme.lastVerifiedDate).getTime()) > 180 * 86400000 ? (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                            ⚠️ &gt;180d
+                          </span>
+                        ) : (
+                          <span className="text-[9px] text-muted">
+                            ✓ {scheme.lastVerifiedDate || 'Recent'}
+                          </span>
+                        )}
+                        <span className="text-[10px] text-muted">{scheme.category}</span>
+                      </div>
                     </div>
                     <h3 className="font-bold text-sm text-foreground mt-2 line-clamp-1">{scheme.name}</h3>
                     <p className="text-xs text-muted line-clamp-2 mt-1">{scheme.description}</p>
                   </div>
 
-                  <div className="pt-2 border-t border-border flex items-center justify-between">
-                    <span className="text-[10px] text-muted">ID: {scheme.id}</span>
-                    <Link
-                      href={`/${ADMIN_ROUTE_KEY}/admin/schemes/${scheme.id}/edit`}
-                      className="text-xs font-bold text-primary hover:underline"
-                    >
-                      AI Edit / Propose →
-                    </Link>
+                  <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                    <span className="text-[10px] text-muted truncate max-w-[90px]" title={scheme.id}>ID: {scheme.id}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTargetSchemeForAi(scheme);
+                          setAiCircularText('');
+                          setAiSourceUrl(scheme.sourceUrl || scheme.officialUrl || '');
+                          setAiDraftDiff(null);
+                          setAiDraftError('');
+                        }}
+                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        ✨ Update with AI
+                      </button>
+                      <Link
+                        href={`/${ADMIN_ROUTE_KEY}/admin/schemes/${scheme.id}/edit`}
+                        className="text-xs font-bold text-primary hover:underline"
+                      >
+                        Edit →
+                      </Link>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -573,6 +675,178 @@ export default function AdminDashboardClient() {
                 >
                   Confirm & Delete Target User
                 </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Scheme Update Modal */}
+        {targetSchemeForAi && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in overflow-y-auto">
+            <div className="w-full max-w-3xl bg-surface-elevated border border-border rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-in my-8 max-h-[90vh] flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+                    ✨
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">
+                      AI Scheme Update Assistant
+                    </h3>
+                    <p className="text-xs text-muted">
+                      Target: <span className="font-semibold text-foreground">{targetSchemeForAi.name}</span> ({targetSchemeForAi.id})
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetSchemeForAi(null);
+                    setAiDraftDiff(null);
+                    setAiDraftError('');
+                  }}
+                  className="text-muted hover:text-foreground text-xl font-bold p-1 rounded-lg"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {aiDraftError && (
+                <div className="p-3 rounded-xl bg-danger-light border border-danger/30 text-danger text-xs flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span className="font-bold">{aiDraftError}</span>
+                </div>
+              )}
+
+              {/* Body: Step 1 (Input) vs Step 2 (Diff Review) */}
+              <div className="overflow-y-auto space-y-4 pr-1 flex-1">
+                {!aiDraftDiff ? (
+                  <div className="space-y-4">
+                    <p className="text-xs text-muted">
+                      Paste the new official government notification, circular text, or gazette amendment below. The AI will extract the parameters, compare them against the live scheme record, and present the exact differences for your review.
+                    </p>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="ai-circular-text" className="text-xs font-bold text-foreground">
+                        Official Circular / Notification Text <span className="text-danger">*</span>
+                      </label>
+                      <textarea
+                        id="ai-circular-text"
+                        rows={8}
+                        value={aiCircularText}
+                        onChange={(e) => setAiCircularText(e.target.value)}
+                        placeholder="Paste official notification text here (e.g., subsidy percentage revised to 35%, maximum project limit raised to ₹50 Lakhs, eligible age relaxed to 18-45 years...)"
+                        className="w-full p-3 rounded-xl bg-surface border border-border text-xs text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary font-mono leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="ai-source-url" className="text-xs font-bold text-foreground">
+                        Official Notification / Gazette Source URL (Optional)
+                      </label>
+                      <input
+                        id="ai-source-url"
+                        type="url"
+                        value={aiSourceUrl}
+                        onChange={(e) => setAiSourceUrl(e.target.value)}
+                        placeholder="https://msme.gov.in/circulars/..."
+                        className="w-full p-2.5 rounded-xl bg-surface border border-border text-xs text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <span>📋</span>
+                        <span>AI Analysis Summary:</span>
+                      </div>
+                      <p className="leading-relaxed">
+                        {aiDraftDiff.summaryOfChanges || 'Changes detected based on the circular provided.'}
+                      </p>
+                    </div>
+
+                    {/* Diff Viewer Component */}
+                    <div className="border border-border rounded-2xl p-3 bg-surface/50">
+                      <DiffViewer
+                        proposedChanges={aiDraftDiff.proposedChanges || {}}
+                        schemeName={targetSchemeForAi.name}
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-surface border border-border text-xs text-muted flex items-start gap-2">
+                      <span className="text-base">🛡️</span>
+                      <span>
+                        <strong>Human Verification Required:</strong> Review all changes above. If approved, these changes will update the verified scheme in Firestore immediately and be timestamped with your admin identity.
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex items-center justify-between pt-3 border-t border-border">
+                {aiDraftDiff ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={aiApproving}
+                      onClick={() => setAiDraftDiff(null)}
+                    >
+                      ← Back to Circular Input
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={aiApproving}
+                        onClick={() => {
+                          setTargetSchemeForAi(null);
+                          setAiDraftDiff(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        isLoading={aiApproving}
+                        onClick={handleApproveAiSchemeUpdate}
+                        className="shadow-md bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        ✓ Approve &amp; Update Live Scheme
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={aiDraftLoading}
+                      onClick={() => setTargetSchemeForAi(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      isLoading={aiDraftLoading}
+                      onClick={handleRunAiSchemeUpdate}
+                      disabled={!aiCircularText.trim()}
+                      className="shadow-md"
+                    >
+                      ✨ Analyze Circular &amp; Show Differences
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

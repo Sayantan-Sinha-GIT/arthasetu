@@ -228,8 +228,10 @@ export interface Scheme {
   requiredDocuments: string[];
   applicationProcess: string;
   officialUrl: string;
+  sourceUrl?: string;
   sourceName: string;
   lastVerifiedDate: string; // ISO date string
+  lastVerifiedAt?: string;
 
   // Status
   isActive: boolean;
@@ -253,6 +255,7 @@ export interface SchemeUpdateRecord {
   adminEmail: string;
   timestamp: Timestamp;
   sourceUrl: string;
+  summaryOfChanges?: string;
   proposedChanges: Record<string, { old: unknown; new: unknown }>;
   status: 'pending' | 'approved' | 'rejected';
   publishedChanges?: Record<string, { old: unknown; new: unknown }>;

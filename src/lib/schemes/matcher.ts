@@ -101,6 +101,16 @@ export function matchSchemesForProfile(
       matchReasons.push(`Enhanced ${maxSubsidyPercent}% subsidy for rural entrepreneurs`);
     }
 
+    // 5. Freshness check: schemes unverified for > 180 days get slight rank penalty (-5)
+    const verifiedDateStr = scheme.lastVerifiedDate || scheme.lastVerifiedAt;
+    if (verifiedDateStr) {
+      const verifiedTime = new Date(verifiedDateStr).getTime();
+      const ageDays = (Date.now() - verifiedTime) / (1000 * 60 * 60 * 24);
+      if (ageDays > 180) {
+        score = Math.max(0, score - 5);
+      }
+    }
+
     // Filter by relevance threshold (minimum 50 points required for high confidence match)
     if (score >= 50) {
       let estimatedBenefit = '';
