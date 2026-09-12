@@ -1,117 +1,116 @@
-# ArthaSetu — Production Operations Runbook
+# ArthaSetu — Operations Runbook
 
-This runbook provides end-to-end instructions for running, operating, maintaining, and debugging ArthaSetu on `localhost` and in production.
-
----
-
-## 1. Prerequisites & Environment Setup
-
-- **Node.js**: Version `>= 20.0.0` (Verify with `node -v`)
-- **Package Manager**: `npm` (Version 10+)
-- **Operating System**: Windows, macOS, or Linux
-
-### Environment Configuration
-
-Copy the example environment file and configure your keys:
-
-```bash
-cp .env.example .env.local
-```
-
-Key environment variables required:
-- `NEXT_PUBLIC_FIREBASE_API_KEY`: Firebase web API key.
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`: Firebase project identifier (`arthasetu-...`).
-- `NEXT_PUBLIC_ADMIN_ROUTE_KEY`: Obfuscated admin route prefix (default: `4632`).
-- `GEMINI_API_KEY`: Google Gemini API key for primary advisor and financial structuring.
-- `GROQ_API_KEY`: Groq API key for high-speed fallback.
-- `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`: Firebase Admin SDK credentials for server-side operations (account deletion, error logging).
+How to run, release, check and repair ArthaSetu, locally and in production
+(https://arthasetu-sigma.vercel.app).
 
 ---
 
-## 2. Local Commands Reference
+## 1. Setup
 
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Starts the Next.js development server at `http://localhost:3000` |
-| `npm test` | Runs the Vitest unit test suite (DSCR, Zod API validation, Scheme freshness) |
-| `npm run lint` | Runs ESLint across the codebase |
-| `npm run build` | Builds the production Next.js application bundle |
-| `npm run start` | Starts the production server using the built bundle |
-| `npx tsx scripts/report-errors.ts` | Displays recent server/client errors logged to Firestore |
+- **Node.js** 20 or newer (`node -v`), **npm** 10 or newer.
+- Copy the template and fill in the values:
 
----
-
-## 3. Core Architecture & Safety Subsystems
-
-### A. Circuit Breakers & Fallback Chain
-- AI calls follow a multi-tier fallback: **Gemini 2.5 Flash → Gemini Flash-Lite → Groq LLaMA 3.3 70B**.
-- If a provider fails 3 consecutive times, its circuit breaker trips open for a 60-second cooldown period.
-- Health status can be checked in real time at:
-  ```http
-  GET /api/health
-  ```
-  Returns status code `200` with circuit breaker states and timestamp.
-
-### B. Rate Limiting & Abuse Protection
-- Public endpoints (`/api/advisor`, `/api/planner`, `/api/tts`, `/api/translate`) are protected by an in-memory sliding window rate limiter (`src/lib/server/rate-limit.ts`).
-- Standard window: 30 requests per minute per IP.
-- Legitimate rural micro-entrepreneurs have uninterrupted access, while automated bot spam is blocked with `429 Too Many Requests`.
-
-### C. Input Validation
-- All incoming API request bodies are strictly validated using Zod schemas (`src/lib/validation/api-schemas.ts`).
-- Invalid PIN codes, negative monetary figures, and empty text payloads are safely caught with friendly `400` errors before reaching AI models.
-
----
-
-## 4. Admin Dashboard Operations
-
-Access the admin dashboard at:
-```text
-http://localhost:3000/4632/admin
-```
-*(Replace `4632` with your `NEXT_PUBLIC_ADMIN_ROUTE_KEY` if customized)*
-
-### A. AI Scheme Update Assistant (Human-in-the-Loop)
-1. Navigate to the **Verified Schemes Directory** tab.
-2. Find any scheme (cards display `⚠️ >180d` badge if unverified for over 6 months).
-3. Click **"✨ Update with AI"**.
-4. In the modal dialog, paste the official government circular, gazette notice, or policy amendment text.
-5. (Optional) Provide the official circular URL.
-6. Click **"Analyze Circular & Show Differences"**.
-7. The AI parses the parameters and generates a **side-by-side Diff Viewer**:
-   - 🔴 **Red box**: Current live database values.
-   - 🟢 **Green box**: Proposed new values extracted from the circular.
-8. **Human Approval**: The database is NOT modified automatically. Click **"Approve & Update Live Scheme"** to commit the changes, or **"Cancel"** to discard.
-
-### B. User Account & Data Erasure (GDPR / DPDP Compliance)
-1. Navigate to the **User Management** tab.
-2. Click **"Delete"** next to any user account.
-3. Review the confirmation prompt displaying user email and UID.
-4. Click **"Confirm & Delete Target User"**.
-5. Server-side batch deletion wipes all user plans, saved advice, user profile, and deletes the Firebase Auth record, recording an entry in `adminActions`.
-
----
-
-## 5. Error Observability & Logging
-
-- All unhandled server exceptions and API errors are automatically captured by `src/lib/server/logger.ts` and saved to Firestore under the `error_events` collection.
-- To view recent logged errors in your terminal, run:
   ```bash
-  npx tsx scripts/report-errors.ts
+  cp .env.example .env.local
   ```
-- Client-side fatal errors trigger `src/app/error.tsx` and `src/app/global-error.tsx`, which post an anonymized error report back to `/api/client-errors`.
+
+| Variable | What it is |
+| :--- | :--- |
+| `NEXT_PUBLIC_FIREBASE_*` | Firebase web app config (API key, auth domain, project id, storage bucket, sender id, app id). |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | The whole service-account JSON on one line. Used by the server for Firestore, token checks and account deletion. |
+| `GEMINI_API_KEY` | Google Gemini, the first AI provider. |
+| `GROQ_API_KEY` | Groq, the fallback provider. Optional, but without it a spent Gemini quota means no AI answers. |
+| `NEXT_PUBLIC_ADMIN_EMAIL` | The admin account's email. |
+| `NEXT_PUBLIC_ADMIN_ROUTE_KEY` | The path segment in front of `/admin`. |
+
+`/api/health` reports `"config": "incomplete"` if a required server variable is missing.
 
 ---
 
-## 6. Verification Checklist Before Any Production Release
+## 2. Commands
 
-Before considering any deployment to production:
-1. `npx tsc --noEmit` exits with `0` errors.
-2. `npm run lint` exits with `0` errors.
-3. `npm test` passes all test suites.
-4. `npm run build` generates the production bundle without errors.
-5. Run locally (`npm run dev`) and test the end-to-end user flow:
-   - Speak into advisor microphone in regional language.
-   - Generate financial business plan in the planner.
-   - Export bank-ready PDF.
-   - Test Admin AI Scheme Updater and user list.
+| Command | What it does |
+| :--- | :--- |
+| `npm run dev` | Development server on http://localhost:3000 |
+| `npm run build` then `npm run start` | Production build and server |
+| `npm test` | Vitest unit tests (DSCR bands, API request schemas, scheme freshness) |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | Typecheck (run `npx next typegen` first on a clean checkout) |
+| `npx tsx scripts/test-plan-pdf-text.ts` | PDF text checks (₹, disclaimer, EMI label) |
+| `npx tsx scripts/report-errors.ts` | Latest entries in Firestore `error_events` |
+| `npx tsx scripts/deploy-firestore-rules.ts` | Publishes `firestore.rules` to the live project |
+
+---
+
+## 3. Releasing
+
+1. Locally: `npx tsc --noEmit`, `npm run lint`, `npm test`, `npm run build` all pass.
+2. Push to `main`. Vercel builds and deploys it; GitHub Actions (`.github/workflows/ci.yml`)
+   runs route type generation, typecheck, lint, tests and a build on the same commit.
+3. If `firestore.rules` changed: `npx tsx scripts/deploy-firestore-rules.ts`. Rules are not
+   deployed by pushing.
+4. Check the live site: `GET /api/health` returns `"status": "ok"`, and the home, login and
+   schemes pages load.
+
+**Rolling back:** in the Vercel dashboard, open Deployments, pick the last good one and choose
+"Promote to Production" (or `npx vercel rollback`). Rules roll back by deploying the previous
+`firestore.rules` from git.
+
+---
+
+## 4. How the safety pieces work
+
+### AI providers
+- Order: **Gemini 3.5 Flash → Gemini 3.5 Flash-Lite → Groq** (`openai/gpt-oss-120b`, then
+  `openai/gpt-oss-20b`). Gemini's free quota is counted per model.
+- A 429 from a Gemini model marks that model as out of quota for 60 seconds, so later requests
+  skip it.
+- **Circuit breaker:** three outage errors in a row (5xx, unreachable — not quota and not bad
+  requests) send requests to Groq first for 60 seconds. Groq has the same breaker.
+- The planner still shows the calculated numbers when every AI provider fails, with a
+  "try again" button for the explanation.
+
+### Health check
+`GET /api/health` returns `status`, `firestore`, `config`, `gemini` (`available` / `cooling`),
+`groq` (`configured` / `missing`) and `buildId`. It answers 503 only when Firestore is unreachable.
+It never calls an AI model.
+
+### Rate limits
+- `src/proxy.ts`: 60 requests a minute per IP for every `/api/*` route.
+- `/api/client-errors`: 10 reports a minute per IP.
+- Both count in the memory of one server instance. Vercel runs several instances, so these
+  slow down abuse; they are not an exact global limit.
+
+### Request validation
+Zod schemas in `src/lib/validation/api-schemas.ts` check the planner, scheme-explanation,
+translation, read-aloud and PIN-code routes and answer 400 with a readable message.
+Values are then cleaned by the routes themselves (for example `sanitizePlanInputs`).
+
+---
+
+## 5. Common incidents
+
+| Symptom | Check | Fix |
+| :--- | :--- | :--- |
+| "AI is busy" everywhere | `/api/health` shows `gemini: cooling` | Wait for the quota reset; make sure `GROQ_API_KEY` is set in Vercel. |
+| Health returns 503 | `firestore: error` | Check the Firebase project status and `FIREBASE_SERVICE_ACCOUNT_KEY` in Vercel. |
+| A user reports a crash | `npx tsx scripts/report-errors.ts` | Browser crashes arrive from `error.tsx` / `global-error.tsx` with the page path. |
+| Profile or plan saves fail | Browser console shows `permission-denied` | Compare live rules with `firestore.rules`; redeploy them. |
+
+---
+
+## 6. Admin tasks
+
+The console is at `/<NEXT_PUBLIC_ADMIN_ROUTE_KEY>/admin`, for the admin account only.
+
+### Updating a scheme from a circular
+1. On a scheme card choose **✨ Update with AI** (cards not verified in 180 days show `⚠️ >180d`).
+2. Paste the circular text (at least 20 characters) and, optionally, its source URL.
+3. **Analyze Circular & Show Differences** shows current and proposed values side by side.
+4. Nothing is published until **✓ Approve & Update Live Scheme** is pressed. The change is
+   recorded in the audit history with the admin's identity and today's verification date.
+
+### Deleting a user
+In the user management tab, delete the user and confirm. The server deletes their plans,
+advice, advisor state, profile and login in batches, and writes an `adminActions` entry. If it
+stops partway, running it again finishes the job.
