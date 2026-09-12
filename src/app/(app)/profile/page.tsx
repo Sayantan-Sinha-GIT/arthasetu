@@ -450,6 +450,13 @@ export default function ProfilePage() {
                           resolvedInfo?.areas && resolvedInfo.areas.length > 0
                             ? [
                                 { value: '', label: t.onboarding.locality + ' / Post Office' },
+                                // A locality saved earlier that is not in this PIN's post-office
+                                // list (told to the advisor, or saved before the list existed)
+                                // stays selected. Otherwise this required field shows blank and
+                                // the whole profile silently refuses to save.
+                                ...(formData.locality && !resolvedInfo.areas.includes(formData.locality)
+                                  ? [{ value: formData.locality, label: formData.locality }]
+                                  : []),
                                 ...resolvedInfo.areas.map(a => ({ value: a, label: a }))
                               ]
                             : [{ value: '', label: 'Select a valid PIN code first' }]

@@ -101,6 +101,11 @@ export default function StepBasicInfo({
   const areaOptions = resolvedInfo?.areas && resolvedInfo.areas.length > 0
     ? [
         { value: '', label: t.onboarding.locality + ' / Post Office' },
+        // Keep a locality saved earlier (for example told to the advisor) selectable,
+        // so this required field is not silently blank.
+        ...(data.locality && !resolvedInfo.areas.includes(data.locality)
+          ? [{ value: data.locality, label: data.locality }]
+          : []),
         ...resolvedInfo.areas.map((a) => ({ value: a, label: a }))
       ]
     : [{ value: '', label: 'Select a valid PIN code first' }];
