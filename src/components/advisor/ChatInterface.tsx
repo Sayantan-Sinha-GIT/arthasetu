@@ -430,6 +430,11 @@ export default function ChatInterface({ userProfile, userId }: ChatInterfaceProp
             {t.advisor.send}
           </Button>
         </form>
+        <p className="text-[11px] text-center text-muted mt-2 select-none">
+          {language === 'hi'
+            ? 'केवल मार्गदर्शन, विनियमित वित्तीय सलाह नहीं। अपने बैंक या आधिकारिक योजना पोर्टल से पुष्टि करें।'
+            : 'Guidance only, not regulated financial advice. Verify with your bank or official scheme portal.'}
+        </p>
       </div>
 
       {/* Save Advice Modal */}

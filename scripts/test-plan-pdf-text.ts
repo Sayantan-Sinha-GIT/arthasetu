@@ -65,6 +65,8 @@ async function main() {
   check('the EMI label matches the calculation (9.5% over 36 months)', raw.includes('9.5% / 36 mo'));
   check('the assumptions and risks sections are printed',
     raw.includes('Key Operational Assumptions') && raw.includes('Risk Analysis'));
+  check('footer includes the financial advice disclaimer',
+    raw.includes('Guidance only, not regulated financial advice'));
 
   console.log(failed === 0 ? '\nAll plan PDF text checks passed.' : `\n${failed} check(s) failed.`);
   process.exit(failed === 0 ? 0 : 1);
