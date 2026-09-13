@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -43,10 +44,12 @@ export default function Modal({
     };
   }, [isOpen, handleEscape]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  // On document.body: pages animate in with a transform, and a fixed element
+  // inside a transformed ancestor is positioned against it, not the screen.
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-navy-950/60 backdrop-blur-sm animate-fade-in"
@@ -89,6 +92,7 @@ export default function Modal({
         {/* Body */}
         <div className="p-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

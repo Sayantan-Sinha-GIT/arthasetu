@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import Button from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
 import { publishReviewedSchemeUpdate } from '@/lib/firestore/admin';
@@ -220,9 +221,11 @@ export default function SchemeAiUpdateModal({ scheme, pendingUpdate, onClose, on
 
   const busy = detecting || publishing;
 
-  return (
+  // On document.body, so the animated page wrapper cannot push it off screen.
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="scheme-ai-update-title"
@@ -530,6 +533,7 @@ export default function SchemeAiUpdateModal({ scheme, pendingUpdate, onClose, on
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

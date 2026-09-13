@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import DiffViewer from '@/components/admin/DiffViewer';
 import SchemeAiUpdateModal from '@/components/admin/SchemeAiUpdateModal';
+import DeleteSchemeDialog from '@/components/admin/DeleteSchemeDialog';
 import { createOrUpdateLiveScheme } from '@/lib/firestore/admin';
 import { getAllSchemes, getSchemeById } from '@/lib/firestore/schemes';
 import { findLikelyDuplicate } from '@/lib/schemes/identity';
@@ -64,6 +65,7 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
   // once listed PM SVANidhi four times; the admin now sees the match first.
   const [duplicateWarning, setDuplicateWarning] = useState<{ id: string; name: string; reason: string } | null>(null);
   const [allowDuplicate, setAllowDuplicate] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -525,13 +527,26 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
 
         {/* Form Actions */}
         <div className="flex items-center justify-between pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push(`/${ADMIN_ROUTE_KEY}/admin/schemes`)}
-          >
-            ← Cancel
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(`/${ADMIN_ROUTE_KEY}/admin/schemes`)}
+            >
+              ← Cancel
+            </Button>
+            {!isNew && initialData && (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setIsDeleteOpen(true)}
+                disabled={saving}
+                className="font-bold"
+              >
+                🗑️ Delete scheme
+              </Button>
+            )}
+          </div>
 
           <Button
             type="submit"
@@ -617,6 +632,20 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
           )}
         </div>
       </Modal>
+
+      {isDeleteOpen && !isNew && initialData && (
+        <DeleteSchemeDialog
+          scheme={{ id: initialData.id, name: initialData.name }}
+          onClose={() => setIsDeleteOpen(false)}
+          onDeleted={(message) => {
+            setIsDeleteOpen(false);
+            setError('');
+            setSuccessMsg(`${message} Returning to the schemes directory...`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => router.push(`/${ADMIN_ROUTE_KEY}/admin/schemes`), 1200);
+          }}
+        />
+      )}
 
       {isAiUpdateOpen && !isNew && initialData && (
         <SchemeAiUpdateModal

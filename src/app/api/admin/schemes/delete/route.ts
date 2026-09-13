@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, type DocumentReference } from 'firebase-admin/firestore';
 import { verifyAdminRequest, ADMIN_EMAIL } from '@/lib/admin-auth';
 import { getErrorMessage } from '@/lib/utils/errors';
 
 export const maxDuration = 60;
+
+/** Firestore allows 500 writes per batch. */
+const BATCH_LIMIT = 450;
+
+async function deleteInBatches(refs: DocumentReference[]) {
+  for (let i = 0; i < refs.length; i += BATCH_LIMIT) {
+    const batch = adminDb.batch();
+    refs.slice(i, i + BATCH_LIMIT).forEach((ref) => batch.delete(ref));
+    await batch.commit();
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,47 +27,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const { schemeId }: { schemeId: string } = body;
+    const body = await req.json().catch(() => ({}));
+    const schemeId = typeof body?.schemeId === 'string' ? body.schemeId.trim() : '';
 
-    if (!schemeId || typeof schemeId !== 'string') {
+    if (!schemeId || schemeId.includes('/')) {
       return NextResponse.json(
         { success: false, error: 'Scheme ID is required' },
         { status: 400 }
       );
     }
 
-    // 1. Fetch the scheme to retrieve its name for audit records
+    // A missing scheme used to be reported as deleted, and an audit entry written
+    // for a deletion that never happened.
     const schemeRef = adminDb.collection('schemes').doc(schemeId);
     const schemeSnap = await schemeRef.get();
-    const schemeName = schemeSnap.exists ? (schemeSnap.data()?.name || schemeId) : schemeId;
+    if (!schemeSnap.exists) {
+      return NextResponse.json(
+        { success: false, error: `No scheme with the ID "${schemeId}" exists. It may already have been deleted.` },
+        { status: 404 }
+      );
+    }
+    const schemeName = schemeSnap.data()?.name || schemeId;
 
-    // 2. Hard delete scheme document from Firestore
+    const [plansSnap, updatesSnap, cacheSnap] = await Promise.all([
+      adminDb.collection('plans').where('schemeRefs', 'array-contains', schemeId).get(),
+      adminDb.collection('scheme_updates').where('schemeId', '==', schemeId).get(),
+      // Cached AI explanations of this scheme would otherwise outlive it.
+      adminDb.collection('scheme_explanation_cache').where('schemeId', '==', schemeId).get(),
+    ]);
+
+    // The scheme goes first, so a failure part-way never leaves it visible with
+    // its history already gone.
     await schemeRef.delete();
-
-    // 3. Remove schemeId references from any existing user plans
-    const plansSnap = await adminDb
-      .collection('plans')
-      .where('schemeRefs', 'array-contains', schemeId)
-      .get();
-    
-    const planUpdates = plansSnap.docs.map((d) =>
-      d.ref.update({
-        schemeRefs: FieldValue.arrayRemove(schemeId),
-      })
+    await Promise.all(
+      plansSnap.docs.map((d) => d.ref.update({ schemeRefs: FieldValue.arrayRemove(schemeId) }))
     );
-    await Promise.all(planUpdates);
+    await deleteInBatches([...updatesSnap.docs, ...cacheSnap.docs].map((d) => d.ref));
 
-    // 4. Delete associated update proposals or draft history for this scheme
-    const updatesSnap = await adminDb
-      .collection('scheme_updates')
-      .where('schemeId', '==', schemeId)
-      .get();
-    
-    const updateDeletions = updatesSnap.docs.map((d) => d.ref.delete());
-    await Promise.all(updateDeletions);
-
-    // 5. Write audit log entry to adminActions collection
     await adminDb.collection('adminActions').add({
       adminEmail: adminEmail || ADMIN_EMAIL,
       targetSchemeId: schemeId,
@@ -64,15 +71,17 @@ export async function POST(req: NextRequest) {
       action: 'delete_scheme',
       plansUpdated: plansSnap.size,
       updatesDeleted: updatesSnap.size,
+      cachedExplanationsDeleted: cacheSnap.size,
       timestamp: FieldValue.serverTimestamp(),
     });
 
     return NextResponse.json({
       success: true,
-      message: `Scheme "${schemeName}" (${schemeId}) and all associated references deleted successfully.`,
+      message: `Scheme "${schemeName}" was permanently deleted.`,
       recordsUpdated: {
         plans: plansSnap.size,
         updates: updatesSnap.size,
+        cachedExplanations: cacheSnap.size,
       },
     });
   } catch (error) {

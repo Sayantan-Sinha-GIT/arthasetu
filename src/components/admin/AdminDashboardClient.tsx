@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -10,6 +11,7 @@ import AmbientBackground from '@/components/ui/AmbientBackground';
 import Button from '@/components/ui/Button';
 import DiffViewer from '@/components/admin/DiffViewer';
 import SchemeAiUpdateModal from '@/components/admin/SchemeAiUpdateModal';
+import DeleteSchemeDialog from '@/components/admin/DeleteSchemeDialog';
 import { getAllSchemes } from '@/lib/firestore/schemes';
 import {
   getPendingUpdates,
@@ -41,6 +43,8 @@ export default function AdminDashboardClient() {
 
   // Scheme being updated with AI, optionally from a queued proposal
   const [schemeUpdate, setSchemeUpdate] = useState<{ scheme: Scheme; pendingUpdate?: SchemeUpdateRecord } | null>(null);
+  // Scheme awaiting delete confirmation
+  const [schemeToDelete, setSchemeToDelete] = useState<Scheme | null>(null);
 
   // Admin User Deletion Modal
   const [targetUserToDelete, setTargetUserToDelete] = useState<{ uid: string; email: string } | null>(null);
@@ -319,6 +323,14 @@ export default function AdminDashboardClient() {
                       >
                         Edit form →
                       </Link>
+                      <button
+                        type="button"
+                        onClick={() => setSchemeToDelete(scheme)}
+                        aria-label={`Delete ${scheme.name}`}
+                        className="px-2 py-0.5 rounded bg-danger/10 text-danger hover:bg-danger hover:text-white text-[11px] font-bold transition-all cursor-pointer"
+                      >
+                        🗑️ {t.common.delete || 'Delete'}
+                      </button>
                     </div>
                   </div>
                 </Card>
@@ -489,8 +501,10 @@ export default function AdminDashboardClient() {
         )}
 
         {/* Admin User Deletion Confirmation Modal */}
-        {targetUserToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+        {/* On document.body: a fixed dialog inside the page's transformed (animated)
+            wrapper was positioned against the whole page, off screen on long lists. */}
+        {targetUserToDelete && createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
             <div className="w-full max-w-md bg-surface-elevated border border-danger/30 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-in">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-danger/10 text-danger flex items-center justify-center text-xl shrink-0">
@@ -543,7 +557,8 @@ export default function AdminDashboardClient() {
                 </Button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
         {schemeUpdate && (
           <SchemeAiUpdateModal
@@ -554,6 +569,20 @@ export default function AdminDashboardClient() {
             onPublished={(message) => {
               setSchemeUpdate(null);
               setDeleteSuccessMsg(message);
+              loadData();
+            }}
+          />
+        )}
+        {schemeToDelete && (
+          <DeleteSchemeDialog
+            scheme={schemeToDelete}
+            onClose={() => setSchemeToDelete(null)}
+            onDeleted={(message) => {
+              const deletedId = schemeToDelete.id;
+              setSchemeToDelete(null);
+              setSchemes((prev) => prev.filter((s) => s.id !== deletedId));
+              setDeleteSuccessMsg(message);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               loadData();
             }}
           />
