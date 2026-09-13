@@ -53,7 +53,13 @@ export async function getSchemesForState(state?: string): Promise<Scheme[]> {
 /**
  * Fetch a single scheme by its ID slug (e.g. 'central-pmegp', 'assam-cmaaa')
  */
-export async function getSchemeById(schemeId: string): Promise<Scheme | null> {
+export async function getSchemeById(
+  schemeId: string,
+  // The admin console must see the live record only: with the bundled fallback, a
+  // flagship scheme the admin had deleted still opened in the edit page, and saving
+  // it there quietly brought it back.
+  { fallbackToSeed = true }: { fallbackToSeed?: boolean } = {}
+): Promise<Scheme | null> {
   try {
     const docRef = doc(db, 'schemes', schemeId);
     const docSnap = await getDoc(docRef);
@@ -62,7 +68,9 @@ export async function getSchemeById(schemeId: string): Promise<Scheme | null> {
     }
   } catch (err) {
     console.warn('Error reading scheme by id from Firestore:', err);
+    if (!fallbackToSeed) throw err;
   }
+  if (!fallbackToSeed) return null;
 
   // Fallback to local verified seed dataset
   const localMatch = SEED_SCHEMES.find((s) => s.id === schemeId);

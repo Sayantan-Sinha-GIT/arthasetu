@@ -19,6 +19,100 @@ import type { Scheme } from '@/types';
 
 const ADMIN_ROUTE_KEY = process.env.NEXT_PUBLIC_ADMIN_ROUTE_KEY || '4632';
 
+const asText = (value: unknown): string =>
+  typeof value === 'string' ? value.trim() : typeof value === 'number' ? String(value) : '';
+const asList = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value.map((item) => String(item ?? '').trim()).filter(Boolean)
+    : typeof value === 'string'
+      ? value.split(/[,\n]/).map((item) => item.trim()).filter(Boolean)
+      : [];
+const asAmount = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const n = Number(String(value).replace(/[,₹%\s]/g, ''));
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
+};
+
+/**
+ * Shapes the AI's extraction of a new scheme into the form's preview.
+ *
+ * The extraction returns a plain scheme object, but the form read
+ * `summaryOfChanges`, `proposedChanges` and `updatedScheme` from it — fields only
+ * the old existing-scheme prompt produced. So after "Analyze" nothing appeared,
+ * and "Load Into Editor Form" loaded nothing. Lists, amounts and the nested
+ * blocks are also made safe here: a list sent as one string crashed the form.
+ */
+function buildNewSchemeDraft(raw: unknown, current: Scheme) {
+  const data = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const eligibility = (data.eligibility && typeof data.eligibility === 'object' ? data.eligibility : {}) as Record<string, unknown>;
+  const benefits = (data.benefits && typeof data.benefits === 'object' ? data.benefits : {}) as Record<string, unknown>;
+  const text = (value: unknown, fallback: string | undefined) => asText(value) || fallback || '';
+  const list = (value: unknown, fallback: string[]) => (asList(value).length ? asList(value) : fallback);
+  const level = data.governmentLevel === 'state' || data.governmentLevel === 'central' ? data.governmentLevel : current.governmentLevel;
+  const status = ['new', 'existing', 'both'].includes(String(eligibility.businessStatus))
+    ? (eligibility.businessStatus as 'new' | 'existing' | 'both')
+    : current.eligibility.businessStatus;
+  const slug = asText(data.id).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+
+  const updatedScheme: Scheme = {
+    ...current,
+    id: slug || current.id,
+    name: text(data.name, current.name),
+    shortName: text(data.shortName, current.shortName),
+    category: text(data.category, current.category),
+    governmentLevel: level,
+    state: level === 'state' ? text(data.state, current.state) : '',
+    description: text(data.description, current.description),
+    targetBusinessTypes: list(data.targetBusinessTypes, current.targetBusinessTypes),
+    targetBeneficiaries: list(data.targetBeneficiaries, current.targetBeneficiaries),
+    eligibility: {
+      ...current.eligibility,
+      ageRange: text(eligibility.ageRange, current.eligibility.ageRange),
+      incomeLimit: text(eligibility.incomeLimit, current.eligibility.incomeLimit),
+      education: text(eligibility.education, current.eligibility.education),
+      businessStatus: status,
+      otherConditions: list(eligibility.otherConditions, current.eligibility.otherConditions),
+    },
+    benefits: {
+      ...current.benefits,
+      subsidyDetails: text(benefits.subsidyDetails, current.benefits.subsidyDetails),
+      loanDetails: text(benefits.loanDetails, current.benefits.loanDetails),
+      maxSubsidyPercent: asAmount(benefits.maxSubsidyPercent) ?? current.benefits.maxSubsidyPercent,
+      maxFundingAmount: asAmount(benefits.maxFundingAmount) ?? current.benefits.maxFundingAmount,
+      otherBenefits: list(benefits.otherBenefits, current.benefits.otherBenefits),
+    },
+    requiredDocuments: list(data.requiredDocuments, current.requiredDocuments),
+    applicationProcess: text(data.applicationProcess, current.applicationProcess),
+    officialUrl: text(data.officialUrl, current.officialUrl),
+    sourceName: text(data.sourceName, current.sourceName),
+  };
+
+  const fields = (s: Scheme): Record<string, unknown> => ({
+    id: s.id, name: s.name, shortName: s.shortName, category: s.category, governmentLevel: s.governmentLevel,
+    state: s.state, description: s.description, targetBusinessTypes: s.targetBusinessTypes,
+    targetBeneficiaries: s.targetBeneficiaries, 'eligibility.ageRange': s.eligibility.ageRange,
+    'eligibility.incomeLimit': s.eligibility.incomeLimit, 'eligibility.education': s.eligibility.education,
+    'eligibility.businessStatus': s.eligibility.businessStatus, 'eligibility.otherConditions': s.eligibility.otherConditions,
+    'benefits.subsidyDetails': s.benefits.subsidyDetails, 'benefits.loanDetails': s.benefits.loanDetails,
+    'benefits.maxSubsidyPercent': s.benefits.maxSubsidyPercent, 'benefits.maxFundingAmount': s.benefits.maxFundingAmount,
+    'benefits.otherBenefits': s.benefits.otherBenefits, requiredDocuments: s.requiredDocuments,
+    applicationProcess: s.applicationProcess, officialUrl: s.officialUrl, sourceName: s.sourceName,
+  });
+  const before = fields(current);
+  const after = fields(updatedScheme);
+  const proposedChanges = Object.fromEntries(
+    Object.keys(after)
+      .filter((key) => JSON.stringify(before[key] ?? '') !== JSON.stringify(after[key] ?? ''))
+      .map((key) => [key, { old: before[key], new: after[key] }])
+  );
+
+  return {
+    summaryOfChanges: `Extracted "${updatedScheme.name || 'the scheme'}" from the circular: ${Object.keys(proposedChanges).length} fields filled. Check every value against the notice before publishing.`,
+    proposedChanges,
+    updatedScheme,
+  };
+}
+
 interface SchemeEditorFormProps {
   initialData?: Scheme | null;
   isNew?: boolean;
@@ -38,10 +132,13 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
     description: initialData?.description || '',
     targetBusinessTypes: initialData?.targetBusinessTypes || [],
     targetBeneficiaries: initialData?.targetBeneficiaries || [],
+    // Sample values are for a brand-new scheme only. Filled in for an existing one,
+    // saving any unrelated edit wrote "18-45 years" and "No limit" into a scheme
+    // whose notice says nothing of the kind.
     eligibility: {
-      ageRange: initialData?.eligibility?.ageRange || '18-45 years',
-      incomeLimit: initialData?.eligibility?.incomeLimit || 'No limit',
-      education: initialData?.eligibility?.education || 'None',
+      ageRange: initialData ? initialData.eligibility?.ageRange || '' : '18-45 years',
+      incomeLimit: initialData ? initialData.eligibility?.incomeLimit || '' : 'No limit',
+      education: initialData ? initialData.eligibility?.education || '' : 'None',
       businessStatus: initialData?.eligibility?.businessStatus || 'both',
       otherConditions: initialData?.eligibility?.otherConditions || [],
     },
@@ -141,7 +238,7 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
         throw new Error(json.error || 'Failed to draft scheme update');
       }
 
-      setAiDraftResult(json.data);
+      setAiDraftResult(buildNewSchemeDraft(json.data, formData));
     } catch (err) {
       setError(getErrorMessage(err, 'AI parsing failed. Please check the text format.'));
     } finally {
@@ -176,7 +273,7 @@ export default function SchemeEditorForm({ initialData, isNew = false }: SchemeE
       if (isNew) {
         // Publishing writes to the ID, so an ID already in use would silently
         // replace that scheme.
-        if (await getSchemeById(formData.id.trim())) {
+        if (await getSchemeById(formData.id.trim(), { fallbackToSeed: false })) {
           setError(`A scheme with the ID "${formData.id}" already exists. Choose a different ID, or edit that scheme instead.`);
           return;
         }

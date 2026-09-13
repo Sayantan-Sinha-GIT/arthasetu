@@ -16,7 +16,6 @@ import { getAllSchemes } from '@/lib/firestore/schemes';
 import {
   getPendingUpdates,
   getAllUpdateHistory,
-  approveSchemeUpdate,
   rejectSchemeUpdate,
 } from '@/lib/firestore/admin';
 import { collection, getDocs } from 'firebase/firestore';
@@ -82,30 +81,20 @@ export default function AdminDashboardClient() {
     loadData();
   }, []);
 
-  const handleApprove = async (update: SchemeUpdateRecord) => {
-    if (!user) return;
-    setActionLoading(update.id);
-    try {
-      await approveSchemeUpdate(
-        update.id,
-        user.uid,
-        user.email || 'admin@arthasetu.app'
-      );
-      await loadData();
-    } catch (err) {
-      console.error('Error approving update:', err);
-    } finally {
-      setActionLoading(null);
+  // Failures used to go only to the console, so a reject that did not save looked
+  // exactly like one that did.
+  const handleReject = async (update: SchemeUpdateRecord) => {
+    if (!window.confirm(`Reject the proposed update to "${update.schemeName || update.schemeId}"? The scheme stays as it is, and the proposal leaves the review queue.`)) {
+      return;
     }
-  };
-
-  const handleReject = async (updateId: string) => {
-    setActionLoading(updateId);
+    setActionLoading(update.id);
+    setDeleteErrorMsg('');
     try {
-      await rejectSchemeUpdate(updateId, 'Rejected by administrative reviewer');
+      await rejectSchemeUpdate(update.id, 'Rejected by administrative reviewer');
+      setDeleteSuccessMsg(`Proposal for "${update.schemeName || update.schemeId}" rejected. The scheme was not changed.`);
       await loadData();
     } catch (err) {
-      console.error('Error rejecting update:', err);
+      setDeleteErrorMsg(getErrorMessage(err, 'The proposal could not be rejected. Please try again.'));
     } finally {
       setActionLoading(null);
     }
@@ -391,7 +380,7 @@ export default function AdminDashboardClient() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleReject(update.id)}
+                            onClick={() => handleReject(update)}
                             isLoading={actionLoading === update.id}
                             className="text-danger border-danger/30 hover:bg-danger-light"
                           >
@@ -403,8 +392,14 @@ export default function AdminDashboardClient() {
                             onClick={() => {
                               // Queued proposals are reviewed, and can be edited, before going live.
                               const scheme = schemes.find((item) => item.id === update.schemeId);
-                              if (scheme) setSchemeUpdate({ scheme, pendingUpdate: update });
-                              else handleApprove(update);
+                              if (scheme) {
+                                setDeleteErrorMsg('');
+                                setSchemeUpdate({ scheme, pendingUpdate: update });
+                              } else {
+                                // Approving without the scheme recreated it as a half-empty record.
+                                setDeleteErrorMsg(`"${update.schemeName || update.schemeId}" is no longer in the directory, so this proposal cannot be applied. Reject it to clear it from the queue.`);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }
                             }}
                             isLoading={actionLoading === update.id}
                             className="bg-success text-white hover:bg-success/90"
@@ -476,13 +471,23 @@ export default function AdminDashboardClient() {
                           </span>
                         </td>
                         <td className="p-3.5 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setTargetUserToDelete({ uid: u.uid, email: u.email || u.uid })}
-                            className="px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-bold transition-all cursor-pointer"
-                          >
-                            🗑️ Delete User
-                          </button>
+                          {u.uid === user?.uid ? (
+                            // Deleting your own login from here would lock the console out.
+                            <span className="px-2.5 py-1 rounded-lg bg-navy-100 dark:bg-navy-900 text-navy-800 dark:text-navy-200 text-[11px] font-bold">
+                              You (admin)
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteErrorMsg('');
+                                setTargetUserToDelete({ uid: u.uid, email: u.email || u.uid });
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-bold transition-all cursor-pointer"
+                            >
+                              🗑️ Delete User
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}

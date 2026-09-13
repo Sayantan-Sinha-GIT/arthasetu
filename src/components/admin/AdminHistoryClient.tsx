@@ -7,6 +7,7 @@ import Footer from '@/components/layout/Footer';
 import AdminGuard from '@/components/admin/AdminGuard';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import DiffViewer from '@/components/admin/DiffViewer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAllUpdateHistory } from '@/lib/firestore/admin';
@@ -19,6 +20,8 @@ export default function AdminHistoryClient() {
   const [history, setHistory] = useState<SchemeUpdateRecord[]>([]);
   const [filter, setFilter] = useState<'all' | 'approved' | 'rejected' | 'pending'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  // Without this the page said "No audit records found" until the list arrived.
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -27,6 +30,8 @@ export default function AdminHistoryClient() {
         setHistory(list);
       } catch (err) {
         console.error('Error loading scheme update history:', err);
+      } finally {
+        setLoading(false);
       }
     }
     load();
@@ -76,7 +81,11 @@ export default function AdminHistoryClient() {
         </div>
 
         {/* List of Audit Entries */}
-        {filteredHistory.length > 0 ? (
+        {loading ? (
+          <div className="py-20 text-center">
+            <LoadingSpinner size="lg" />
+          </div>
+        ) : filteredHistory.length > 0 ? (
           <div className="space-y-4">
             {filteredHistory.map((item) => {
               const isExpanded = expandedId === item.id;

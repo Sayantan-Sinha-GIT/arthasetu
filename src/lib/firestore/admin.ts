@@ -120,6 +120,12 @@ export async function approveSchemeUpdate(
     const schemeSnap = await getDoc(schemeDocRef);
     const todayIso = new Date().toISOString().split('T')[0];
 
+    // A proposal for a deleted scheme used to recreate it from the changed fields
+    // alone: a nameless, half-empty record.
+    if (!schemeSnap.exists()) {
+      throw new Error('The scheme for this proposal no longer exists, so it cannot be applied. Reject the proposal instead.');
+    }
+
     if (schemeSnap.exists()) {
       const existingData = schemeSnap.data() as Scheme;
       const merged = JSON.parse(JSON.stringify(existingData));

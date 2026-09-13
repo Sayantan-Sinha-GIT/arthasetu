@@ -49,8 +49,10 @@ export default function AdminSchemesDirectoryClient() {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
-      s.name.toLowerCase().includes(q) ||
-      s.shortName.toLowerCase().includes(q) ||
+      // A record without a short name used to crash the page on the first keystroke.
+      (s.name || '').toLowerCase().includes(q) ||
+      (s.shortName || '').toLowerCase().includes(q) ||
+      s.id.toLowerCase().includes(q) ||
       (s.state && s.state.toLowerCase().includes(q)) ||
       s.category?.toLowerCase().includes(q)
     );

@@ -21,7 +21,7 @@ export default function AdminEditSchemeClient({ id }: { id: string }) {
     async function load() {
       if (!id) return;
       try {
-        const doc = await getSchemeById(id);
+        const doc = await getSchemeById(id, { fallbackToSeed: false });
         setScheme(doc);
       } catch (err) {
         console.error('Error loading scheme for editing:', err);
