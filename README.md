@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ArthaSetu (अर्थसेतु)
 
-## Getting Started
+**A voice-first, multilingual business advisor for India's rural micro-entrepreneurs.**
+Speak in your own language about the business you want to start. ArthaSetu works out the costs, the
+loan and the break-even point, finds the government schemes you qualify for, and hands you a
+bank-ready project report.
 
-First, run the development server:
+**Live:** https://arthasetu-sigma.vercel.app
+
+Built for **Smart India Hackathon (SIH) 2026**, problem statement **SIH26091**: *AI-Driven Hyper-Local
+Business Advisory and Financial Structuring Assistant for Rural Micro-Entrepreneurs.*
+
+## The problem
+
+Tailors, kirana owners, poultry and dairy farmers, weavers and artisans are often "credit-invisible".
+Banking terms are intimidating, forms and scheme portals are written in formal English or Hindi, and
+hundreds of central and state subsidy schemes exist with no easy way to know which ones apply.
+
+## What ArthaSetu does
+
+- **Talk, don't fill forms.** Speech recognition in 23 Indian languages, with read-aloud answers.
+- **Exact numbers.** Start-up cost, working capital, reducing-balance EMI and break-even are computed by
+  a deterministic TypeScript engine, not by the language model.
+- **Real schemes only.** Matches from a curated database of central and state schemes (PMEGP, MUDRA,
+  PMFME and state programmes). The model explains verified records; it never invents one.
+- **Credit readiness score** (300–900) that shows how bank-ready a plan is and what would improve it.
+- **Bank-ready PDF report**, bilingual, with regional fonts.
+- **Admin console** for keeping the scheme database up to date.
+- Works as an installable web app and as an Android app (Trusted Web Activity).
+
+### Design rule: the AI advises, it never calculates or invents
+
+1. All arithmetic lives in `src/lib/calculator.ts`; the model only explains the final numbers.
+2. Schemes come only from the database in `src/lib/schemes/`.
+3. When a plan is saved, the server stores its own computed numbers and ignores any the model supplies.
+
+## Stack
+
+Next.js 16 (App Router, TypeScript) · React 19 · Tailwind CSS 4 · Framer Motion · Lenis ·
+Firebase Auth + Cloud Firestore · Google Gemini (with Groq as an automatic fallback) · jsPDF ·
+Web Speech API · Vercel · Vitest
+
+## Running locally
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in the Firebase and Gemini values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+npm test      # unit tests
+npm run lint
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+[`RUNBOOK.md`](RUNBOOK.md) covers setup, releases, the safety checks and admin tasks.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How it was built
 
-## Learn More
+ArthaSetu was built in Google's **Antigravity** IDE, with its AI coding agent doing much of the
+implementation. Our team decided what to build and the rules it had to follow (such as "the AI never
+does the arithmetic"), directed the work, and tested it.
 
-To learn more about Next.js, take a look at the following resources:
+## Team
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Team CoreDumped**: Deepjoy Mullick (team leader), Sayantan Sinha (lead developer). Testing by
+Adrija Roy, Madhurya Ghosh and Soumyadeep Das.
